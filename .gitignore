@@ -1,0 +1,22 @@
+# build
+Builds/
+bin/
+Debug/
+Release/
+x64/
+
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.opendb
+*.user
+*.suo
+*.log
+
+# JUCE build artifacts
+JuceLibraryCode/
+ipch/
+
+# OS
+.DS_Store
+Thumbs.db
