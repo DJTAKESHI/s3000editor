@@ -1,5 +1,6 @@
 #include "MainComponent.h"
 #include <fstream>
+#include <juce_gui_basics/juce_gui_basics.h>
 
 //char decodeAkaiChar(uint8_t v)
 //{
@@ -236,13 +237,13 @@ void MainComponent::resized()
 
     auto area = getLocalBounds();
 
-    listBox.setBounds(getLocalBounds());
     captureAButton.setBounds(area.removeFromTop(50));
     captureBButton.setBounds(area.removeFromTop(50));
     compareButton.setBounds(area.removeFromTop(50));
     requestButton.setBounds(area.removeFromTop(50));
     requestRPDATAButton.setBounds(area.removeFromTop(50));
     programLabel.setBounds(area.removeFromTop(30));
+    listBox.setBounds(area);
 
 }
 
@@ -315,18 +316,26 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
     case 0x03:
     {
         //std::vector<uint8_t> raw(data,data + size);
-        DBG("=== PLIST RAW HEX ===");
+        //DBG("=== PLIST RAW HEX ===");
 
-        for (int i = 0; i < size; ++i)
-        {
-            DBG(juce::String(i) + ": " +
-                juce::String::toHexString((int)data[i]));
-        }
-        std::vector<uint8_t> raw;
-        raw.assign(data, data + size);
-        DBG("PLIST RECEIVED");
-        parsePLIST(raw);
+        //for (int i = 0; i < size; ++i)
+        //{
+        //    DBG(juce::String(i) + ": " +
+        //        juce::String::toHexString((int)data[i]));
+        //}
+
+        auto rawCopy = std::vector<uint8_t>(data, data + size);
+        juce::MessageManager::callAsync([this, rawCopy]()
+            {
+                parsePLIST(rawCopy);
+            });
         break;
+
+        //std::vector<uint8_t> raw;
+        //raw.assign(data, data + size);
+        //DBG("PLIST RECEIVED");
+        //parsePLIST(raw);
+        //break;
 
     }
 
@@ -590,6 +599,9 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 
         DBG(juce::String(p) + " : " + name);
     }
+
+    listBox.updateContent();
+    listBox.repaint();
 
     repaint();
 }
@@ -936,6 +948,16 @@ std::string MainComponent::trimRightSpaces(std::string s)
     while (!s.empty() && s.back() == ' ')
         s.pop_back();
     return s;
+}
+
+void MainComponent::listBoxItemClicked(int row, const juce::MouseEvent&)
+{
+    if (row < 0 || row >= programList.size())
+    {
+        return;
+    }
+
+    sendRPDATA(programList[row].index);
 }
 
 //void MainComponent::saveRawSysEx(const uint8_t* data, size_t size)

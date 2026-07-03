@@ -123,6 +123,8 @@ private:
         int width, int height,
         bool rowIsSelected) override;
 
+    void listBoxItemClicked(int row, const juce::MouseEvent&);
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
