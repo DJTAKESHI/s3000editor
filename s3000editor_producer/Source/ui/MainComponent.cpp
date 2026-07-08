@@ -1,42 +1,8 @@
 #include "MainComponent.h"
 #include <fstream>
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "../s3000/Offsets.h"
 
-//char decodeAkaiChar(uint8_t v)
-//{
-//    switch (v)
-//    {
-//    case 0x0A: return ' ';   // space‰¼
-//    case 0x0B: return 'A';
-//    case 0x0C: return 'B';
-//    case 0x0D: return 'C';
-//    case 0x0E: return 'D';
-//    case 0x0F: return 'E';
-//    case 0x10: return 'F';
-//    case 0x11: return 'G';
-//    case 0x12: return 'H';
-//    case 0x13: return 'I';
-//    case 0x14: return 'J';
-//    case 0x15: return 'K';
-//    case 0x16: return 'L';
-//    case 0x17: return 'M';
-//    case 0x18: return 'N';
-//    case 0x19: return 'O';
-//    case 0x1A: return 'P';
-//    case 0x1B: return 'Q';
-//    case 0x1C: return 'R';
-//    case 0x1D: return 'S';
-//    case 0x1E: return 'T';
-//    case 0x1F: return 'U';
-//    default:   return '?';
-//    }
-//}
-
-//char decodeAkaiChar(uint8_t v)
-//{
-//    DBG("CHAR RAW = " + juce::String((int)v));
-//    return '?';
-//}
 
 char decodeAkaiChar(uint8_t v)
 {
@@ -840,22 +806,14 @@ void MainComponent::parseKeygroup(
     const std::vector<uint8_t>& decoded
 )
 {
-    DBG("====KEYGROUP=====");
-    DBG("Size = " + juce::String((int)decoded.size()));
+    dumpKeygroup(decoded);
 
-    static int dumpIndex = 0;
+    Keygroup k = parseKeygroupStruct(decoded);
 
-    juce::File file =
-        juce::File::getSpecialLocation(
-            juce::File::userDesktopDirectory
-        ).getChildFile(
-            "keygroup_" + juce::String(dumpIndex++) + ".bin");
-
-    file.replaceWithData(
-        decoded.data(),
-        decoded.size()
-    );
+   
 }
+
+
 
 void MainComponent::saveRawDump(const juce::String& name)
 {
@@ -908,15 +866,86 @@ ProgramParams MainComponent::parseParams(const std::vector<uint8_t>& d)
 {
     ProgramParams p{};
 
-    if (d.size() < 3)
+    if (d.size() < 80)
         return p;
 
-    p.pan = (int8_t)d[0];
-    p.frequency = d[1];
-    p.filter = d[2];
+    p.programNumber = d[15];
+    p.midiChannel = d[16];
+    p.polyphony = d[17] + 1;
+    p.priority = d[18];
+
+    p.playLow = d[19];
+    p.playHigh = d[20];
+
+    p.output = d[22];
+    p.stereo = d[23];
+
+    p.panPos = (int8_t)d[24];   // -50..+50Œn‚Í’ˆÓ
+    p.loudness = d[25];
+    p.velocityLoud = (int8_t)d[26];
+
+    p.lfo2Rate = d[29];
+    p.lfo2Depth = d[30];
+
+    p.lfo1Rate = d[33];
+    p.lfo1Depth = d[34];
+
+    p.bendUp = d[39];
+    p.bendDown = d[73];
+
+    p.transpose = (int8_t)d[75];
 
     return p;
 }
+
+Keygroup parseKeygroup(const std::vector<uint8_t>& d)
+{
+    Keygroup k{};
+
+    if (d.size() < 34)
+        return k;
+
+    k.id = d[0];
+    k.nextBlock = (d[1] | (d[2] << 7)); // 2-byte block addr
+
+    k.lowNote = d[3];
+    k.highNote = d[4];
+
+    k.tune = (int8_t)d[5]; // signed-ish (—v’²®)
+
+    k.filterFreq = d[7];
+    k.keyFollow = d[8];
+
+    k.env1_attack = d[12];
+    k.env1_decay = d[13];
+    k.env1_sustain = d[14];
+    k.env1_release = d[15];
+
+    k.env1_velAttack = (int8_t)d[16];
+    k.env1_velRelease = (int8_t)d[17];
+
+    k.env1_noteOffRelease = (int8_t)d[18];
+    k.env1_keyDecayRelease = (int8_t)d[19];
+
+    k.env2_attack = d[20];
+    k.env2_decay = d[21];
+    k.env2_sustain = d[22];
+    k.env2_release = d[23];
+
+    k.env2_velAttack = (int8_t)d[24];
+    k.env2_velRelease = (int8_t)d[25];
+
+    k.env2_noteOffRelease = (int8_t)d[26];
+    k.env2_keyDecayRelease = (int8_t)d[27];
+
+    k.env2_velocityScale = (int8_t)d[28];
+
+    k.velocityXfade = d[30];
+
+    return k;
+}
+
+
 
 int MainComponent::getNumRows()
 {

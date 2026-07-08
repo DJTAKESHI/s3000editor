@@ -4,6 +4,44 @@
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="c4SuyX" name="s3000editor_producer">
     <GROUP id="{0B4A6806-AA35-EFCF-7296-36DF564D3DE3}" name="Source">
+      <GROUP id="{293077FE-5789-4832-86B5-557EF4AA0727}" name="s3000">
+        <FILE id="B8jQZO" name="Decode.cpp" compile="1" resource="0" file="Source/s3000/Decode.cpp"/>
+        <FILE id="aowFqh" name="Decode.h" compile="0" resource="0" file="Source/s3000/Decode.h"/>
+        <FILE id="FDLVWk" name="KeygroupParser.cpp" compile="1" resource="0"
+              file="Source/s3000/KeygroupParser.cpp"/>
+        <FILE id="zDmG4j" name="KeygroupParser.h" compile="0" resource="0"
+              file="Source/s3000/KeygroupParser.h"/>
+        <FILE id="YRfYzg" name="ModMatrix.cpp" compile="1" resource="0" file="Source/s3000/ModMatrix.cpp"/>
+        <FILE id="U6dksm" name="ModMatrix.h" compile="0" resource="0" file="Source/s3000/ModMatrix.h"/>
+        <FILE id="ar741J" name="Offsets.h" compile="0" resource="0" file="Source/s3000/Offsets.h"/>
+        <FILE id="cUnqyA" name="ProgramParser.cpp" compile="1" resource="0"
+              file="Source/s3000/ProgramParser.cpp"/>
+        <FILE id="BIHFlV" name="ProgramParser.h" compile="0" resource="0" file="Source/s3000/ProgramParser.h"/>
+        <FILE id="xjuUC2" name="SampleParser.cpp" compile="1" resource="0"
+              file="Source/s3000/SampleParser.cpp"/>
+        <FILE id="KJDirq" name="SampleParser.h" compile="0" resource="0" file="Source/s3000/SampleParser.h"/>
+      </GROUP>
+      <GROUP id="{4CDB8C56-5A74-CC7A-DD1A-8FCC92414609}" name="ui">
+        <FILE id="SKDo6v" name="KeyGroupEditor.cpp" compile="1" resource="0"
+              file="Source/ui/KeyGroupEditor.cpp"/>
+        <FILE id="BcU4By" name="KeyGroupEditor.h" compile="0" resource="0"
+              file="Source/ui/KeyGroupEditor.h"/>
+        <FILE id="N5ysuu" name="MainComponent.cpp" compile="1" resource="0"
+              file="Source/ui/MainComponent.cpp"/>
+        <FILE id="yGArYO" name="MainComponent.h" compile="0" resource="0" file="Source/ui/MainComponent.h"/>
+        <FILE id="lJ6Pjt" name="ProgramEditor.cpp" compile="1" resource="0"
+              file="Source/ui/ProgramEditor.cpp"/>
+        <FILE id="f4AB6n" name="ProgramEditor.h" compile="0" resource="0" file="Source/ui/ProgramEditor.h"/>
+      </GROUP>
+      <GROUP id="{D8808C5A-7B0E-B411-A863-10A40BD99275}" name="midi">
+        <FILE id="gcFq9i" name="MiDiManager.cpp" compile="1" resource="0" file="Source/midi/MiDiManager.cpp"/>
+        <FILE id="Ecyu6b" name="MiDiManager.h" compile="0" resource="0" file="Source/midi/MiDiManager.h"/>
+        <FILE id="DQ8Ljw" name="SysEx.cpp" compile="1" resource="0" file="Source/midi/SysEx.cpp"/>
+        <FILE id="h0gXkn" name="SysEx.h" compile="0" resource="0" file="Source/midi/SysEx.h"/>
+      </GROUP>
+      <GROUP id="{8DDAEE10-6A44-9E02-56B2-578B71880BCE}" name="s3000">
+        <FILE id="XfUytA" name="S3000Types.h" compile="0" resource="0" file="Source/s3000/S3000Types.h"/>
+      </GROUP>
       <FILE id="DwuRsi" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="c3GmAz" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="xMaMUM" name="MainComponent.cpp" compile="1" resource="0"
