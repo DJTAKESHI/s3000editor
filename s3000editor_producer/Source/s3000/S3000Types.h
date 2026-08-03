@@ -48,6 +48,7 @@ enum class PlayMode : uint8_t
 
 struct VelocityZone
 {
+    //int sampleNumber = -1;
     std::string sampleName;
 
     int lowVel = 0;
@@ -60,45 +61,63 @@ struct VelocityZone
     PlayMode playMode = PlayMode::AsSample;
 };
 
-
-enum class ModSource
+struct Sample
 {
-    Off,
-    LFO1,
-    LFO2,
-    ENV1,
-    ENV2,
-    Velocity,
-    Aftertouch,
-    ModWheel,
-    Keytrack,
-    PitchBend
+    int number = -1;
+    std::string name;
+
+    int sampleRate = 0;
+    int length = 0;
+    int tune = 0;
+    int rootKey = 60;
+    //int start = 0;
+    //int end = 0;
+
+    bool loop = false;
+    int loopStart = 0;
+    int loopEnd = 0;
+
 };
 
 
-enum class ModDestination
-{
-    None,
-    Pan,
-    Amp,
-    FilterFreq,
-    Pitch
-};
+//enum class ModSource
+//{
+//    Off,
+//    LFO1,
+//    LFO2,
+//    ENV1,
+//    ENV2,
+//    Velocity,
+//    Aftertouch,
+//    ModWheel,
+//    Keytrack,
+//    PitchBend
+//};
 
 
-struct ModSlot
-{
-    ModSource source = ModSource::Off;
-    ModDestination dest = ModDestination::None;
+//enum class ModDestination
+//{
+//    None,
+//    Pan,
+//    Amp,
+//    FilterFreq,
+//    Pitch
+//};
 
-    int amount = 0;
-};
+
+//struct ModSlot
+//{
+//    ModSource source = ModSource::Off;
+//    ModDestination dest = ModDestination::None;
+//
+//    int amount = 0;
+//};
 
 
-struct ModMatrix
-{
-    std::array<ModSlot, 6> slots;
-};
+//struct ModMatrix
+//{
+//    std::array<ModSlot, 6> slots;
+//};
 
 
 struct Keygroup
@@ -116,7 +135,7 @@ struct Keygroup
 
     PlaybackParams playback;
 
-    ModMatrix modulation;
+    //ModMatrix modulation;
 };
 
 
@@ -129,4 +148,9 @@ struct Program
     int polyphony = 0;
 
     std::vector<Keygroup> keygroups;
+};
+
+struct SampleMemory
+{
+    std::vector<Sample> samples;
 };

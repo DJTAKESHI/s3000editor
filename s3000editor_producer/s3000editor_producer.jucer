@@ -43,9 +43,6 @@
         <FILE id="XfUytA" name="S3000Types.h" compile="0" resource="0" file="Source/s3000/S3000Types.h"/>
       </GROUP>
       <FILE id="DwuRsi" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="c3GmAz" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="xMaMUM" name="MainComponent.cpp" compile="1" resource="0"
-            file="Source/MainComponent.cpp"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

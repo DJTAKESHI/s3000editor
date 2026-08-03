@@ -152,15 +152,25 @@ namespace KeygroupOffset
     }
 
     // ===== Velocity Zones =====
-    namespace Zone1
+    namespace Zone
     {
-        constexpr std::size_t SNAME = 34;
-        constexpr std::size_t LOVEL = 46;
-        constexpr std::size_t HIVEL = 47;
+        constexpr std::size_t BASE = 34;
+
+        constexpr std::size_t SNAME = 0;
+
+        constexpr std::size_t LOVEL = 12;
+        constexpr std::size_t HIVEL = 13;
+
+        constexpr std::size_t TUNE = 14;
+        constexpr std::size_t LOUDNESS = 15;
+        constexpr std::size_t PAN = 16;
+        constexpr std::size_t PLAYMODE = 17;
+
+        constexpr std::size_t STRIDE = 24;
     }
 
     // Zone2〜4はオフセット+差分で管理するのが基本
-    constexpr std::size_t ZONE_STRIDE = 24;
+    //constexpr std::size_t ZONE_STRIDE = 24;
 
     // ===== Playback =====
     namespace Playback

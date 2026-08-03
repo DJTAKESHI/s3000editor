@@ -2,6 +2,7 @@
 #include <fstream>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../s3000/Offsets.h"
+#include "../s3000/ProgramParser.h"
 
 
 char decodeAkaiChar(uint8_t v)
@@ -510,20 +511,43 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
         decoded.size()
     );
 
-    int panOffset = 0x50;
-    int freqOffset = 0x51;
-    int filterOffset = 0x52;
+    //int panOffset = 0x50;
+    //int freqOffset = 0x51;
+    //int filterOffset = 0x52;
 
-    auto params = parseParams(decoded);
+    //auto params = parseParams(decoded);
 
 
     DBG("DECODED SIZE = "
         + juce::String((int)decoded.size()));
+
+    Program program = ProgramParser::parse(decoded);
+
+    DBG("===== PROGRAM =====");
+
+    DBG("Program Number = "
+        + juce::String(program.programNumber));
+
+
+    DBG("MIDI Channel = "
+        + juce::String(program.midiChannel));
+
+
+    DBG("Polyphony = "
+        + juce::String(program.polyphony));
+
+
+    DBG("Keygroup Count = "
+        + juce::String(
+            (int)program.keygroups.size()
+        ));
+
+
     //auto params = parseParams(decoded);
 
-    DBG("PAN = " + juce::String(params.pan));
-    DBG("FREQ = " + juce::String(params.frequency));
-    DBG("FILTER = " + juce::String(params.filter));
+    //DBG("PAN = " + juce::String(params.pan));
+    //DBG("FREQ = " + juce::String(params.frequency));
+    //DBG("FILTER = " + juce::String(params.filter));
 }
 
 void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
@@ -787,31 +811,28 @@ void MainComponent::parseProgram(const std::vector<uint8_t>& decoded)
         decoded.size()
     );
 
-    ProgramParams params = parseParams(
-        decoded
-        //0x50,
-        //0x51,
-        //0x52
-    );
+    Program program = ProgramParser::parse(decoded);
+
+
     DBG("===== PROGRAM =====");
     DBG("SIZE   = " + juce::String((int)decoded.size()));
-    DBG("PAN    = " + juce::String(params.pan));
-    DBG("FREQ   = " + juce::String(params.frequency));
-    DBG("FILTER = " + juce::String(params.filter));
+    //DBG("PAN    = " + juce::String(params.pan));
+    //DBG("FREQ   = " + juce::String(params.frequency));
+    //DBG("FILTER = " + juce::String(params.filter));
 
 
 }
 
-void MainComponent::parseKeygroup(
-    const std::vector<uint8_t>& decoded
-)
-{
-    dumpKeygroup(decoded);
-
-    Keygroup k = parseKeygroupStruct(decoded);
-
-   
-}
+//void MainComponent::parseKeygroup(
+//    const std::vector<uint8_t>& decoded
+//)
+//{
+//    dumpKeygroup(decoded);
+//
+//    Keygroup k = parseKeygroupStruct(decoded);
+//
+//   
+//}
 
 
 
@@ -862,88 +883,88 @@ void MainComponent::saveRawRPDATA(const juce::String& name,
 //    return p;
 //}
 
-ProgramParams MainComponent::parseParams(const std::vector<uint8_t>& d)
-{
-    ProgramParams p{};
+//Program MainComponent::parseParams(const std::vector<uint8_t>& d)
+//{
+//    Program p{};
+//
+//    if (d.size() < 80)
+//        return p;
+//
+//    p.programNumber = d[15];
+//    p.midiChannel = d[16];
+//    p.polyphony = d[17] + 1;
+//    p.priority = d[18];
+//
+//    p.playLow = d[19];
+//    p.playHigh = d[20];
+//
+//    p.output = d[22];
+//    p.stereo = d[23];
+//
+//    p.panPos = (int8_t)d[24];   // -50..+50Œn‚Í’ˆÓ
+//    p.loudness = d[25];
+//    p.velocityLoud = (int8_t)d[26];
+//
+//    p.lfo2Rate = d[29];
+//    p.lfo2Depth = d[30];
+//
+//    p.lfo1Rate = d[33];
+//    p.lfo1Depth = d[34];
+//
+//    p.bendUp = d[39];
+//    p.bendDown = d[73];
+//
+//    p.transpose = (int8_t)d[75];
+//
+//    return p;
+//}
 
-    if (d.size() < 80)
-        return p;
-
-    p.programNumber = d[15];
-    p.midiChannel = d[16];
-    p.polyphony = d[17] + 1;
-    p.priority = d[18];
-
-    p.playLow = d[19];
-    p.playHigh = d[20];
-
-    p.output = d[22];
-    p.stereo = d[23];
-
-    p.panPos = (int8_t)d[24];   // -50..+50Œn‚Í’ˆÓ
-    p.loudness = d[25];
-    p.velocityLoud = (int8_t)d[26];
-
-    p.lfo2Rate = d[29];
-    p.lfo2Depth = d[30];
-
-    p.lfo1Rate = d[33];
-    p.lfo1Depth = d[34];
-
-    p.bendUp = d[39];
-    p.bendDown = d[73];
-
-    p.transpose = (int8_t)d[75];
-
-    return p;
-}
-
-Keygroup parseKeygroup(const std::vector<uint8_t>& d)
-{
-    Keygroup k{};
-
-    if (d.size() < 34)
-        return k;
-
-    k.id = d[0];
-    k.nextBlock = (d[1] | (d[2] << 7)); // 2-byte block addr
-
-    k.lowNote = d[3];
-    k.highNote = d[4];
-
-    k.tune = (int8_t)d[5]; // signed-ish (—v’²®)
-
-    k.filterFreq = d[7];
-    k.keyFollow = d[8];
-
-    k.env1_attack = d[12];
-    k.env1_decay = d[13];
-    k.env1_sustain = d[14];
-    k.env1_release = d[15];
-
-    k.env1_velAttack = (int8_t)d[16];
-    k.env1_velRelease = (int8_t)d[17];
-
-    k.env1_noteOffRelease = (int8_t)d[18];
-    k.env1_keyDecayRelease = (int8_t)d[19];
-
-    k.env2_attack = d[20];
-    k.env2_decay = d[21];
-    k.env2_sustain = d[22];
-    k.env2_release = d[23];
-
-    k.env2_velAttack = (int8_t)d[24];
-    k.env2_velRelease = (int8_t)d[25];
-
-    k.env2_noteOffRelease = (int8_t)d[26];
-    k.env2_keyDecayRelease = (int8_t)d[27];
-
-    k.env2_velocityScale = (int8_t)d[28];
-
-    k.velocityXfade = d[30];
-
-    return k;
-}
+//Keygroup parseKeygroup(const std::vector<uint8_t>& d)
+//{
+//    Keygroup k{};
+//
+//    if (d.size() < 34)
+//        return k;
+//
+//    k.id = d[0];
+//    k.nextBlock = (d[1] | (d[2] << 7)); // 2-byte block addr
+//
+//    k.lowNote = d[3];
+//    k.highNote = d[4];
+//
+//    k.tune = (int8_t)d[5]; // signed-ish (—v’²®)
+//
+//    k.filterFreq = d[7];
+//    k.keyFollow = d[8];
+//
+//    k.env1_attack = d[12];
+//    k.env1_decay = d[13];
+//    k.env1_sustain = d[14];
+//    k.env1_release = d[15];
+//
+//    k.env1_velAttack = (int8_t)d[16];
+//    k.env1_velRelease = (int8_t)d[17];
+//
+//    k.env1_noteOffRelease = (int8_t)d[18];
+//    k.env1_keyDecayRelease = (int8_t)d[19];
+//
+//    k.env2_attack = d[20];
+//    k.env2_decay = d[21];
+//    k.env2_sustain = d[22];
+//    k.env2_release = d[23];
+//
+//    k.env2_velAttack = (int8_t)d[24];
+//    k.env2_velRelease = (int8_t)d[25];
+//
+//    k.env2_noteOffRelease = (int8_t)d[26];
+//    k.env2_keyDecayRelease = (int8_t)d[27];
+//
+//    k.env2_velocityScale = (int8_t)d[28];
+//
+//    k.velocityXfade = d[30];
+//
+//    return k;
+//}
 
 
 

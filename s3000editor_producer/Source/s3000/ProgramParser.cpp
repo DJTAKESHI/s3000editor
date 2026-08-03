@@ -1,9 +1,9 @@
 #include "ProgramParser.h"
 #include "KeygroupParser.h"
+#include <juce_core/juce_core.h>
 
-
-using K = ProgramOffset;
-using KG = KeygroupOffset;
+namespace P = ProgramOffset;
+namespace KG = KeygroupOffset;
 
 
 int8_t ProgramParser::readS8(const std::vector<uint8_t>& d, size_t offset)
@@ -46,27 +46,42 @@ Program ProgramParser::parse(const std::vector<uint8_t>& d)
 
 void ProgramParser::parseHeader(const std::vector<uint8_t>& d, Program& p)
 {
-	p.programNumber = d[K::General::Number];
-	p.midiChannel = d[K::General::MidiChannel];
-	p.polyphony = d[K::General::Polyphony];
+	if (d.size() <= P::General::Polyphony)
+	{
+		return;
+	}
+
+	p.programNumber = d[P::General::Number];
+	p.midiChannel = d[P::General::MidiChannel];
+	p.polyphony = d[P::General::Polyphony];
 
 	// ’Ç‰Á—\’è
 }
 
 void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p)
 {
-	const int numKeygroupgs = d[K::Keygroup::NumKeygroups];
+	if (d.size() <= P::Keygroups::NumKeygroups)
+	{
+		return;
+	}
 
-	const size_t baseOffset = K::Keygroups::TempProgramNumber + 1;
+	const int numKeygroups = d[P::Keygroups::NumKeygroups];
+
+	const size_t baseOffset = P::Keygroups::TempProgramNumber + 1;
 
 	const size_t stride = 256;
 
 	p.keygroups.clear();
 	p.keygroups.reserve(numKeygroups);
 
-	for (int i = 0; i < numKeygroupgs; ++i)
+	for (int i = 0; i < numKeygroups; ++i)
 	{
 		size_t offset = baseOffset + i * stride;
+
+		if (offset + stride > d.size())
+		{
+			break;
+		}
 
 		std::vector<uint8_t> block(
 			d.begin() + offset,
@@ -77,6 +92,8 @@ void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p)
 			KeygroupParser::parse(block)
 		);
 
-
+		DBG(
+			"Parsed Keygroup " + juce::String(i)
+		);
 	}
 }
