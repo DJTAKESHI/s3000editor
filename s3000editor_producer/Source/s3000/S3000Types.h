@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+
 struct Envelope
 {
     int attack = 0;
@@ -18,31 +19,30 @@ struct Envelope
 };
 
 
-struct Filter1
+struct FilterParams
 {
     int freq = 0;
     int keyFollow = 0;
     int resonance = 0;
 };
-    
-struct PlaybackControl
+
+
+struct PlaybackParams
 {
     int kbeat = 0;
     uint8_t ahold = 0;
-
     uint8_t constantPitch = 0;
-
     int keygroupXfade = 0;
-
 };
+
 
 enum class PlayMode : uint8_t
 {
-    AsSample = 0,
-    LoopInRelease = 1,
-    LoopTilRelease = 2,
-    NoLoop = 3,
-    PlayToEnd = 4
+    AsSample,
+    LoopInRelease,
+    LoopTilRelease,
+    NoLoop,
+    PlayToEnd
 };
 
 
@@ -58,13 +58,12 @@ struct VelocityZone
     int pan = 0;
 
     PlayMode playMode = PlayMode::AsSample;
-
 };
 
 
 enum class ModSource
 {
-    Off = 0,
+    Off,
     LFO1,
     LFO2,
     ENV1,
@@ -76,35 +75,16 @@ enum class ModSource
     PitchBend
 };
 
+
 enum class ModDestination
 {
-    None = 0,
+    None,
     Pan,
     Amp,
     FilterFreq,
-    Pitch,
-    LFO1Rate,
-    LFO1Depth,
-    LFO1Delay
-
+    Pitch
 };
 
-struct ModContext
-{
-    float lfo1 = 0.0f;
-    float lfo2 = 0.0f;
-    float env1 = 0.0f;
-    float env2 = 0.0f;
-
-    float velocity = 0.0f;
-    float aftertouch = 0.0f;
-    float modWheel = 0.0f;
-
-    float keytrack = 0.0f;
-    float pitchBend = 0.0f;
-
-    float get(ModSource s) const;
-};
 
 struct ModSlot
 {
@@ -112,54 +92,41 @@ struct ModSlot
     ModDestination dest = ModDestination::None;
 
     int amount = 0;
-
-    float normalized() const
-    {
-        return amount / 50.0f;
-    }
-
 };
+
 
 struct ModMatrix
 {
     std::array<ModSlot, 6> slots;
-
-    float evaluate(const ModContext& ctx,
-        ModDestination dest) const;
 };
+
 
 struct Keygroup
 {
+    int lowNote = 0;
+    int highNote = 127;
+    int tune = 0;
 
-    int lowNote;
-    int highNote;
-
-    int tune;
-
-    Filter1 filter1;
-
+    FilterParams filter;
 
     Envelope env1;
     Envelope env2;
 
-
-
     std::array<VelocityZone, 4> zones;
 
-    PlaybackControl playback;
+    PlaybackParams playback;
 
-    ModMatrix mod;
-
-
-
+    ModMatrix modulation;
 };
+
 
 struct Program
 {
-    int programNumber;
+    int programNumber = 0;
     std::string name;
-    int midiChannel;
-    int polyphony;
+
+    int midiChannel = 1;
+    int polyphony = 0;
 
     std::vector<Keygroup> keygroups;
 };
