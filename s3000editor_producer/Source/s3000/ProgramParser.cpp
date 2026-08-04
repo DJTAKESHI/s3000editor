@@ -51,6 +51,14 @@ void ProgramParser::parseHeader(const std::vector<uint8_t>& d, Program& p)
 		return;
 	}
 
+	uint16_t kgrpAddress =
+		(d[0] << 8) | d[1];
+
+	DBG(
+		"KGRP1 address = "
+		+ juce::String(kgrpAddress)
+	);
+
 	p.programNumber = d[P::General::Number];
 	p.midiChannel = d[P::General::MidiChannel];
 	p.polyphony = d[P::General::Polyphony];

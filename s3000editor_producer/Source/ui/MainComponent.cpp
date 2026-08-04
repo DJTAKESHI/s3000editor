@@ -3,6 +3,8 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "../s3000/Offsets.h"
 #include "../s3000/ProgramParser.h"
+#include "../s3000/KeygroupParser.h"
+#include "../s3000/KeygroupHeaderParser.h"
 
 
 char decodeAkaiChar(uint8_t v)
@@ -97,7 +99,9 @@ MainComponent::MainComponent()
     addAndMakeVisible(requestRPDATAButton);
     requestRPDATAButton.onClick = [this]
         {
-            sendRPDATA(0);
+            //
+            // sendRPDATA(0);
+            sendKGHeader(0, 0);
         };
 
     addAndMakeVisible(programLabel);
@@ -261,21 +265,58 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
     saveRawRPDATA(name, programBuffer);
     
     
-    std::vector<uint8_t> decoded = decodeNibbleData(programBuffer);
+    std::vector<uint8_t> decoded;
 
     switch (opcode)
     {
     case 0x28:
         DBG("PROGRAM HEADER RECEIVED");
+        decoded = decodeNibbleData(programBuffer);
         //parseProgram(decoded);
         break;
 
     case 0x2A:
+    {
+        //decoded = decodeKeygroupHeader(programBuffer);
+        
+
+        decoded = decodeKeygroupHeader(programBuffer);
         DBG("KEYGROUP HEADER RECEIVED");
-        //parseKeygroup(decoded);
+
+        DBG("decoded size = "
+            + juce::String((int)decoded.size()));
+
+        DBG("KG SIZE = "
+            + juce::String(decoded.size()));
+
+        KeygroupHeader kg = KeygroupHeaderParser::parse(decoded);
+
+        DBG("=== KEYGROUP DATA ===");
+
+        //decoded = decodeKeygroupHeader(programBuffer);
+
+        DBG("=== KEYGROUP HEADER ===");
+
+        DBG("KGIDENT = "
+            + juce::String(kg.id));
+
+        DBG("LOW NOTE = "
+            + juce::String(kg.lowNote));
+
+        DBG("HIGH NOTE = "
+            + juce::String(kg.highNote));
+
+        DBG("FILTER FREQ = "
+            + juce::String(kg.filterFreq));
+
+        DBG("KEY FOLLOW = "
+            + juce::String(kg.filterKeyFollow));
+
         break;
+    }
 
     case 0x07:
+        //decoded = decodeRPDATA(programBuffer);
         DBG("RPDATA RESPONSE RECEIVED");
         parseRPDATA(decoded);
         break;
@@ -475,12 +516,21 @@ void MainComponent::sendRPDATA(int programIndex)
 
     uint8_t data[]
     {
-        0x47,
-        0x00,
-        0x06,
-        0x48,
+        0x47, //Akai
+        0x00, //MIDI exclusive channel
+        0x27, //Request Program Header bytes
+        0x48, // S1000 identity
+
         (uint8_t)(programIndex & 0x7F),
-        (uint8_t)((programIndex >> 7) & 0x7F)
+        (uint8_t)((programIndex >> 7) & 0x7F),
+
+        0x00, //reserved
+        0x00, //offset low
+        0x00, //offset high
+        0x7F, //length low
+        0x00 // length high
+
+
     };
 
     auto msg = juce::MidiMessage::createSysExMessage(
@@ -491,6 +541,54 @@ void MainComponent::sendRPDATA(int programIndex)
 
     DBG("RPDATA SENT");
 }
+
+void MainComponent::sendKGHeader(
+    int programIndex,
+    int keygroup)
+{
+    DBG("sendKGHeader called");
+    DBG("program = " + juce::String(programIndex));
+    DBG("keygroup = " + juce::String(keygroup));
+
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    uint8_t data[]
+    {
+        0x47, //Akai
+        0x00, //MIDI exclusive channel
+        0x29, //Request Keygroup Header bytes
+        0x48, // S1000 identity
+
+        (uint8_t)(programIndex & 0x7F),
+        (uint8_t)((programIndex >> 7) & 0x7F),
+
+        (uint8_t)(keygroup & 0x7F),
+
+        //offset 00,00
+        0x00, 
+        0x00, 
+
+        //number of bytes nn,nn
+        0x40, 
+        0x00 
+
+
+    };
+
+    auto msg = juce::MidiMessage::createSysExMessage(
+        data,
+        sizeof(data));
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG("KG HEADER SENT");
+}
+
+
 
 void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
 {
@@ -521,6 +619,27 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
     DBG("DECODED SIZE = "
         + juce::String((int)decoded.size()));
 
+    DBG("=== FIRST 32 BYTES ===");
+
+    juce::String s;
+
+    for (int i = 0; i < 32 && i < decoded.size(); ++i)
+    {
+        s += juce::String::formatted("%02X ", decoded[i]);
+    }
+
+    DBG(s);
+
+    for (int i = 0; i < 40; i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : "
+            + juce::String::toHexString(decoded[i])
+        );
+    }
+
+
     Program program = ProgramParser::parse(decoded);
 
     DBG("===== PROGRAM =====");
@@ -541,6 +660,39 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
         + juce::String(
             (int)program.keygroups.size()
         ));
+
+    DBG("=== PROGRAM HEX ===");
+
+    for (int i = 0; i < 100; i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : "
+            + juce::String::toHexString(decoded[i])
+        );
+    }
+
+    DBG("=== FIRST 64 BYTES ===");
+
+    for (int i = 0; i < 64; i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : "
+            + juce::String::toHexString(decoded[i])
+        );
+    }
+
+    DBG("=== FIRST 100 BYTES ===");
+
+    for (int i = 0; i < 100; i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : "
+            + juce::String::toHexString(decoded[i])
+        );
+    }
 
 
     //auto params = parseParams(decoded);
@@ -757,17 +909,83 @@ uint8_t MainComponent::unpack7bit(const std::vector<uint8_t>& d, int& bitPos)
 
 std::vector<uint8_t> MainComponent::decodeNibbleData(const juce::MemoryBlock& data)
 {
+    DBG("RAW SIZE = " + juce::String((int)data.getSize()));
+
+    auto* raw = (const uint8_t*)data.getData();
+
+    juce::String s;
+
+    for (int i = 0; i < 32 && i < data.getSize(); ++i)
+    {
+        s += juce::String::formatted("%02X ", raw[i]);
+    }
+
+    DBG(s);
+
     std::vector<uint8_t> decoded;
 
     const uint8_t* p = (const uint8_t*)data.getData();
     size_t size = data.getSize();
 
-    for (size_t i = 4; i < size; ++i)
+    const int start = 8;
+
+    for (size_t i = start; i + 1< size; i +=2)
     {
-        decoded.push_back(p[i] & 0x7F);
+        //decoded.push_back(p[i] & 0x7F);
+        uint8_t high = p[i + 1] & 0x0F;
+        uint8_t low = p[i] & 0x0F;
+
+        uint8_t value = (high << 4) | low;
+        decoded.push_back(value);
     }
 
     DBG("decoded size = " + juce::String((int)decoded.size()));
+    return decoded;
+}
+
+std::vector<uint8_t> MainComponent::decodeKeygroupNibbleData(
+    const juce::MemoryBlock& data)
+{
+    std::vector<uint8_t> decoded;
+
+    auto* p = (const uint8_t*)data.getData();
+
+    const size_t start = 11;
+
+    for (size_t i = start; i + 1 < data.getSize(); i += 2)
+    {
+        uint8_t low = p[i] & 0x0F;
+        uint8_t high = p[i + 1] & 0x0F;
+
+        decoded.push_back((high << 4) | low);
+    }
+
+    return decoded;
+}
+
+std::vector<uint8_t> MainComponent::decodeKeygroupHeader(
+    const juce::MemoryBlock& data)
+{
+    std::vector<uint8_t> decoded;
+
+    auto* p = (const uint8_t*)data.getData();
+
+    // Keygroup response header is 11 bytes
+    const int start = 11;
+
+    for (size_t i = start; i + 1 < data.getSize(); i += 2)
+    {
+        uint8_t low = p[i] & 0x0F;
+        uint8_t high = p[i + 1] & 0x0F;
+
+        decoded.push_back(
+            (high << 4) | low
+        );
+    }
+
+    DBG("KG decoded size = "
+        + juce::String((int)decoded.size()));
+
     return decoded;
 }
 
@@ -810,6 +1028,16 @@ void MainComponent::parseProgram(const std::vector<uint8_t>& decoded)
         decoded.data(),
         decoded.size()
     );
+
+    DBG("=== BEFORE PARSE ===");
+
+    for (int i = 0; i < 40; i++)
+    {
+        DBG(juce::String(i)
+            + " : "
+            + juce::String::toHexString(decoded[i]));
+    }
+
 
     Program program = ProgramParser::parse(decoded);
 

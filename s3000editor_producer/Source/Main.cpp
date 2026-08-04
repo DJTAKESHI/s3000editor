@@ -7,7 +7,7 @@
 */
 
 #include <JuceHeader.h>
-#include "MainComponent.h"
+#include "ui/MainComponent.h"
 
 //==============================================================================
 class s3000editor_producerApplication  : public juce::JUCEApplication

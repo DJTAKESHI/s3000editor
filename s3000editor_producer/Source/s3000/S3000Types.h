@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-
 struct Envelope
 {
     int attack = 0;
@@ -136,6 +135,17 @@ struct Keygroup
     PlaybackParams playback;
 
     //ModMatrix modulation;
+};
+
+struct KeygroupHeader
+{
+    int id = 0;
+    int nextBlock = 0;
+    int lowNote = 0;
+    int highNote = 127;
+    int tune = 0;
+    int filterFreq = 0;
+    int filterKeyFollow = 0;
 };
 
 

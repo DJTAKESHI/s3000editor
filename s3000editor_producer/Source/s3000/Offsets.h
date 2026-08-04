@@ -6,9 +6,9 @@ namespace ProgramOffset
 {
     namespace General
     {
-        constexpr size_t Number = 15;
-        constexpr size_t MidiChannel = 16;
-        constexpr size_t Polyphony = 17;
+        constexpr size_t Number = 14;
+        constexpr size_t MidiChannel = 15;
+        constexpr size_t Polyphony = 16;
         constexpr size_t Priority = 18;
     }
 

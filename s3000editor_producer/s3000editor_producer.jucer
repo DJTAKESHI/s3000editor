@@ -7,6 +7,10 @@
       <GROUP id="{293077FE-5789-4832-86B5-557EF4AA0727}" name="s3000">
         <FILE id="B8jQZO" name="Decode.cpp" compile="1" resource="0" file="Source/s3000/Decode.cpp"/>
         <FILE id="aowFqh" name="Decode.h" compile="0" resource="0" file="Source/s3000/Decode.h"/>
+        <FILE id="K4oZhB" name="KeygroupHeaderParser.cpp" compile="1" resource="0"
+              file="Source/s3000/KeygroupHeaderParser.cpp"/>
+        <FILE id="XfEKNf" name="KeygroupHeaderParser.h" compile="0" resource="0"
+              file="Source/s3000/KeygroupHeaderParser.h"/>
         <FILE id="FDLVWk" name="KeygroupParser.cpp" compile="1" resource="0"
               file="Source/s3000/KeygroupParser.cpp"/>
         <FILE id="zDmG4j" name="KeygroupParser.h" compile="0" resource="0"
