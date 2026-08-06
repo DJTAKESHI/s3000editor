@@ -1,6 +1,7 @@
 #include "ProgramParser.h"
 #include "KeygroupParser.h"
 #include <juce_core/juce_core.h>
+#include "SysExUtils.h"
 
 namespace P = ProgramOffset;
 namespace KG = KeygroupOffset;
@@ -36,40 +37,67 @@ std::string ProgramParser::readName(const std::vector<uint8_t>& d, size_t offset
 
 Program ProgramParser::parse(const std::vector<uint8_t>& d)
 {
+	
+
 	Program p{};
 
 	parseHeader(d, p);
-	parseKeygroups(d, p);
+	//parseKeygroups(d, p);
 
 	return p;
 }
 
-void ProgramParser::parseHeader(const std::vector<uint8_t>& d, Program& p)
+void ProgramParser::parseHeader(
+	const std::vector<uint8_t>& d,
+	Program& p)
 {
+
+	DBG("GROUPS=" + juce::String(p.groups));
+	
 	if (d.size() <= P::General::Polyphony)
 	{
 		return;
 	}
 
-	uint16_t kgrpAddress =
-		(d[0] << 8) | d[1];
 
-	DBG(
-		"KGRP1 address = "
-		+ juce::String(kgrpAddress)
-	);
+	p.programNumber =
+		d[P::General::Number];
 
-	p.programNumber = d[P::General::Number];
-	p.midiChannel = d[P::General::MidiChannel];
-	p.polyphony = d[P::General::Polyphony];
 
-	// ’Ç‰Á—\’è
+	p.midiChannel =
+		d[P::General::MidiChannel];
+
+
+	p.polyphony =
+		d[P::General::Polyphony];
+	p.groups =
+		d[42];
+
+
+	//// GROUPS offset 42
+	//if (d.size() > 42)
+	//{
+	//	p.groups = d[42];
+
+	//	DBG(
+	//		"GROUPS = "
+	//		+ juce::String(p.groups)
+	//	);
+	//}
+
+
 }
 
-void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p)
+void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p, const std::map<int, juce::String>& residentSamples)
 {
 	if (d.size() <= P::Keygroups::NumKeygroups)
 	{
+		return;
+	}
+
+	if (d.size() < 128)
+	{
+		DBG("Program data too small");
 		return;
 	}
 
@@ -97,7 +125,10 @@ void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p)
 		);
 
 		p.keygroups.push_back(
-			KeygroupParser::parse(block)
+			KeygroupParser::parse(
+				block,
+				residentSamples
+			)
 		);
 
 		DBG(

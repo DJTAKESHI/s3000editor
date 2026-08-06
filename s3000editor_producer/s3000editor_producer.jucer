@@ -21,9 +21,15 @@
         <FILE id="cUnqyA" name="ProgramParser.cpp" compile="1" resource="0"
               file="Source/s3000/ProgramParser.cpp"/>
         <FILE id="BIHFlV" name="ProgramParser.h" compile="0" resource="0" file="Source/s3000/ProgramParser.h"/>
+        <FILE id="GKtnuQ" name="SampleHeaderParser.cpp" compile="1" resource="0"
+              file="Source/s3000/SampleHeaderParser.cpp"/>
+        <FILE id="TdL9Kg" name="SampleHeaderParser.h" compile="0" resource="0"
+              file="Source/s3000/SampleHeaderParser.h"/>
         <FILE id="xjuUC2" name="SampleParser.cpp" compile="1" resource="0"
               file="Source/s3000/SampleParser.cpp"/>
         <FILE id="KJDirq" name="SampleParser.h" compile="0" resource="0" file="Source/s3000/SampleParser.h"/>
+        <FILE id="hmb22Z" name="SysExUtils.cpp" compile="1" resource="0" file="Source/s3000/SysExUtils.cpp"/>
+        <FILE id="Zx338W" name="SysExUtils.h" compile="0" resource="0" file="Source/s3000/SysExUtils.h"/>
       </GROUP>
       <GROUP id="{4CDB8C56-5A74-CC7A-DD1A-8FCC92414609}" name="ui">
         <FILE id="SKDo6v" name="KeyGroupEditor.cpp" compile="1" resource="0"

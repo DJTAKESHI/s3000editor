@@ -7,12 +7,14 @@
 class KeygroupParser
 {
 public:
-    static Keygroup parse(const std::vector<uint8_t>& d);
+    static Keygroup parse(const std::vector<uint8_t>& d, const std::map<int, juce::String>& residentSamples);
 
 private:
     static VelocityZone parseZone(
         const std::vector<uint8_t>& d,
-        size_t base
+        size_t base,
+        const std::map<int, juce::String>& residentSamples
+        //const std::map<int, SampleHeader>& samples
     );
 
     template <typename T>
@@ -20,6 +22,11 @@ private:
     {
         return static_cast<T>(d[offset]);
     }
+
+    void KeygroupParser::resolveSampleNames(
+        Keygroup& k,
+        const std::vector<std::string>& sampleNames);
+
 };
 
 

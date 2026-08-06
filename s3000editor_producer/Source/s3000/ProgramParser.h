@@ -39,5 +39,5 @@ private:
     // internal parsing steps
     // =========================
     static void parseHeader(const std::vector<uint8_t>& d, Program& p);
-    static void parseKeygroups(const std::vector<uint8_t>& d, Program& p);
+    static void parseKeygroups(const std::vector<uint8_t>& d, Program& p, const std::map<int, juce::String>& residentSamples);
 };

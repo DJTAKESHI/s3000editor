@@ -4,7 +4,9 @@
 #include "../s3000/Offsets.h"
 #include "../s3000/ProgramParser.h"
 #include "../s3000/KeygroupParser.h"
+#include "../s3000/SampleHeaderParser.h"
 #include "../s3000/KeygroupHeaderParser.h"
+#include "../s3000/S3000Types.h"
 
 
 char decodeAkaiChar(uint8_t v)
@@ -102,6 +104,12 @@ MainComponent::MainComponent()
             //
             // sendRPDATA(0);
             sendKGHeader(0, 0);
+            juce::Timer::callAfterDelay(
+                100,
+                [this]
+                {
+                    sendKData(0, 0);
+                });
         };
 
     addAndMakeVisible(programLabel);
@@ -267,12 +275,191 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
     
     std::vector<uint8_t> decoded;
 
+    
+    DBG("OPCODE = "
+        + opcode);
+
     switch (opcode)
     {
+    //case 0x05:
+    //{
+    //    DBG("SLIST RECEIVED");
+
+    //    parseSLIST(programBuffer);
+
+    //    break;
+    //}
+
+
+    case 0x05:
+    {
+        
+
+        DBG("SLIST RECEIVED");
+
+        DBG("BEFORE parseSLIST");
+
+        parseSLIST(programBuffer);
+
+        DBG("AFTER parseSLIST");
+
+        for (int i = 0; i < programBuffer.getSize(); i++)
+        {
+            DBG(
+                juce::String(i)
+                + " : 0x"
+                + juce::String::toHexString(programBuffer[i])
+            );
+        }
+
+        break;
+    }
+
+    case 0x09:
+    {
+        DBG("KEYGROUP DATA RECEIVED");
+
+        auto* raw = programBuffer.getData();
+        auto size = programBuffer.getSize();
+
+        for (int i = 0; i < size; i++)
+        {
+            DBG(
+                juce::String(i)
+                + " : 0x"
+                + juce::String::toHexString(
+                    ((uint8_t*)raw)[i])
+            );
+        }
+        decoded =
+            decodeKData(message.getSysExData(),
+                message.getSysExDataSize());
+
+
+        //decoded = decodeKData(programBuffer);
+
+
+        DBG("KG FULL SIZE = "
+            + juce::String((int)decoded.size()));
+
+
+        if (decoded.size() < 132)
+        {
+            DBG("Invalid KDATA SIZE");
+            break;
+        }
+
+
+        Keygroup kg =
+            KeygroupParser::parse(
+                decoded,
+                residentSamples
+            );
+
+
+        loadedProgram.keygroups.push_back(kg);
+
+
+
+        DBG("=== KEYGROUP DATA PARSED ===");
+
+        //auto sampleId =
+        //    findSampleId(
+        //        kg.zones[0].sampleName
+        //    );
+
+        auto sampleId =
+            findSampleId(
+                juce::String(kg.zones[0].sampleName)
+            );
+
+        DBG("FOUND SAMPLE ID = "
+            + juce::String(sampleId));
+
+
+        //sendSampleHeader(
+        //    
+        //    sampleId
+        //);
+
+        //sendSampleHeader(2);
+
+        for (auto& zone : kg.zones)
+        {
+            if (zone.sampleName.isEmpty())
+                continue;
+
+
+            int sampleIndex =
+                findSampleId(
+                    juce::String(zone.sampleName)
+                );
+
+
+            DBG(
+                "ZONE SAMPLE = "
+                + juce::String(zone.sampleName)
+                + " INDEX = "
+                + juce::String(sampleIndex)
+            );
+
+
+            if (sampleIndex >= 0)
+            {
+                zone.sampleId = sampleIndex;
+
+                sendSampleHeader(
+                    sampleIndex
+                );
+            }
+        }
+
+        DBG("LOW NOTE = "
+            + juce::String(kg.lowNote));
+
+        DBG("HIGH NOTE = "
+            + juce::String(kg.highNote));
+
+        DBG("FILTER = "
+            + juce::String(kg.filter.freq));
+
+
+        DBG("ENV1 ATTACK = "
+            + juce::String(kg.env1.attack));
+
+ /*       DBG("ZONE1 NAME = "
+            + kg.zones[0].sampleName);*/
+
+
+        break;
+    }
+
     case 0x28:
         DBG("PROGRAM HEADER RECEIVED");
-        decoded = decodeNibbleData(programBuffer);
-        //parseProgram(decoded);
+
+        decoded = decodeProgramHeader(programBuffer);
+        DBG("PROGRAM SIZE = "
+            + juce::String(decoded.size()));
+
+        loadedProgram =
+            ProgramParser::parse(decoded);
+
+        DBG("GROUPS = "
+            + juce::String(loadedProgram.groups));
+
+
+
+
+        // Keygroup HeaderŽæ“¾
+        for (int i = 0; i < loadedProgram.groups; i++)
+        {
+            sendKGHeader(
+                loadedProgram.programNumber,
+                i
+            );
+        }
+
+
         break;
 
     case 0x2A:
@@ -281,6 +468,16 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
         
 
         decoded = decodeKeygroupHeader(programBuffer);
+
+        for (int i = 0; i < decoded.size(); i++)
+        {
+            DBG(
+                juce::String(i)
+                + " : 0x"
+                + juce::String::toHexString(decoded[i])
+            );
+        }
+
         DBG("KEYGROUP HEADER RECEIVED");
 
         DBG("decoded size = "
@@ -289,31 +486,165 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
         DBG("KG SIZE = "
             + juce::String(decoded.size()));
 
-        KeygroupHeader kg = KeygroupHeaderParser::parse(decoded);
+        Keygroup kg =
+            KeygroupParser::parse(
+                decoded,
+                residentSamples
+            );
+
+        for (auto& zone : kg.zones)
+        {
+            if (zone.sampleName.isEmpty())
+                continue;
+
+
+            zone.sampleId =
+                findSampleId(
+                    juce::String(zone.sampleName)
+                );
+
+
+            DBG(
+                "Resolved "
+                + juce::String(zone.sampleName)
+                + " -> "
+                + juce::String(zone.sampleId)
+            );
+        }
+
+        loadedProgram.keygroups.push_back(kg);
+
+        sendRSLIST();
+
+
+        sendKData(
+            loadedProgram.programNumber,
+            currentKeygroup
+        );
+
+        /*sendSampleHeader(
+            loadedProgram.programNumber,
+            kg.zones[0].sampleId
+        );*/
 
         DBG("=== KEYGROUP DATA ===");
 
         //decoded = decodeKeygroupHeader(programBuffer);
 
-        DBG("=== KEYGROUP HEADER ===");
+        DBG("ENV1 SUSTAIN = "
+            + juce::String(kg.env1.sustain));
 
-        DBG("KGIDENT = "
-            + juce::String(kg.id));
+        DBG("ENV1 RELEASE = "
+            + juce::String(kg.env1.release));
 
-        DBG("LOW NOTE = "
-            + juce::String(kg.lowNote));
+        DBG("ENV2 ATTACK = "
+            + juce::String(kg.env2.attack));
 
-        DBG("HIGH NOTE = "
-            + juce::String(kg.highNote));
+        DBG("ENV2 DECAY = "
+            + juce::String(kg.env2.decay));
 
-        DBG("FILTER FREQ = "
-            + juce::String(kg.filterFreq));
+        DBG("ENV2 SUSTAIN = "
+            + juce::String(kg.env2.sustain));
 
-        DBG("KEY FOLLOW = "
-            + juce::String(kg.filterKeyFollow));
+        DBG("ENV2 RELEASE = "
+            + juce::String(kg.env2.release));
+
+
 
         break;
     }
+
+    case 0x2B:
+    {
+        DBG("KEYGROUP DATA RECEIVED");
+
+
+        decoded = decodeKeygroupFull(programBuffer);
+
+
+        DBG("FULL KG decoded size = "
+            + juce::String((int)decoded.size()));
+
+
+        DBG("=== KEYGROUP FULL DATA ===");
+
+
+        break;
+    }
+
+    case 0x2C:
+    {
+        DBG("SAMPLE HEADER RECEIVED");
+
+        DBG("RAW SAMPLE HEADER SYSEX");
+
+        auto* p = (uint8_t*)programBuffer.getData();
+
+        for (int i = 0; i < 30; i++)
+        {
+            DBG(
+                juce::String(i)
+                + " : "
+                + juce::String::toHexString(p[i])
+            );
+        }
+
+        
+        decoded =
+            decodeSampleHeader(programBuffer);
+
+        DBG("FULL SAMPLE HEADER SIZE = "
+            + juce::String((int)decoded.size()));
+
+        SampleHeader sh =
+            SampleHeaderParser::parse(
+                decoded,
+                currentRequestedSampleIndex
+            );
+
+        sampleHeaders[sh.id] = sh;
+
+        DBG("Stored sample "
+            + juce::String(sh.id)
+            + " : "
+            + sh.name);
+
+        DBG("=== SAMPLE HEADER ===");
+
+        DBG("ID = "
+            + juce::String(sh.id));
+
+        //samples.push_back(sh);
+        DBG("SAMPLE HEADER COUNT = "
+            + juce::String((int)sampleHeaders.size()));
+
+        DBG("NAME = "
+            + sh.name);
+
+        DBG("PITCH = "
+            + juce::String(sh.originalPitch));
+
+        DBG("LOOPS = "
+            + juce::String(sh.numLoops));
+
+        DBG("PLAY TYPE = "
+            + juce::String(sh.playType));
+
+        for (int i = 0; i < decoded.size(); ++i)
+        {
+            DBG(
+                juce::String(i)
+                + " : 0x"
+                + juce::String::toHexString(decoded[i]));
+        }
+
+        saveDecodedDump(
+            "sample_header_0.bin",
+            decoded);
+
+        break;
+    }
+
 
     case 0x07:
         //decoded = decodeRPDATA(programBuffer);
@@ -374,6 +705,155 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
 
 }
 
+//int findSampleId(
+//    const std::string& name)
+//{
+//    for (auto& s : samples)
+//    {
+//        if (s.name == name)
+//            return s.id;
+//    }
+//
+//    return -1;
+//}FIND
+
+int MainComponent::findSampleId(
+    const juce::String& name)
+{
+    for (auto& s : residentSamples)
+    {
+        if (s.second.trim()
+            == name.trim())
+        {
+            return s.first;
+        }
+    }
+
+    return -1;
+}
+
+
+
+std::vector<uint8_t> MainComponent::decodeProgramHeader(
+    const juce::MemoryBlock& data)
+{
+    std::vector<uint8_t> decoded;
+
+    auto* p =
+        (const uint8_t*)data.getData();
+
+    size_t size = data.getSize();
+
+    const int start = 11;
+
+
+    for (size_t i = start; i + 1 < size; i += 2)
+    {
+        uint8_t low =
+            p[i] & 0x0F;
+
+        uint8_t high =
+            p[i + 1] & 0x0F;
+
+
+        decoded.push_back(
+            (high << 4) | low
+        );
+    }
+
+
+    DBG("Program decoded size = "
+        + juce::String((int)decoded.size()));
+
+
+    return decoded;
+}
+
+
+void MainComponent::parseSLIST(
+    const juce::MemoryBlock& data)
+{
+    auto* p =
+        static_cast<const uint8_t*>(data.getData());
+
+    int count =
+        p[4] | (p[5] << 7);
+
+    DBG("SAMPLE COUNT = "
+        + juce::String(count));
+
+
+    residentSamples.clear();
+
+
+    int offset = 6;
+
+    for (int i = 0; i < count; i++)
+    {
+        juce::String name;
+
+        for (int j = 0; j < 12; j++)
+        {
+            name += decodePlistChar(
+                p[offset + j]
+            );
+        }
+
+        name = name.trim();
+
+
+        // š •Û‘¶
+        residentSamples[i] = name;
+
+
+        DBG(
+            juce::String(i)
+            + " : "
+            + name
+        );
+
+
+        offset += 12;
+    }
+
+
+    DBG("RESIDENT SAMPLE SIZE = "
+        + juce::String(
+            residentSamples.size()
+        ));
+}
+
+//void MainComponent::sendRSLIST()
+//{
+//    DBG("sendRSLIST CALLED");
+//
+//    if (!midiOutput)
+//    {
+//        DBG("NO MIDI OUTPUT");
+//        return;
+//    }
+//
+//
+//    uint8_t data[]
+//    {
+//        0x47,   // Akai manufacturer
+//        0x00,   // MIDI channel
+//        0x04,   // RSLIST request
+//        0x48    // S1000 identity
+//    };
+//
+//
+//    auto msg =
+//        juce::MidiMessage::createSysExMessage(
+//            data,
+//            sizeof(data));
+//
+//
+//    midiOutput->sendMessageNow(msg);
+//
+//
+//    DBG("RSLIST SENT");
+//}
 
 
 void MainComponent::saveDump(const juce::String& name)
@@ -507,7 +987,7 @@ void MainComponent::sendRPLIST()
 
 }
 
-void MainComponent::sendRPDATA(int programIndex)
+void MainComponent::sendProgramHeader(int programIndex)
 {
     if (!midiOutput)
     {
@@ -527,8 +1007,9 @@ void MainComponent::sendRPDATA(int programIndex)
         0x00, //reserved
         0x00, //offset low
         0x00, //offset high
-        0x7F, //length low
-        0x00 // length high
+
+        0x00, //length low
+        0x01 // length high
 
 
     };
@@ -539,7 +1020,7 @@ void MainComponent::sendRPDATA(int programIndex)
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("RPDATA SENT");
+    DBG("Program Header Request Sent");
 }
 
 void MainComponent::sendKGHeader(
@@ -588,6 +1069,86 @@ void MainComponent::sendKGHeader(
     DBG("KG HEADER SENT");
 }
 
+void MainComponent::sendSampleHeader(
+    int sampleId)
+{
+    currentRequestedSampleIndex = sampleId;
+
+    DBG("sendSampleHeader called");
+    DBG("sampleId = "
+        + juce::String(sampleId));
+
+    DBG("LOW BYTE = "
+        + juce::String(sampleId & 0x7F));
+
+    DBG("HIGH BYTE = "
+        + juce::String((sampleId >> 7) & 0x7F));
+
+
+
+
+    uint8_t data[]
+    {
+        0x47,       // Akai
+        0x00,       // MIDI channel
+
+        0x2B,       // Request Sample Header
+
+        0x48,       // S1000 identity
+
+
+        // Sample number (14bit)
+        (uint8_t)(sampleId & 0x7F),
+        (uint8_t)((sampleId >> 7) & 0x7F),
+
+        // reserved
+        0x00,
+
+
+        // offset
+        0x00,
+        0x00,
+
+
+        // length 132 bytes
+        0x04,
+        0x01
+    };
+
+    DBG("CHECK DATA ARRAY");
+
+    for (int i = 0; i < sizeof(data); i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : "
+            + juce::String::toHexString(
+                (int)data[i])
+        );
+    }
+
+    DBG("Sending Sample Header Request");
+    for (int i = 0; i < sizeof(data); i++)
+    {
+        DBG(
+            juce::String(i)
+            + " : 0x"
+            + juce::String::toHexString(data[i])
+        );
+    }
+
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data));
+
+
+    midiOutput->sendMessageNow(msg);
+
+
+    DBG("SAMPLE HEADER REQUEST SENT");
+}
 
 
 void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
@@ -701,6 +1262,72 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
     //DBG("FREQ = " + juce::String(params.frequency));
     //DBG("FILTER = " + juce::String(params.filter));
 }
+
+void MainComponent::sendKData(
+    int programIndex,
+    int keygroup)
+{
+    DBG("sendKData called");
+
+
+    uint8_t data[]
+    {
+        0x47, // Akai
+        0x00, // channel
+        0x08, // RKDATA
+        0x48, // S1000
+
+
+        // program number
+        (uint8_t)(programIndex & 0x7F),
+        (uint8_t)((programIndex >> 7) & 0x7F),
+
+
+        // keygroup
+        (uint8_t)(keygroup & 0x7F)
+    };
+
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data));
+
+
+    midiOutput->sendMessageNow(msg);
+
+
+    DBG("RKDATA SENT");
+}
+
+void MainComponent::sendRSLIST()
+{
+    DBG("sendRSLIST called");
+
+
+    uint8_t data[]
+    {
+        0x47,   // AKAI manufacturer ID
+        0x00,   // channel
+
+        0x04,   // RSLIST request
+
+        0x48    // S1000 identity
+    };
+
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data));
+
+
+    midiOutput->sendMessageNow(msg);
+
+
+    DBG("RSLIST REQUEST SENT");
+}
+
 
 void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 {
@@ -986,6 +1613,120 @@ std::vector<uint8_t> MainComponent::decodeKeygroupHeader(
     DBG("KG decoded size = "
         + juce::String((int)decoded.size()));
 
+    for (size_t i = 0; i < decoded.size(); i++)
+    {
+        DBG(
+            juce::String((int)i)
+            + " : 0x"
+            + juce::String::toHexString(decoded[i])
+        );
+    }
+
+    return decoded;
+}
+
+
+
+std::vector<uint8_t> MainComponent::decodeKData(
+    const uint8_t* data,
+    size_t size)
+{
+    std::vector<uint8_t> decoded;
+
+
+    // SysEx header
+    // F0‚Ímessage.getSysExData()‚É‚ÍŠÜ‚Ü‚ê‚È‚¢
+    // 47 cc 09 48 pp pp kk ‚ÌŒã‚©‚çdataŠJŽn
+
+    const int start = 7;
+
+
+    for (size_t i = start; i + 1 < size; i += 2)
+    {
+        uint8_t low =
+            data[i] & 0x0F;
+
+        uint8_t high =
+            data[i + 1] & 0x0F;
+
+
+        decoded.push_back(
+            (high << 4) | low
+        );
+    }
+
+
+    return decoded;
+}
+
+
+std::vector<uint8_t> MainComponent::decodeKeygroupFull(
+    const juce::MemoryBlock& data)
+{
+    std::vector<uint8_t> decoded;
+
+
+    auto* p =
+        (const uint8_t*)data.getData();
+
+
+    size_t size =
+        data.getSize();
+
+
+    const int start = 11;
+
+
+    for (size_t i = start; i + 1 < size; i += 2)
+    {
+        uint8_t low =
+            p[i] & 0x0F;
+
+        uint8_t high =
+            p[i + 1] & 0x0F;
+
+
+        decoded.push_back(
+            (high << 4) | low
+        );
+    }
+
+
+    return decoded;
+}
+
+std::vector<uint8_t> MainComponent::decodeSampleHeader(
+    const juce::MemoryBlock& data)
+{
+    std::vector<uint8_t> decoded;
+
+
+    auto* p =
+        (const uint8_t*)data.getData();
+
+
+    size_t size =
+        data.getSize();
+
+
+    const int start = 11;
+
+
+    for (size_t i = start; i + 1 < size; i += 2)
+    {
+        uint8_t low =
+            p[i] & 0x0F;
+
+        uint8_t high =
+            p[i + 1] & 0x0F;
+
+
+        decoded.push_back(
+            (high << 4) | low
+        );
+    }
+
+
     return decoded;
 }
 
@@ -995,7 +1736,8 @@ std::string decodeName(const uint8_t* p)
     std::string s;
     for (int i = 0; i < 12; i++)
     {
-        s += decodeAkaiChar(p[i + 4]);
+        /*s += decodeAkaiChar(p[i + 4]);*/
+        s += decodeAkaiChar(p[i + 3]);
     }
     return s;
 }
@@ -1012,6 +1754,8 @@ char MainComponent::decodePlistChar(uint8_t v)
 
     return '?';
 }
+
+
 
 void MainComponent::parseProgram(const std::vector<uint8_t>& decoded)
 {
@@ -1235,7 +1979,13 @@ void MainComponent::listBoxItemClicked(int row, const juce::MouseEvent&)
         return;
     }
 
-    sendRPDATA(programList[row].index);
+    currentProgram = programList[row].index;
+
+    DBG("Selected Program = " + juce::String(currentProgram));
+
+
+
+    sendProgramHeader(currentProgram);
 }
 
 //void MainComponent::saveRawSysEx(const uint8_t* data, size_t size)

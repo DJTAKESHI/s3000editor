@@ -185,3 +185,181 @@ namespace KeygroupOffset
         constexpr std::size_t MOD_BASE = 151;
     }
 }
+
+//namespace KeygroupFullOffset
+//{
+//    // ===== Velocity Zones =====
+//    namespace Zone
+//    {
+//        constexpr std::size_t BASE = 64;
+//
+//        constexpr std::size_t SNAME = 0;
+//
+//        constexpr std::size_t LOVEL = 12;
+//        constexpr std::size_t HIVEL = 13;
+//
+//        constexpr std::size_t TUNE = 14;
+//        constexpr std::size_t LOUDNESS = 15;
+//        constexpr std::size_t PAN = 16;
+//        constexpr std::size_t PLAYMODE = 17;
+//
+//        constexpr std::size_t STRIDE = 24;
+//    }
+//
+//
+//    // ===== Playback =====
+//    namespace Playback
+//    {
+//        constexpr std::size_t KBEAT = 130;
+//        constexpr std::size_t AHOLD = 131;
+//    }
+//
+//
+//    // ===== ModMatrix =====
+//    namespace Mod
+//    {
+//        constexpr std::size_t MOD_BASE = 151;
+//    }
+//};
+
+namespace KeygroupHeaderOffset
+{
+    namespace Common
+    {
+        constexpr std::size_t KGIDENT = 0;
+        constexpr std::size_t NXTKG = 1;
+
+        constexpr std::size_t LONOTE = 3;
+        constexpr std::size_t HINOTE = 4;
+        constexpr std::size_t KGTUNO = 5;
+    }
+
+
+    namespace Filter
+    {
+        constexpr std::size_t FILFRQ = 7;
+        constexpr std::size_t K_FREQ = 8;
+        constexpr std::size_t V_FREQ = 9;
+        constexpr std::size_t P_FREQ = 10;
+        constexpr std::size_t E_FREQ = 11;
+    }
+
+
+    namespace Env1
+    {
+        constexpr std::size_t ATTACK = 12;
+        constexpr std::size_t DECAY = 13;
+        constexpr std::size_t SUSTAIN = 14;
+        constexpr std::size_t RELEASE = 15;
+    }
+
+
+    namespace Env2
+    {
+        constexpr std::size_t ATTACK = 20;
+        constexpr std::size_t DECAY = 21;
+        constexpr std::size_t SUSTAIN = 22;
+        constexpr std::size_t RELEASE = 23;
+    }
+
+
+    namespace Velocity
+    {
+        constexpr std::size_t V_ATT2 = 24;
+        constexpr std::size_t V_REL2 = 25;
+        constexpr std::size_t O_REL2 = 26;
+        constexpr std::size_t K_DAR2 = 27;
+
+        constexpr std::size_t V_ENV2 = 28;
+
+        constexpr std::size_t E_PTCH = 29;
+        constexpr std::size_t VXFADE = 30;
+        constexpr std::size_t VZONES = 31;
+
+        constexpr std::size_t LKXF = 32;
+        constexpr std::size_t RKXF = 33;
+    }
+}
+
+
+// =================================
+// Keygroup Full 132 byte
+// =================================
+namespace KeygroupFullOffset
+{
+    namespace Zone1
+    {
+        constexpr size_t BASE = 34;
+
+        constexpr size_t SNAME = 0;
+
+        constexpr size_t LOVEL = 12;
+        constexpr size_t HIVEL = 13;
+
+        constexpr size_t VTUNO = 14;
+
+        constexpr size_t VLOUD = 16;
+        constexpr size_t VFREQ = 17;
+        constexpr size_t VPANO = 18;
+
+        constexpr size_t ZPLAY = 19;
+
+        constexpr size_t STRIDE = 24;
+    }
+
+
+    namespace Zone2
+    {
+        constexpr std::size_t SNAME = 58;
+        // 続き
+    }
+}
+
+
+namespace SampleHeaderOffset
+{
+    constexpr size_t SHIDENT = 0;
+    constexpr size_t SBANDW = 1;
+    constexpr size_t SPITCH = 2;
+
+    constexpr size_t SHNAME = 3;
+
+    constexpr size_t SSRVLD = 15;
+
+    constexpr size_t SLOOPS = 16;
+    constexpr size_t SALOOP = 17;
+    constexpr size_t SHLOOP = 18;
+
+    constexpr size_t SPTYPE = 19;
+
+    constexpr size_t STUNO = 20;
+
+    constexpr size_t SLOCAT = 22;
+    constexpr size_t SLNGTH = 26;
+    constexpr size_t SSTART = 30;
+    constexpr size_t SMPEND = 34;
+
+
+    namespace Loop1
+    {
+        constexpr size_t LOOPAT = 38;
+        constexpr size_t LLNGTH = 42;
+        constexpr size_t LDWELL = 48;
+    }
+
+
+    namespace Loop2
+    {
+        constexpr size_t LOOPAT = 50;
+        constexpr size_t LLNGTH = 54;
+        constexpr size_t LDWELL = 60;
+    }
+
+
+    namespace Loop3
+    {
+        constexpr size_t LOOPAT = 62;
+        constexpr size_t LLNGTH = 66;
+        constexpr size_t LDWELL = 72;
+    }
+}

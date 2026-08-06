@@ -2,10 +2,11 @@
 
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
+#include <map>
 
 
 
-struct Keygroup;
+
 
 
 
@@ -85,20 +86,45 @@ private:
 
     juce::TextButton requestButton{ "Request PLIST" };
     void sendRPLIST();
-    void sendRPDATA(int programIndex);
+    /*void sendRPDATA(int programIndex);*/
+    void sendProgramHeader(int programIndex);
     void sendKGHeader(int programIndex, int keygroup);
+    //void sendSampleHeader(int program, int keygroup);
+    void MainComponent::sendSampleHeader(
+        //int program,
+        int sampleId);
+    void MainComponent::sendKData(
+        int programIndex,
+        int keygroup);
     /*void parseRPDATA(const juce::MemoryBlock& data);*/
     void parseRPDATA(const std::vector<uint8_t>& decoded);
     void parseProgram(const std::vector<uint8_t>& decoded);
     void parseKeygroup(const std::vector<uint8_t>& decoded);
     void parsePLIST(const std::vector<uint8_t>& d);
+    void MainComponent::sendRSLIST();
 
     void dumpKeygroup(const std::vector<uint8_t>& decoded);
     Keygroup parseKeygroupStruct(const std::vector<uint8_t>& d);
 
     uint8_t unpack7bit(const std::vector<uint8_t>& d, int& bitPos);
+    std::vector<uint8_t> MainComponent::decodeProgramHeader(
+        const juce::MemoryBlock& data);
+
+    //enum class RequestType
+    //{
+    //    None,
+    //    ProgramHeader,
+    //    KeygroupHeader,
+    //    KeygroupData,
+    //    SampleHeader
+    //};
+
+
+    //RequestType currentRequest =
+    //    RequestType::None;
 
     std::vector<ProgramEntry> programList;
+    //std::map<uint16_t, SampleHeader> sampleHeaders;
 
 
 
@@ -115,13 +141,28 @@ private:
         const juce::MemoryBlock& data);
 
     std::vector<uint8_t> MainComponent::decodeKeygroupHeader(const juce::MemoryBlock& data);
+    std::vector<uint8_t> decodeKeygroupFull(
+        const juce::MemoryBlock& data);
+    std::vector<uint8_t> MainComponent::decodeSampleHeader(
+        const juce::MemoryBlock& data);
 
 
     std::vector<uint8_t> decodeKeygroupNibbleData(
         const juce::MemoryBlock& data);
 
-    
+    std::vector<uint8_t> decodeKData(
+        const uint8_t* data,
+        size_t size);
 
+    /*std::vector<uint8_t>
+        MainComponent::decodeProgramHeader(
+            const juce::MemoryBlock& data);*/
+
+    
+    //std::vector<SampleHeader> samples;
+    std::map<int, SampleHeader> sampleHeaders;
+    std::map<int, juce::String> sampleList;
+    std::map<int, juce::String> residentSamples;
     juce::Label programLabel;
 
     juce::File dumpA;
@@ -145,6 +186,11 @@ private:
     void saveRawSysEx(const uint8_t* data, size_t size);
     char MainComponent::decodePlistChar(uint8_t v);
 
+    void MainComponent::parseSLIST(
+        const juce::MemoryBlock& data);
+
+    int currentRequestedSampleIndex = -1;
+
 
 
     std::unique_ptr<juce::MidiInput> midiInput;
@@ -160,6 +206,9 @@ private:
 
     Program parseParams(const std::vector<uint8_t>& d);
 
+    int findSampleId(
+        const juce::String& name);
+
     int getNumRows() override;
     void paintListBoxItem(int rowNumber,
         juce::Graphics& g,
@@ -167,6 +216,13 @@ private:
         bool rowIsSelected) override;
 
     void listBoxItemClicked(int row, const juce::MouseEvent&);
+
+    Program loadedProgram;     // 受信したProgramデータ
+
+    int currentProgram = 0;    // 選択中のProgram番号
+
+    int currentKeygroup = 0;
+    int totalKeygroups = 0;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

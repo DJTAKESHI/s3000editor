@@ -1,5 +1,6 @@
 #pragma once
 
+#include <JuceHeader.h>
 #include <array>
 #include <string>
 #include <vector>
@@ -47,17 +48,24 @@ enum class PlayMode : uint8_t
 
 struct VelocityZone
 {
-    //int sampleNumber = -1;
-    std::string sampleName;
+    // Zone sample reference
+    juce::String sampleName;
 
-    int lowVel = 0;
-    int highVel = 127;
+    int sampleId = -1;   // Œã‚Å‰ðŒˆ‚·‚é
 
-    int tune = 0;
-    int loudness = 0;
-    int pan = 0;
 
-    PlayMode playMode = PlayMode::AsSample;
+    // Velocity range
+    uint8_t lowVel;
+    uint8_t highVel;
+
+
+    // Sample parameters
+    int8_t tune;
+    int8_t loudness;
+    int8_t pan;
+
+
+    PlayMode playMode;
 };
 
 struct Sample
@@ -79,62 +87,50 @@ struct Sample
 };
 
 
-//enum class ModSource
-//{
-//    Off,
-//    LFO1,
-//    LFO2,
-//    ENV1,
-//    ENV2,
-//    Velocity,
-//    Aftertouch,
-//    ModWheel,
-//    Keytrack,
-//    PitchBend
-//};
+struct VelocityControl
+{
+    int8_t vAtt2 = 0;
+    int8_t vRel2 = 0;
+    int8_t oRel2 = 0;
+    int8_t kDar2 = 0;
 
+    int8_t vEnv2 = 0;
 
-//enum class ModDestination
-//{
-//    None,
-//    Pan,
-//    Amp,
-//    FilterFreq,
-//    Pitch
-//};
+    uint8_t ePtch = 0;
+    uint8_t vxFade = 0;
+    uint8_t vZones = 0;
 
-
-//struct ModSlot
-//{
-//    ModSource source = ModSource::Off;
-//    ModDestination dest = ModDestination::None;
-//
-//    int amount = 0;
-//};
-
-
-//struct ModMatrix
-//{
-//    std::array<ModSlot, 6> slots;
-//};
+    uint8_t lkxf = 0;
+    uint8_t rkxf = 0;
+};
 
 
 struct Keygroup
 {
+    // ===== Internal block information =====
+    uint8_t id = 0;              // KGIDENT
+    uint16_t nextAddress = 0;    // NXTKG@
+
+    // ===== Key range =====
     int lowNote = 0;
     int highNote = 127;
     int tune = 0;
 
+    // ===== Filter =====
     FilterParams filter;
 
+    // ===== Envelopes =====
     Envelope env1;
     Envelope env2;
 
+    // ===== Velocity zones =====
     std::array<VelocityZone, 4> zones;
 
+    // ===== Playback =====
     PlaybackParams playback;
 
-    //ModMatrix modulation;
+    // ===== Velocity control =====
+    VelocityControl velocity;
 };
 
 struct KeygroupHeader
@@ -157,10 +153,52 @@ struct Program
     int midiChannel = 1;
     int polyphony = 0;
 
+    int groups = 0;
+
     std::vector<Keygroup> keygroups;
 };
 
 struct SampleMemory
 {
     std::vector<Sample> samples;
+};
+
+struct SampleHeader
+{
+    int id = 0;
+
+    int bandwidth = 0;
+    int originalPitch = 0;
+
+    juce::String name;
+
+    int sampleRateValid = 0;
+
+    int numLoops = 0;
+    int activeLoop = 0;
+    int highestLoop = 0;
+
+    int playType = 0;
+
+    int tune = 0;
+
+    uint32_t location = 0;
+    uint32_t length = 0;
+    uint32_t start = 0;
+    uint32_t end = 0;
+
+    struct Loop
+    {
+        uint32_t position = 0;
+        uint32_t length = 0;
+        uint16_t dwell = 0;
+    };
+
+    std::array<Loop, 3> loops;
+};
+
+
+struct KeyZone
+{
+    uint16_t sampleId;
 };
