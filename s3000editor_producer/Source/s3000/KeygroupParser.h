@@ -12,9 +12,8 @@ public:
 private:
     static VelocityZone parseZone(
         const std::vector<uint8_t>& d,
-        size_t base,
+        int zoneIndex,
         const std::map<int, juce::String>& residentSamples
-        //const std::map<int, SampleHeader>& samples
     );
 
     template <typename T>

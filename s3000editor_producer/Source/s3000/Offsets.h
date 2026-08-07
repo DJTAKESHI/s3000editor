@@ -287,31 +287,71 @@ namespace KeygroupHeaderOffset
 // =================================
 namespace KeygroupFullOffset
 {
-    namespace Zone1
+    namespace Zone
     {
-        constexpr size_t BASE = 34;
 
-        constexpr size_t SNAME = 0;
-
-        constexpr size_t LOVEL = 12;
-        constexpr size_t HIVEL = 13;
-
-        constexpr size_t VTUNO = 14;
-
-        constexpr size_t VLOUD = 16;
-        constexpr size_t VFREQ = 17;
-        constexpr size_t VPANO = 18;
-
-        constexpr size_t ZPLAY = 19;
-
-        constexpr size_t STRIDE = 24;
-    }
+        constexpr size_t SNAME[4] =
+        {
+            34,
+            58,
+            82,
+            106
+        };
 
 
-    namespace Zone2
-    {
-        constexpr std::size_t SNAME = 58;
-        // 続き
+        constexpr size_t LOVEL[4] =
+        {
+            46,
+            70,
+            94,
+            118
+        };
+
+
+        constexpr size_t HIVEL[4] =
+        {
+            47,
+            71,
+            95,
+            119
+        };
+
+
+        constexpr size_t VTUNO[4] =
+        {
+            48,
+            72,
+            96,
+            120
+        };
+
+
+        constexpr size_t VLOUD[4] =
+        {
+            50,
+            74,
+            98,
+            122
+        };
+
+
+        constexpr size_t VPANO[4] =
+        {
+            52,
+            76,
+            100,
+            124
+        };
+
+
+        constexpr size_t ZPLAY[4] =
+        {
+            53,
+            77,
+            101,
+            125
+        };
+
     }
 }
 

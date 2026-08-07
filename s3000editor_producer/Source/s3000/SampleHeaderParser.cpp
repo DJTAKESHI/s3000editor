@@ -57,6 +57,22 @@ SampleHeader SampleHeaderParser::parse(
     s.originalPitch =
         d[SampleHeaderOffset::SPITCH];
 
+    DBG("SHNAME OFFSET = "
+        + juce::String(SampleHeaderOffset::SHNAME));
+
+
+    for (int i = 0; i < 20; i++)
+    {
+        DBG(
+            "NAME RAW "
+            + juce::String(i)
+            + " : 0x"
+            + juce::String::toHexString(
+                d[SampleHeaderOffset::SHNAME + i]
+            )
+        );
+    }
+
 
     for (int i = 0; i < 12; i++)
     {

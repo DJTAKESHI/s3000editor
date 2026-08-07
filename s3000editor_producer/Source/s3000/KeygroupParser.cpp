@@ -38,6 +38,14 @@ Keygroup KeygroupParser::parse(
     const std::vector<uint8_t>& d,
     const std::map<int, juce::String>& residentSamples)
 {
+    DBG("parse size = " + juce::String((int)d.size()));
+    Keygroup k{};
+    if (d.size() < 192)
+    {
+        DBG("Keygroup data too small");
+        return k;
+    }
+
     DBG("=== RAW KEYGROUP FIRST 64 ===");
 
     for (int i = 0; i < 64; i++)
@@ -49,13 +57,6 @@ Keygroup KeygroupParser::parse(
         );
     }
 
-    DBG("parse size = " + juce::String((int)d.size()));
-    Keygroup k{};
-    if (d.size() < 64)
-    {
-        DBG("Keygroup data too small");
-        return k;
-    }
 
     // ===== Internal =====
     k.id =
@@ -198,26 +199,59 @@ Keygroup KeygroupParser::parse(
 
     // ===== Zones =====
 
-    if (d.size() >= KGF::Zone1::BASE + KGF::Zone1::STRIDE)
+    //if (d.size() >= KGF::Zone1::BASE + KGF::Zone1::STRIDE)
+    //{
+    //    for (int i = 0; i < 4; i++)
+    //    {
+    //        size_t base =
+    //            KGF::Zone1::BASE
+    //            + i * KGF::Zone1::STRIDE;
+
+    //        if (base + KGF::Zone1::STRIDE > d.size())
+    //        {
+    //            DBG("No more zones");
+    //            break;
+    //        }
+
+    //        k.zones[i] =
+    //            parseZone(d, 
+    //                        base,
+    //                        residentSamples);
+    //    }
+    //}
+
+    for (int i = 0; i < 4; i++)
     {
-        for (int i = 0; i < 4; i++)
+        if (KGF::Zone::SNAME[i] + 12 >= d.size())
         {
-            size_t base =
-                KGF::Zone1::BASE
-                + i * KGF::Zone1::STRIDE;
-
-            if (base + KGF::Zone1::STRIDE > d.size())
-            {
-                DBG("No more zones");
-                break;
-            }
-
-            k.zones[i] =
-                parseZone(d, 
-                            base,
-                            residentSamples);
+            DBG("No more zones");
+            break;
         }
+
+        k.zones[i] =
+            parseZone(
+                d,
+                i,
+                residentSamples
+            );
     }
+
+    for (int i = 0; i < 4; i++)
+    {
+        DBG(
+            "KEYGROUP ZONE "
+            + juce::String(i)
+            + " SAMPLE ID = "
+            + juce::String(k.zones[i].sampleId)
+        );
+
+        DBG(
+            "SAMPLE NAME = "
+            + k.zones[i].sampleName
+        );
+    }
+
+
     DBG("=== KEYGROUP HEADER ===");
 
     DBG("LOW NOTE = "
@@ -287,19 +321,35 @@ Keygroup KeygroupParser::parse(
 
 VelocityZone KeygroupParser::parseZone(
     const std::vector<uint8_t>& d,
-    size_t base,
+    int zoneIndex,
     const std::map<int, juce::String>& residentSamples
-    //const std::map<int, SampleHeader>& samples
 )
 {
     VelocityZone z{};
+
+    DBG("parseZone index="
+        + juce::String(zoneIndex));
+
+    DBG("SNAME offset="
+        + juce::String(KGF::Zone::SNAME[zoneIndex]));
+
+    for (int j = 0; j < 32; j++)
+    {
+        DBG(
+            juce::String(j)
+            + " : "
+            + juce::String::toHexString(
+                d[KGF::Zone::SNAME[zoneIndex] + j]
+            )
+        );
+    }
 
     // ===== Sample Name =====
     for (int i = 0; i < 12; i++)
     {
         z.sampleName +=
             decodePlistChar(
-                d[base + KGF::Zone1::SNAME + i]
+                d[KGF::Zone::SNAME[zoneIndex] + i]
             );
     }
 
@@ -309,19 +359,31 @@ VelocityZone KeygroupParser::parseZone(
 
     for (auto& sample : residentSamples)
     {
-        if (sample.second.trim() == z.sampleName)
+        auto residentName = sample.second.trim();
+        auto zoneName = z.sampleName.trim();
+
+        DBG(
+            "COMPARE ["
+            + residentName
+            + "] vs ["
+            + zoneName
+            + "]"
+        );
+
+        if (residentName == zoneName)
         {
             z.sampleId = sample.first;
 
-            DBG("MATCH SAMPLE ID = "
-                + juce::String(z.sampleId));
+            DBG(
+                "MATCH SAMPLE ID = "
+                + juce::String(z.sampleId)
+            );
 
             break;
         }
     }
 
-    DBG("ZONE SAMPLE NAME = "
-        + juce::String(z.sampleName));
+
 
 
     for (auto& sample : residentSamples)
@@ -337,33 +399,33 @@ VelocityZone KeygroupParser::parseZone(
     // ===== Velocity =====
 
     z.lowVel =
-        d[base + KGF::Zone1::LOVEL];
+        d[KGF::Zone::LOVEL[zoneIndex]];
 
     z.highVel =
-        d[base + KGF::Zone1::HIVEL];
+        d[KGF::Zone::HIVEL[zoneIndex]];
 
 
     z.tune =
         static_cast<int8_t>(
-            d[base + KGF::Zone1::VTUNO]
+            d[KGF::Zone::VTUNO[zoneIndex]]
             );
 
 
     z.loudness =
         static_cast<int8_t>(
-            d[base + KGF::Zone1::VLOUD]
+            d[KGF::Zone::VLOUD[zoneIndex]]
             );
 
 
     z.pan =
         static_cast<int8_t>(
-            d[base + KGF::Zone1::VPANO]
+            d[KGF::Zone::VPANO[zoneIndex]]
             );
 
 
     z.playMode =
         static_cast<PlayMode>(
-            d[base + KGF::Zone1::ZPLAY]
+            d[KGF::Zone::ZPLAY[zoneIndex]]
             );
 
     //auto it = samples.find(z.sampleId);
@@ -372,6 +434,17 @@ VelocityZone KeygroupParser::parseZone(
     //{
     //    z.sampleName = it->second.name;
     //}
+
+    DBG("===== ZONE " + juce::String(zoneIndex + 1) + " =====");
+
+    DBG("Sample = " + z.sampleName);
+    DBG("LowVel = " + juce::String(z.lowVel));
+    DBG("HighVel = " + juce::String(z.highVel));
+    DBG("Tune = " + juce::String(z.tune));
+    DBG("Loud = " + juce::String(z.loudness));
+    DBG("Pan = " + juce::String(z.pan));
+    DBG("PlayMode = " + juce::String((int)z.playMode));
+
 
     return z;
 }

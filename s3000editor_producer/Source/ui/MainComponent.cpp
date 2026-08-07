@@ -356,6 +356,40 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
                 residentSamples
             );
 
+        for (auto& zone : kg.zones)
+        {
+            int id = zone.sampleId;
+
+            if (id >= 0)
+            {
+                auto it = sampleHeaders.find(id);
+
+                if (it != sampleHeaders.end())
+                {
+                    DBG(
+                        "ZONE SAMPLE HEADER FOUND : "
+                        + it->second.name
+                    );
+
+                    DBG(
+                        "Pitch = "
+                        + juce::String(it->second.originalPitch)
+                    );
+
+                    DBG(
+                        "Length = "
+                        + juce::String((int)it->second.length)
+                    );
+                }
+                else
+                {
+                    DBG(
+                        "NO SAMPLE HEADER FOR ID "
+                        + juce::String(id)
+                    );
+                }
+            }
+        }
 
         loadedProgram.keygroups.push_back(kg);
 
@@ -465,9 +499,16 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
     case 0x2A:
     {
         //decoded = decodeKeygroupHeader(programBuffer);
+
+        DBG("ENTER CASE 0x2A");
         
 
         decoded = decodeKeygroupHeader(programBuffer);
+
+        DBG(
+            "decodeKeygroupHeader size = "
+            + juce::String((int)decoded.size())
+        );
 
         for (int i = 0; i < decoded.size(); i++)
         {
@@ -480,7 +521,7 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
 
         DBG("KEYGROUP HEADER RECEIVED");
 
-        DBG("decoded size = "
+        DBG("KEYGROUP decoded size = "
             + juce::String((int)decoded.size()));
 
         DBG("KG SIZE = "
@@ -593,42 +634,84 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
         decoded =
             decodeSampleHeader(programBuffer);
 
+        for (int i = 0; i < 20; i++)
+        {
+            DBG(
+                "decoded "
+                + juce::String(i)
+                + " : "
+                + juce::String::toHexString(decoded[i])
+            );
+        }
+
         DBG("FULL SAMPLE HEADER SIZE = "
             + juce::String((int)decoded.size()));
 
-        SampleHeader sh =
-            SampleHeaderParser::parse(
-                decoded,
-                currentRequestedSampleIndex
-            );
+        //SampleHeader sh =
+        //    SampleHeaderParser::parse(
+        //        decoded,
+        //        currentRequestedSampleIndex
+        //    );
 
-        sampleHeaders[sh.id] = sh;
+        if (!pendingSampleRequests.empty())
+        {
+            int sampleId =
+                pendingSampleRequests.front();
 
-        DBG("Stored sample "
-            + juce::String(sh.id)
-            + " : "
-            + sh.name);
+            pendingSampleRequests.pop();
 
-        DBG("=== SAMPLE HEADER ===");
 
-        DBG("ID = "
-            + juce::String(sh.id));
+            SampleHeader sh =
+                SampleHeaderParser::parse(
+                    decoded,
+                    sampleId
+                );
 
-        //samples.push_back(sh);
-        DBG("SAMPLE HEADER COUNT = "
-            + juce::String((int)sampleHeaders.size()));
+            //sampleHeaders[sampleId] = sh;
+            sampleHeaders[sh.id] = sh;
+            DBG("Stored sample "
+                + juce::String(sh.id)
+                + " : "
+                + sh.name);
 
-        DBG("NAME = "
-            + sh.name);
+            for (auto& s : sampleHeaders)
+            {
+                DBG(
+                    juce::String(s.first)
+                    + " : "
+                    + s.second.name
+                );
+            }
 
-        DBG("PITCH = "
-            + juce::String(sh.originalPitch));
+            DBG("=== SAMPLE HEADER ===");
 
-        DBG("LOOPS = "
-            + juce::String(sh.numLoops));
+            DBG("ID = "
+                + juce::String(sh.id));
 
-        DBG("PLAY TYPE = "
-            + juce::String(sh.playType));
+            //samples.push_back(sh);
+            DBG("SAMPLE HEADER COUNT = "
+                + juce::String((int)sampleHeaders.size()));
+
+            DBG("NAME = "
+                + sh.name);
+
+            DBG("PITCH = "
+                + juce::String(sh.originalPitch));
+
+            DBG("LOOPS = "
+                + juce::String(sh.numLoops));
+
+            DBG("PLAY TYPE = "
+                + juce::String(sh.playType));
+
+            DBG("Stored sample "
+                + juce::String(sh.id)
+                + " : "
+                + sh.name);
+        }
+
+        //sampleHeaders[sh.id] = sh;
+
 
         for (int i = 0; i < decoded.size(); ++i)
         {
@@ -1055,6 +1138,8 @@ void MainComponent::sendKGHeader(
 
         //number of bytes nn,nn
         0x40, 
+        //// number of bytes = 192
+        //0xC0,
         0x00 
 
 
@@ -1072,7 +1157,9 @@ void MainComponent::sendKGHeader(
 void MainComponent::sendSampleHeader(
     int sampleId)
 {
-    currentRequestedSampleIndex = sampleId;
+    //currentRequestedSampleIndex = sampleId;
+    pendingSampleRequests.push(sampleId);
+
 
     DBG("sendSampleHeader called");
     DBG("sampleId = "

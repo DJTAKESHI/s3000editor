@@ -102,6 +102,7 @@ private:
     void parseKeygroup(const std::vector<uint8_t>& decoded);
     void parsePLIST(const std::vector<uint8_t>& d);
     void MainComponent::sendRSLIST();
+    std::queue<int> pendingSampleRequests;
 
     void dumpKeygroup(const std::vector<uint8_t>& decoded);
     Keygroup parseKeygroupStruct(const std::vector<uint8_t>& d);
