@@ -38,6 +38,9 @@ Keygroup KeygroupParser::parse(
     const std::vector<uint8_t>& d,
     const std::map<int, juce::String>& residentSamples)
 {
+    DBG("========== KeygroupParser::parse ENTER ==========");
+
+
     DBG("parse size = " + juce::String((int)d.size()));
     Keygroup k{};
     if (d.size() < 192)
@@ -145,6 +148,31 @@ Keygroup KeygroupParser::parse(
     k.env2.release =
         d[KGH::Env2::RELEASE];
 
+    DBG("=== DIRECT OFFSET CHECK ===");
+
+    DBG("d[3]  = " + juce::String((int)d[3]));
+    DBG("d[4]  = " + juce::String((int)d[4]));
+    DBG("d[5]  = " + juce::String((int)d[5]));
+    DBG("d[7]  = " + juce::String((int)d[7]));
+    DBG("d[12] = " + juce::String((int)d[12]));
+
+    DBG("LONOTE constant = "
+        + juce::String((int)KGH::Common::LONOTE));
+
+    DBG("HINOTE constant = "
+        + juce::String((int)KGH::Common::HINOTE));
+
+    DBG("FILFRQ constant = "
+        + juce::String((int)KGH::Filter::FILFRQ));
+
+    DBG("ATTACK constant = "
+        + juce::String((int)KGH::Env1::ATTACK));
+
+    DBG("k.lowNote = " + juce::String(k.lowNote));
+    DBG("k.highNote = " + juce::String(k.highNote));
+    DBG("k.filter.freq = " + juce::String(k.filter.freq));
+    DBG("k.env1.attack = " + juce::String(k.env1.attack));
+
     // ===== Velocity Control =====
 
     k.velocity.vAtt2 =
@@ -228,12 +256,23 @@ Keygroup KeygroupParser::parse(
             break;
         }
 
+        DBG("ABOUT TO CALL parseZone");
+
         k.zones[i] =
             parseZone(
                 d,
                 i,
                 residentSamples
             );
+
+        //DBG(
+        //    "STORED ZONE "
+        //    + juce::String(i)
+        //    + " NAME=["
+        //    + k.zones[i].sampleName
+        //    + "] ID="
+        //    + juce::String(k.zones[i].sampleId)
+        //);
     }
 
     for (int i = 0; i < 4; i++)
@@ -245,10 +284,10 @@ Keygroup KeygroupParser::parse(
             + juce::String(k.zones[i].sampleId)
         );
 
-        DBG(
-            "SAMPLE NAME = "
-            + k.zones[i].sampleName
-        );
+        //DBG(
+        //    "SAMPLE NAME = "
+        //    + k.zones[i].sampleName
+        //);
     }
 
 
@@ -325,13 +364,16 @@ VelocityZone KeygroupParser::parseZone(
     const std::map<int, juce::String>& residentSamples
 )
 {
+
+    DBG(
+        "========== parseZone CALLED index="
+        + juce::String(zoneIndex)
+        + " =========="
+    );
+
     VelocityZone z{};
 
-    DBG("parseZone index="
-        + juce::String(zoneIndex));
 
-    DBG("SNAME offset="
-        + juce::String(KGF::Zone::SNAME[zoneIndex]));
 
     for (int j = 0; j < 32; j++)
     {
@@ -353,6 +395,14 @@ VelocityZone KeygroupParser::parseZone(
             );
     }
 
+    DBG(
+        "PARSED ZONE "
+        + juce::String(zoneIndex)
+        + " SAMPLE=["
+        + z.sampleName
+        + "]"
+    );
+
 
     DBG("ZONE SAMPLE NAME = "
         + juce::String(z.sampleName));
@@ -362,13 +412,13 @@ VelocityZone KeygroupParser::parseZone(
         auto residentName = sample.second.trim();
         auto zoneName = z.sampleName.trim();
 
-        DBG(
-            "COMPARE ["
-            + residentName
-            + "] vs ["
-            + zoneName
-            + "]"
-        );
+        //DBG(
+        //    "COMPARE ["
+        //    + residentName
+        //    + "] vs ["
+        //    + zoneName
+        //    + "]"
+        //);
 
         if (residentName == zoneName)
         {
@@ -444,6 +494,15 @@ VelocityZone KeygroupParser::parseZone(
     DBG("Loud = " + juce::String(z.loudness));
     DBG("Pan = " + juce::String(z.pan));
     DBG("PlayMode = " + juce::String((int)z.playMode));
+
+    DBG(
+        "RETURN ZONE "
+        + juce::String(zoneIndex)
+        + " NAME=["
+        + z.sampleName
+        + "] ID="
+        + juce::String(z.sampleId)
+    );
 
 
     return z;

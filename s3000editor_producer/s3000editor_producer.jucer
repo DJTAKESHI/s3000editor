@@ -36,12 +36,25 @@
               file="Source/ui/KeyGroupEditor.cpp"/>
         <FILE id="BcU4By" name="KeyGroupEditor.h" compile="0" resource="0"
               file="Source/ui/KeyGroupEditor.h"/>
+        <FILE id="Cqy7Bk" name="KeygroupItem.cpp" compile="1" resource="0"
+              file="Source/ui/KeygroupItem.cpp"/>
+        <FILE id="HZ7Stt" name="KeygroupItem.h" compile="0" resource="0" file="Source/ui/KeygroupItem.h"/>
         <FILE id="N5ysuu" name="MainComponent.cpp" compile="1" resource="0"
               file="Source/ui/MainComponent.cpp"/>
         <FILE id="yGArYO" name="MainComponent.h" compile="0" resource="0" file="Source/ui/MainComponent.h"/>
         <FILE id="lJ6Pjt" name="ProgramEditor.cpp" compile="1" resource="0"
               file="Source/ui/ProgramEditor.cpp"/>
         <FILE id="f4AB6n" name="ProgramEditor.h" compile="0" resource="0" file="Source/ui/ProgramEditor.h"/>
+        <FILE id="HwcFjU" name="ProgramTree.cpp" compile="1" resource="0" file="Source/ui/ProgramTree.cpp"/>
+        <FILE id="yiIXdz" name="ProgramTree.h" compile="0" resource="0" file="Source/ui/ProgramTree.h"/>
+        <FILE id="s5GABH" name="ProgramTreeItem.cpp" compile="1" resource="0"
+              file="Source/ui/ProgramTreeItem.cpp"/>
+        <FILE id="XBKMoj" name="ProgramTreeItem.h" compile="0" resource="0"
+              file="Source/ui/ProgramTreeItem.h"/>
+        <FILE id="a8V4L2" name="VelocityZoneItem.cpp" compile="1" resource="0"
+              file="Source/ui/VelocityZoneItem.cpp"/>
+        <FILE id="uJzjYw" name="VelocityZoneItem.h" compile="0" resource="0"
+              file="Source/ui/VelocityZoneItem.h"/>
       </GROUP>
       <GROUP id="{D8808C5A-7B0E-B411-A863-10A40BD99275}" name="midi">
         <FILE id="gcFq9i" name="MiDiManager.cpp" compile="1" resource="0" file="Source/midi/MiDiManager.cpp"/>

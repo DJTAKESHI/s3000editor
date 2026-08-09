@@ -71,6 +71,90 @@ MainComponent::MainComponent()
     addAndMakeVisible(listBox);
     listBox.setModel(this);
 
+    addAndMakeVisible(programTree);
+    //addAndMakeVisible(programTree);
+
+    programTree.setRootItemVisible(true);
+    programTree.setDefaultOpenness(true);
+
+    programTree.onZoneSelected =
+        [this](
+            const VelocityZone& zone,
+            const SampleHeader& sampleHeader
+            )
+        {
+            DBG("MAIN COMPONENT RECEIVED ZONE SELECTION");
+
+            DBG(
+                "ZONE SAMPLE = ["
+                + zone.sampleName
+                + "]"
+            );
+
+            DBG(
+                "SAMPLE ID = "
+                + juce::String(zone.sampleId)
+            );
+
+            DBG(
+                "SAMPLE HEADER = ["
+                + sampleHeader.name
+                + "]"
+            );
+        };
+
+
+    // ===== TEST PROGRAM =====
+
+    currentProgramData.programNumber = 0;
+    currentProgramData.name = "TEST PROGRAM";
+
+    currentProgramData.keygroups.resize(3);
+
+
+    currentProgramData.keygroups[0].lowNote = 36;
+    currentProgramData.keygroups[0].highNote = 36;
+
+
+    currentProgramData.keygroups[1].lowNote = 37;
+    currentProgramData.keygroups[1].highNote = 60;
+
+
+    currentProgramData.keygroups[2].lowNote = 61;
+    currentProgramData.keygroups[2].highNote = 127;
+
+    DBG("========== BEFORE PROGRAM TREE ==========");
+
+    for (int i = 0; i < currentProgramData.keygroups.size(); ++i)
+    {
+        auto& kg = currentProgramData.keygroups[i];
+
+        DBG("KEYGROUP " + juce::String(i));
+
+        for (int z = 0; z < kg.zones.size(); ++z)
+        {
+            auto& zone = kg.zones[z];
+
+            DBG(
+                "ZONE "
+                + juce::String(z)
+                + " SAMPLE=["
+                + zone.sampleName
+                + "] ID="
+                + juce::String(zone.sampleId)
+                + " LOW="
+                + juce::String(zone.lowVel)
+                + " HIGH="
+                + juce::String(zone.highVel)
+                + " TUNE="
+                + juce::String(zone.tune)
+            );
+        }
+    }
+
+    programTree.setProgram(currentProgramData, sampleHeaders);
+
+
     addAndMakeVisible(captureAButton);
 
     captureAButton.onClick = [this]
@@ -114,6 +198,11 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(programLabel);
     programLabel.setText("No program", juce::dontSendNotification);
+
+    //addAndMakeVisible(treeView);
+
+    //treeView.setRootItemVisible(false);
+    //treeView.setDefaultOpenness(true);
 
 
 
@@ -222,7 +311,9 @@ void MainComponent::resized()
     requestButton.setBounds(area.removeFromTop(50));
     requestRPDATAButton.setBounds(area.removeFromTop(50));
     programLabel.setBounds(area.removeFromTop(30));
-    listBox.setBounds(area);
+    //listBox.setBounds(area);
+    programTree.setBounds(area);
+    treeView.setBounds(area);
 
 }
 
@@ -356,79 +447,16 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
                 residentSamples
             );
 
-        for (auto& zone : kg.zones)
-        {
-            int id = zone.sampleId;
-
-            if (id >= 0)
-            {
-                auto it = sampleHeaders.find(id);
-
-                if (it != sampleHeaders.end())
-                {
-                    DBG(
-                        "ZONE SAMPLE HEADER FOUND : "
-                        + it->second.name
-                    );
-
-                    DBG(
-                        "Pitch = "
-                        + juce::String(it->second.originalPitch)
-                    );
-
-                    DBG(
-                        "Length = "
-                        + juce::String((int)it->second.length)
-                    );
-                }
-                else
-                {
-                    DBG(
-                        "NO SAMPLE HEADER FOR ID "
-                        + juce::String(id)
-                    );
-                }
-            }
-        }
-
-        loadedProgram.keygroups.push_back(kg);
-
-
-
-        DBG("=== KEYGROUP DATA PARSED ===");
-
-        //auto sampleId =
-        //    findSampleId(
-        //        kg.zones[0].sampleName
-        //    );
-
-        auto sampleId =
-            findSampleId(
-                juce::String(kg.zones[0].sampleName)
-            );
-
-        DBG("FOUND SAMPLE ID = "
-            + juce::String(sampleId));
-
-
-        //sendSampleHeader(
-        //    
-        //    sampleId
-        //);
-
-        //sendSampleHeader(2);
-
+        // Resolve sample IDs
         for (auto& zone : kg.zones)
         {
             if (zone.sampleName.isEmpty())
                 continue;
 
-
             int sampleIndex =
                 findSampleId(
                     juce::String(zone.sampleName)
                 );
-
 
             DBG(
                 "ZONE SAMPLE = "
@@ -437,33 +465,30 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
                 + juce::String(sampleIndex)
             );
 
-
             if (sampleIndex >= 0)
             {
                 zone.sampleId = sampleIndex;
 
-                sendSampleHeader(
-                    sampleIndex
+                DBG(
+                    "ASSIGNED SAMPLE ID = "
+                    + juce::String(zone.sampleId)
                 );
             }
         }
 
-        DBG("LOW NOTE = "
-            + juce::String(kg.lowNote));
 
-        DBG("HIGH NOTE = "
-            + juce::String(kg.highNote));
-
-        DBG("FILTER = "
-            + juce::String(kg.filter.freq));
+        // Store completed keygroup
+        loadedProgram.keygroups.push_back(kg);
 
 
-        DBG("ENV1 ATTACK = "
-            + juce::String(kg.env1.attack));
-
- /*       DBG("ZONE1 NAME = "
-            + kg.zones[0].sampleName);*/
-
+        // Request sample headers
+        for (const auto& zone : kg.zones)
+        {
+            if (zone.sampleId >= 0)
+            {
+                sendSampleHeader(zone.sampleId);
+            }
+        }
 
         break;
     }
@@ -553,7 +578,7 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
             );
         }
 
-        loadedProgram.keygroups.push_back(kg);
+        //loadedProgram.keygroups.push_back(kg);
 
         sendRSLIST();
 
@@ -667,12 +692,40 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
                     sampleId
                 );
 
+            //juce::MessageManager::callAsync(
+            //    [this]
+            //    {
+            //        programTree.setProgram(
+            //            loadedProgram,
+            //            sampleHeaders
+            //        );
+
+            //        DBG("PROGRAM TREE UPDATED FROM SAMPLE HEADER");
+            //    }
+            //);
+
             //sampleHeaders[sampleId] = sh;
             sampleHeaders[sh.id] = sh;
             DBG("Stored sample "
                 + juce::String(sh.id)
                 + " : "
                 + sh.name);
+
+            DBG("UPDATING PROGRAM TREE FROM SAMPLE HEADER");
+
+            juce::MessageManager::callAsync(
+                [this]
+                {
+                    programTree.setProgram(
+                        loadedProgram,
+                        sampleHeaders
+                    );
+
+                    DBG("PROGRAM TREE UPDATED FROM SAMPLE HEADER");
+                }
+            );
+
+            //programTree.setProgram(currentProgramData, sampleHeaders);
 
             for (auto& s : sampleHeaders)
             {
@@ -2059,20 +2112,29 @@ std::string MainComponent::trimRightSpaces(std::string s)
     return s;
 }
 
-void MainComponent::listBoxItemClicked(int row, const juce::MouseEvent&)
+void MainComponent::listBoxItemClicked(
+    int row,
+    const juce::MouseEvent&)
 {
     if (row < 0 || row >= programList.size())
     {
         return;
     }
 
-    currentProgram = programList[row].index;
 
-    DBG("Selected Program = " + juce::String(currentProgram));
+    currentProgramIndex =
+        programList[row].index;
 
 
+    DBG(
+        "Selected Program = "
+        + juce::String(currentProgramIndex)
+    );
 
-    sendProgramHeader(currentProgram);
+
+    sendProgramHeader(
+        currentProgramIndex
+    );
 }
 
 //void MainComponent::saveRawSysEx(const uint8_t* data, size_t size)

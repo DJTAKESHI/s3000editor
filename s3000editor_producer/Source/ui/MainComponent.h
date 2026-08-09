@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
 #include <map>
+#include "ProgramTree.h"
 
 
 
@@ -220,11 +221,15 @@ private:
 
     Program loadedProgram;     // 受信したProgramデータ
 
-    int currentProgram = 0;    // 選択中のProgram番号
+    //int currentProgram = 0;    // 選択中のProgram番号
 
     int currentKeygroup = 0;
     int totalKeygroups = 0;
 
+    juce::TreeView treeView;
+    ProgramTree programTree;
+    Program currentProgramData;
+    int currentProgramIndex = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
