@@ -27,8 +27,28 @@ public:
         int height
     ) override;
 
-    std::function<void(const VelocityZone&, const SampleHeader&)>
-        onZoneSelected;
+    std::function<void(
+        int,
+        int,
+        const VelocityZone&,
+        const SampleHeader&
+        )> onZoneSelected;
+
+    std::function<void(
+        int,
+        const Keygroup&
+        )> onSelected;
+
+    void itemClicked(
+        const juce::MouseEvent&
+    ) override;
+
+    std::function<void(
+        int,
+        int,
+        const VelocityZone&
+        )> onBasicZoneSelected;
+
 
 
 private:

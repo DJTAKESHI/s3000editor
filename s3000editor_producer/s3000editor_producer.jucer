@@ -7,6 +7,10 @@
       <GROUP id="{293077FE-5789-4832-86B5-557EF4AA0727}" name="s3000">
         <FILE id="B8jQZO" name="Decode.cpp" compile="1" resource="0" file="Source/s3000/Decode.cpp"/>
         <FILE id="aowFqh" name="Decode.h" compile="0" resource="0" file="Source/s3000/Decode.h"/>
+        <FILE id="XWEflI" name="KeygroupEncoder.cpp" compile="1" resource="0"
+              file="Source/s3000/KeygroupEncoder.cpp"/>
+        <FILE id="vX362N" name="KeygroupEncoder.h" compile="0" resource="0"
+              file="Source/s3000/KeygroupEncoder.h"/>
         <FILE id="K4oZhB" name="KeygroupHeaderParser.cpp" compile="1" resource="0"
               file="Source/s3000/KeygroupHeaderParser.cpp"/>
         <FILE id="XfEKNf" name="KeygroupHeaderParser.h" compile="0" resource="0"
@@ -15,19 +19,18 @@
               file="Source/s3000/KeygroupParser.cpp"/>
         <FILE id="zDmG4j" name="KeygroupParser.h" compile="0" resource="0"
               file="Source/s3000/KeygroupParser.h"/>
-        <FILE id="YRfYzg" name="ModMatrix.cpp" compile="1" resource="0" file="Source/s3000/ModMatrix.cpp"/>
-        <FILE id="U6dksm" name="ModMatrix.h" compile="0" resource="0" file="Source/s3000/ModMatrix.h"/>
         <FILE id="ar741J" name="Offsets.h" compile="0" resource="0" file="Source/s3000/Offsets.h"/>
         <FILE id="cUnqyA" name="ProgramParser.cpp" compile="1" resource="0"
               file="Source/s3000/ProgramParser.cpp"/>
         <FILE id="BIHFlV" name="ProgramParser.h" compile="0" resource="0" file="Source/s3000/ProgramParser.h"/>
+        <FILE id="mtcCw6" name="SampleHeaderEncoder.cpp" compile="1" resource="0"
+              file="Source/s3000/SampleHeaderEncoder.cpp"/>
+        <FILE id="HMniHA" name="SampleHeaderEncoder.h" compile="0" resource="0"
+              file="Source/s3000/SampleHeaderEncoder.h"/>
         <FILE id="GKtnuQ" name="SampleHeaderParser.cpp" compile="1" resource="0"
               file="Source/s3000/SampleHeaderParser.cpp"/>
         <FILE id="TdL9Kg" name="SampleHeaderParser.h" compile="0" resource="0"
               file="Source/s3000/SampleHeaderParser.h"/>
-        <FILE id="xjuUC2" name="SampleParser.cpp" compile="1" resource="0"
-              file="Source/s3000/SampleParser.cpp"/>
-        <FILE id="KJDirq" name="SampleParser.h" compile="0" resource="0" file="Source/s3000/SampleParser.h"/>
         <FILE id="hmb22Z" name="SysExUtils.cpp" compile="1" resource="0" file="Source/s3000/SysExUtils.cpp"/>
         <FILE id="Zx338W" name="SysExUtils.h" compile="0" resource="0" file="Source/s3000/SysExUtils.h"/>
       </GROUP>
@@ -51,6 +54,14 @@
               file="Source/ui/ProgramTreeItem.cpp"/>
         <FILE id="XBKMoj" name="ProgramTreeItem.h" compile="0" resource="0"
               file="Source/ui/ProgramTreeItem.h"/>
+        <FILE id="D2PmOu" name="SampleHeaderEditor.cpp" compile="1" resource="0"
+              file="Source/ui/SampleHeaderEditor.cpp"/>
+        <FILE id="OOPQwU" name="SampleHeaderEditor.h" compile="0" resource="0"
+              file="Source/ui/SampleHeaderEditor.h"/>
+        <FILE id="Ivo44i" name="VelocityZoneEditor.cpp" compile="1" resource="0"
+              file="Source/ui/VelocityZoneEditor.cpp"/>
+        <FILE id="xD3X6D" name="VelocityZoneEditor.h" compile="0" resource="0"
+              file="Source/ui/VelocityZoneEditor.h"/>
         <FILE id="a8V4L2" name="VelocityZoneItem.cpp" compile="1" resource="0"
               file="Source/ui/VelocityZoneItem.cpp"/>
         <FILE id="uJzjYw" name="VelocityZoneItem.h" compile="0" resource="0"

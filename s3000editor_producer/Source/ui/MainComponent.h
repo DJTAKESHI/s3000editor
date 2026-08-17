@@ -4,6 +4,10 @@
 #include "../s3000/S3000Types.h"
 #include <map>
 #include "ProgramTree.h"
+#include "SampleHeaderEditor.h"
+#include "VelocityZoneEditor.h"
+#include "KeyGroupEditor.h"
+#include "ProgramEditor.h"
 
 
 
@@ -85,6 +89,8 @@ private:
     juce::TextButton captureBButton{ "capture B" };
     juce::TextButton compareButton{ "compare" };
 
+    KeyGroupEditor keyGroupEditor;
+
     juce::TextButton requestButton{ "Request PLIST" };
     void sendRPLIST();
     /*void sendRPDATA(int programIndex);*/
@@ -97,6 +103,12 @@ private:
     void MainComponent::sendKData(
         int programIndex,
         int keygroup);
+
+    void MainComponent::sendKeygroupData(
+        int programIndex,
+        int keygroupIndex,
+        const std::vector<uint8_t>& data);
+
     /*void parseRPDATA(const juce::MemoryBlock& data);*/
     void parseRPDATA(const std::vector<uint8_t>& decoded);
     void parseProgram(const std::vector<uint8_t>& decoded);
@@ -111,6 +123,9 @@ private:
     uint8_t unpack7bit(const std::vector<uint8_t>& d, int& bitPos);
     std::vector<uint8_t> MainComponent::decodeProgramHeader(
         const juce::MemoryBlock& data);
+
+    SampleHeaderEditor sampleHeaderEditor;
+    VelocityZoneEditor velocityZoneEditor;
 
     //enum class RequestType
     //{
@@ -133,7 +148,13 @@ private:
 
     juce::TextButton requestRPDATAButton{ "get program" };
 
+    juce::Viewport sampleHeaderViewport;
+    juce::Viewport keyGroupViewport;
+
+
     juce::ListBox listBox;
+
+    void resolveAllSampleIds();
 
     juce::MemoryBlock lastSysEx;
     juce::MemoryBlock sysExBuffer;
@@ -193,6 +214,9 @@ private:
 
     int currentRequestedSampleIndex = -1;
 
+    //int currentKeygroup = -1;
+    int currentZone = -1;
+
 
 
     std::unique_ptr<juce::MidiInput> midiInput;
@@ -230,6 +254,13 @@ private:
     ProgramTree programTree;
     Program currentProgramData;
     int currentProgramIndex = 0;
+
+    juce::TabbedComponent editorTabs{
+    juce::TabbedButtonBar::TabsAtTop
+    };
+
+    ProgramEditor programEditor;
+    juce::Viewport programEditorViewport;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

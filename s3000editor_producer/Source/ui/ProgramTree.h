@@ -19,8 +19,24 @@ public:
     );
 
 
-    std::function<void(const VelocityZone&, const SampleHeader&)>
-        onZoneSelected;
+    std::function<void(
+        int,
+        int,
+        const VelocityZone&,
+        const SampleHeader&
+        )> onZoneSelected;
+
+    std::function<void(
+        int,
+        const Keygroup&
+        )> onKeygroupSelected;
+
+    std::function<void(
+        int,
+        int,
+        const VelocityZone&
+        )> onBasicZoneSelected;
+
 
 
 private:

@@ -23,8 +23,7 @@ VelocityZoneItem::VelocityZoneItem(
         + juce::String(zoneData.lowVel)
         + " HIGH="
         + juce::String(zoneData.highVel)
-        + " TUNE="
-        + juce::String(zoneData.tune)
+
         + " LOUD="
         + juce::String(zoneData.loudness)
         + " PAN="
@@ -75,10 +74,69 @@ void VelocityZoneItem::itemClicked(
         + juce::String(zoneData.sampleId)
     );
 
-    auto it =
-        sampleHeaders.find(zoneData.sampleId);
+    // ========================================
+    // ★ Sample Headerが無くてもZone選択を通知
+    // ========================================
 
-    // ===== Sample Header lookup =====
+    if (onZoneSelected)
+    {
+        DBG("NOTIFY ZONE SELECTED");
+
+        onZoneSelected(
+            zoneIndex,
+            zoneData
+        );
+    }
+
+
+    // ========================================
+    // sampleId未解決なら
+    // 取得済みSample Headerから名前検索
+    // ========================================
+
+    if (zoneData.sampleId < 0 &&
+        !zoneData.sampleName.trim().isEmpty())
+    {
+        DBG(
+            "sampleHeaders.size = "
+            + juce::String(
+                (int)sampleHeaders.size()
+            )
+        );
+
+        const auto target =
+            zoneData.sampleName.trim();
+
+        for (const auto& [id, header] :
+            sampleHeaders)
+        {
+            const auto candidate =
+                header.name.trim();
+
+            if (candidate == target)
+            {
+                zoneData.sampleId = id;
+
+                DBG(
+                    "RESOLVED SAMPLE ON CLICK -> "
+                    + juce::String(id)
+                );
+
+                break;
+            }
+        }
+    }
+
+
+    // ========================================
+    // Sample Header lookup
+    // ========================================
+
+    auto it =
+        sampleHeaders.find(
+            zoneData.sampleId
+        );
+
     if (it != sampleHeaders.end())
     {
         DBG("FOUND SAMPLE HEADER");
@@ -102,13 +160,22 @@ void VelocityZoneItem::itemClicked(
             )
         );
 
-        // Zone + SampleHeader を親へ渡す
+        // Sample Headerまで揃っている場合
         if (onSelected)
-            onSelected(zoneData, it->second);
+        {
+            onSelected(
+                zoneIndex,
+                zoneData,
+                it->second
+            );
+        }
     }
     else
     {
-        DBG("SAMPLE HEADER NOT FOUND");
+        DBG(
+            "SAMPLE HEADER NOT FOUND "
+            "- ZONE SELECTION STILL VALID"
+        );
     }
 }
 
@@ -156,9 +223,22 @@ void VelocityZoneItem::paintItem(
         + "-"
         + juce::String(zoneData.highVel);
 
+    //// Tune
+    //text += "   Tune:"
+    //    + juce::String(zoneData.tune);
+
     // Tune
-    text += "   Tune:"
-        + juce::String(zoneData.tune);
+    const int cents =
+        juce::roundToInt(
+            zoneData.fineTuneRaw * 100.0 / 256.0
+        );
+
+    text += "   SEM:"
+        + juce::String(zoneData.semitone);
+
+    text += "   CNT:"
+        + juce::String(cents);
+
 
     // Loudness
     text += "   Loud:"

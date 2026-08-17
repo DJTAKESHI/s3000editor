@@ -6,10 +6,13 @@ namespace ProgramOffset
 {
     namespace General
     {
-        constexpr size_t Number = 14;
-        constexpr size_t MidiChannel = 15;
-        constexpr size_t Polyphony = 16;
-        constexpr size_t Priority = 18;
+        constexpr std::size_t Number = 15; // PRGNUM
+        constexpr std::size_t MidiChannel = 16; // PMCHAN
+        constexpr std::size_t Polyphony = 17; // POLYPH
+        constexpr std::size_t Priority = 18; // PRIORT
+
+        constexpr std::size_t PlayLow = 19; // PLAYLO
+        constexpr std::size_t PlayHigh = 20; // PLAYHI
     }
 
     namespace Output
@@ -18,14 +21,17 @@ namespace ProgramOffset
         constexpr size_t Stereo = 23;
         constexpr size_t Pan = 24;
         constexpr size_t Loudness = 25;
+        constexpr std::size_t VelocityLoudness = 26;
     }
 
     namespace LFO
     {
-        constexpr size_t LFO2Rate = 29;
-        constexpr size_t LFO2Depth = 30;
-        constexpr size_t LFO1Rate = 33;
-        constexpr size_t LFO1Depth = 34;
+        constexpr std::size_t LFO2Rate = 29;
+        constexpr std::size_t LFO2Depth = 30;
+        constexpr std::size_t LFO2Delay = 31;
+
+        constexpr std::size_t LFO1Rate = 33;
+        constexpr std::size_t LFO1Depth = 34;
         constexpr std::size_t LFO1Delay = 35;
 
         constexpr std::size_t ModWheelDepth = 36;
@@ -34,7 +40,6 @@ namespace ProgramOffset
 
         constexpr std::size_t LFO1Wave = 97;
         constexpr std::size_t LFO2Wave = 98;
-
     }
 
     namespace Pitch
@@ -155,6 +160,7 @@ namespace KeygroupOffset
     namespace Zone
     {
         constexpr std::size_t BASE = 34;
+        constexpr std::size_t STRIDE = 24;
 
         constexpr std::size_t SNAME = 0;
 
@@ -166,7 +172,6 @@ namespace KeygroupOffset
         constexpr std::size_t PAN = 16;
         constexpr std::size_t PLAYMODE = 17;
 
-        constexpr std::size_t STRIDE = 24;
     }
 
     // Zone2〜4はオフセット+差分で管理するのが基本
@@ -256,10 +261,21 @@ namespace KeygroupHeaderOffset
 
     namespace Env2
     {
-        constexpr std::size_t ATTACK = 20;
-        constexpr std::size_t DECAY = 21;
-        constexpr std::size_t SUSTAIN = 22;
-        constexpr std::size_t RELEASE = 23;
+        constexpr std::size_t R1 = 20;
+        constexpr std::size_t R3 = 21;
+        constexpr std::size_t L3 = 22;
+        constexpr std::size_t R4 = 23;
+
+        constexpr std::size_t L1 = 156;
+        constexpr std::size_t R2 = 157;
+        constexpr std::size_t L2 = 158;
+        constexpr std::size_t L4 = 159;
+
+        // compatibility aliases
+        constexpr std::size_t ATTACK = R1;
+        constexpr std::size_t DECAY = R3;
+        constexpr std::size_t SUSTAIN = L3;
+        constexpr std::size_t RELEASE = R4;
     }
 
 
@@ -352,6 +368,32 @@ namespace KeygroupFullOffset
             125
         };
 
+        constexpr std::array<std::size_t, 4> VFREQ =
+        {
+            51,   // Zone 1
+            75,   // Zone 2
+            99,   // Zone 3
+            123   // Zone 4
+        };
+
+        constexpr std::array<std::size_t, 4> LVXF =
+        {
+            54,
+            78,
+            102,
+            126
+        };
+
+        constexpr std::array<std::size_t, 4> HVXF =
+        {
+            55,
+            79,
+            103,
+            127
+        };
+
+
+
     }
 }
 
@@ -402,4 +444,28 @@ namespace SampleHeaderOffset
         constexpr size_t LLNGTH = 66;
         constexpr size_t LDWELL = 72;
     }
+
+    namespace Loop4
+    {
+        constexpr size_t LOOPAT = 74;  // 74-77
+        constexpr size_t LLNGTH = 78;  // 78-83
+        constexpr size_t LDWELL = 84;  // 84-85
+    }
+
+    constexpr size_t SLXY1 = 86;
+    constexpr size_t SLXY2 = 98;
+    constexpr size_t SLXY3 = 110;
+    constexpr size_t SLXY4 = 122;
+
+    constexpr size_t SSPARE = 134;
+    constexpr size_t SWCOMM = 135;
+    constexpr size_t SSPAIR = 136;
+    constexpr size_t SSRATE = 138;
+    constexpr size_t SHLTO = 140;
+
+}
+
+namespace SampleHeaderFormat
+{
+    constexpr int Size = 141;
 }

@@ -20,13 +20,72 @@ KeygroupItem::KeygroupItem(
                 sampleHeaders
             );
 
+
+        // ========================================
+        // š Sample Header‚ª–³‚­‚Ä‚à“Í‚­Zone‘I‘ð
+        // ========================================
+
+        zoneItem->onZoneSelected =
+            [this](
+                int zoneIndex,
+                const VelocityZone& zone
+                )
+            {
+                DBG(
+                    "KEYGROUP RECEIVED BASIC ZONE SELECTION"
+                );
+
+                DBG(
+                    "KEYGROUP INDEX = "
+                    + juce::String(index)
+                );
+
+                DBG(
+                    "ZONE INDEX = "
+                    + juce::String(zoneIndex)
+                );
+
+                DBG(
+                    "ZONE SAMPLE = ["
+                    + zone.sampleName
+                    + "]"
+                );
+
+                if (onBasicZoneSelected)
+                {
+                    onBasicZoneSelected(
+                        index,
+                        zoneIndex,
+                        zone
+                    );
+                }
+            };
+
+
+        // ========================================
+        // Sample Header‚Ü‚ÅŒ©‚Â‚©‚Á‚½ê‡
+        // ========================================
+
         zoneItem->onSelected =
             [this](
+                int zoneIndex,
                 const VelocityZone& zone,
                 const SampleHeader& sampleHeader
                 )
             {
-                DBG("KEYGROUP RECEIVED ZONE SELECTION");
+                DBG(
+                    "KEYGROUP RECEIVED ZONE SELECTION"
+                );
+
+                DBG(
+                    "KEYGROUP INDEX = "
+                    + juce::String(index)
+                );
+
+                DBG(
+                    "ZONE INDEX = "
+                    + juce::String(zoneIndex)
+                );
 
                 DBG(
                     "ZONE SAMPLE = ["
@@ -46,11 +105,16 @@ KeygroupItem::KeygroupItem(
                 );
 
                 if (onZoneSelected)
+                {
                     onZoneSelected(
+                        index,
+                        zoneIndex,
                         zone,
                         sampleHeader
                     );
+                }
             };
+
 
         addSubItem(zoneItem);
     }
@@ -81,4 +145,22 @@ void KeygroupItem::paintItem(
         height,
         juce::Justification::centredLeft
     );
+}
+
+void KeygroupItem::itemClicked(
+    const juce::MouseEvent&
+)
+{
+    DBG(
+        "KEYGROUP CLICKED INDEX = "
+        + juce::String(index)
+    );
+
+    if (onSelected)
+    {
+        onSelected(
+            index,
+            keygroup
+        );
+    }
 }

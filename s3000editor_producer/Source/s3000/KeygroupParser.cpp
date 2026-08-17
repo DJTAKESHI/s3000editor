@@ -49,6 +49,8 @@ Keygroup KeygroupParser::parse(
         return k;
     }
 
+    k.rawData = d;
+
     DBG("=== RAW KEYGROUP FIRST 64 ===");
 
     for (int i = 0; i < 64; i++)
@@ -120,6 +122,30 @@ Keygroup KeygroupParser::parse(
     k.filter.keyFollow =
         d[KGH::Filter::K_FREQ];
 
+    k.filter.velocityToFreq =
+        static_cast<int8_t>(
+            d[KGH::Filter::V_FREQ]
+            );
+
+    k.filter.pressureToFreq =
+        static_cast<int8_t>(
+            d[KGH::Filter::P_FREQ]
+            );
+
+    k.filter.envelopeToFreq =
+        static_cast<int8_t>(
+            d[KGH::Filter::E_FREQ]
+            );
+
+    // ===== Velocity Control =====
+    k.velocity.vEnv2 =
+        static_cast<int8_t>(
+            d[KGH::Velocity::V_ENV2]
+            );
+
+
+
+
 
     // ===== Env1 =====
     k.env1.attack =
@@ -136,17 +162,67 @@ Keygroup KeygroupParser::parse(
 
 
     // ===== Env2 =====
-    k.env2.attack =
-        d[KGH::Env2::ATTACK];
+    //k.env2.attack =
+    //    d[KGH::Env2::ATTACK];
 
-    k.env2.decay =
-        d[KGH::Env2::DECAY];
+    //k.env2.decay =
+    //    d[KGH::Env2::DECAY];
 
-    k.env2.sustain =
-        d[KGH::Env2::SUSTAIN];
+    //k.env2.sustain =
+    //    d[KGH::Env2::SUSTAIN];
 
-    k.env2.release =
-        d[KGH::Env2::RELEASE];
+    //k.env2.release =
+    //    d[KGH::Env2::RELEASE];
+
+    k.env2.r1 = d[KGH::Env2::R1];
+    k.env2.l1 = d[KGH::Env2::L1];
+
+    k.env2.r2 = d[KGH::Env2::R2];
+    k.env2.l2 = d[KGH::Env2::L2];
+
+    k.env2.r3 = d[KGH::Env2::R3];
+    k.env2.l3 = d[KGH::Env2::L3];
+
+    k.env2.r4 = d[KGH::Env2::R4];
+    k.env2.l4 = d[KGH::Env2::L4];
+
+
+    k.env2.velAttack =
+        static_cast<int8_t>(
+            d[KGH::Velocity::V_ATT2]
+            );
+
+    k.env2.velRelease =
+        static_cast<int8_t>(
+            d[KGH::Velocity::V_REL2]
+            );
+
+    k.env2.noteOffRelease =
+        static_cast<int8_t>(
+            d[KGH::Velocity::O_REL2]
+            );
+
+    k.env2.keyTracking =
+        static_cast<int8_t>(
+            d[KGH::Velocity::K_DAR2]
+            );
+
+    k.velocity.ePtch =
+        d[KGH::Velocity::E_PTCH];
+
+    k.velocity.vxFade =
+        d[KGH::Velocity::VXFADE];
+
+    k.velocity.vZones =
+        d[KGH::Velocity::VZONES];
+
+    k.velocity.lkxf =
+        d[KGH::Velocity::LKXF];
+
+    k.velocity.rkxf =
+        d[KGH::Velocity::RKXF];
+
+
 
     DBG("=== DIRECT OFFSET CHECK ===");
 
@@ -172,6 +248,16 @@ Keygroup KeygroupParser::parse(
     DBG("k.highNote = " + juce::String(k.highNote));
     DBG("k.filter.freq = " + juce::String(k.filter.freq));
     DBG("k.env1.attack = " + juce::String(k.env1.attack));
+
+    DBG(
+        "LKXF RAW = "
+        + juce::String((int)d[KGH::Velocity::LKXF])
+    );
+
+    DBG(
+        "RKXF RAW = "
+        + juce::String((int)d[KGH::Velocity::RKXF])
+    );
 
     // ===== Velocity Control =====
 
@@ -308,8 +394,8 @@ Keygroup KeygroupParser::parse(
     DBG("ENV1 DECAY = "
         + juce::String(k.env1.decay));
 
-    DBG("ENV2 ATTACK = "
-        + juce::String(k.env2.attack));
+    //DBG("ENV2 ATTACK = "
+        //+ juce::String(k.env2.attack));
 
     DBG("V_ENV2 = "
         + juce::String(k.velocity.vEnv2));
@@ -455,10 +541,50 @@ VelocityZone KeygroupParser::parseZone(
         d[KGF::Zone::HIVEL[zoneIndex]];
 
 
-    z.tune =
+    //z.tune =
+    //    static_cast<int8_t>(
+    //        d[KGF::Zone::VTUNO[zoneIndex]]
+    //        );
+
+    z.fineTuneRaw =
         static_cast<int8_t>(
             d[KGF::Zone::VTUNO[zoneIndex]]
             );
+
+    z.semitone =
+        static_cast<int8_t>(
+            d[KGF::Zone::VTUNO[zoneIndex] + 1]
+            );
+
+    z.fineTuneRaw =
+        static_cast<int8_t>(
+            d[KGF::Zone::VTUNO[zoneIndex]]
+            );
+
+    z.semitone =
+        static_cast<int8_t>(
+            d[KGF::Zone::VTUNO[zoneIndex] + 1]
+            );
+
+    z.filterFreq =
+        static_cast<int8_t>(
+            d[KGF::Zone::VFREQ[zoneIndex]]
+            );
+
+    z.lowVelXFade =
+        d[KGF::Zone::LVXF[zoneIndex]];
+
+    z.highVelXFade =
+        d[KGF::Zone::HVXF[zoneIndex]];
+
+    DBG(
+        "ZONE "
+        + juce::String(zoneIndex)
+        + " SEM="
+        + juce::String(z.semitone)
+        + " FINE RAW="
+        + juce::String(z.fineTuneRaw)
+    );
 
 
     z.loudness =
@@ -490,7 +616,7 @@ VelocityZone KeygroupParser::parseZone(
     DBG("Sample = " + z.sampleName);
     DBG("LowVel = " + juce::String(z.lowVel));
     DBG("HighVel = " + juce::String(z.highVel));
-    DBG("Tune = " + juce::String(z.tune));
+    //DBG("Tune = " + juce::String(z.tune));
     DBG("Loud = " + juce::String(z.loudness));
     DBG("Pan = " + juce::String(z.pan));
     DBG("PlayMode = " + juce::String((int)z.playMode));

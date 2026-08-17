@@ -35,7 +35,17 @@ public:
     ) override;
 
 
-    std::function<void(const VelocityZone&, const SampleHeader&)> onSelected;
+    std::function<void(
+        int,
+        const VelocityZone&,
+        const SampleHeader&
+        )> onSelected;
+
+    std::function<void(
+        int,
+        const VelocityZone&
+        )> onZoneSelected;
+
 
 
 private:

@@ -34,14 +34,86 @@ void ProgramTree::setProgram(
 
     rootItem->onZoneSelected =
         [this](
+            int keygroupIndex,
+            int zoneIndex,
             const VelocityZone& zone,
             const SampleHeader& sampleHeader)
         {
             DBG("PROGRAM TREE RECEIVED ZONE SELECTION");
 
+            DBG(
+                "KEYGROUP INDEX = "
+                + juce::String(keygroupIndex)
+            );
+
+            DBG(
+                "ZONE INDEX = "
+                + juce::String(zoneIndex)
+            );
+
             if (onZoneSelected)
-                onZoneSelected(zone, sampleHeader);
+            {
+                onZoneSelected(
+                    keygroupIndex,
+                    zoneIndex,
+                    zone,
+                    sampleHeader
+                );
+            }
         };
+
+    rootItem->onBasicZoneSelected =
+        [this](
+            int keygroupIndex,
+            int zoneIndex,
+            const VelocityZone& zone
+            )
+        {
+            DBG(
+                "PROGRAM TREE RECEIVED BASIC ZONE SELECTION"
+            );
+
+            DBG(
+                "KEYGROUP INDEX = "
+                + juce::String(keygroupIndex)
+            );
+
+            DBG(
+                "ZONE INDEX = "
+                + juce::String(zoneIndex)
+            );
+
+            if (onBasicZoneSelected)
+            {
+                onBasicZoneSelected(
+                    keygroupIndex,
+                    zoneIndex,
+                    zone
+                );
+            }
+        };
+
+
+    rootItem->onKeygroupSelected =
+        [this](
+            int keygroupIndex,
+            const Keygroup& keygroup
+            )
+        {
+            DBG(
+                "PROGRAM TREE RECEIVED KEYGROUP SELECTION "
+                + juce::String(keygroupIndex)
+            );
+
+            if (onKeygroupSelected)
+            {
+                onKeygroupSelected(
+                    keygroupIndex,
+                    keygroup
+                );
+            }
+        };
+
 
     DBG(
         "NEW ROOT = "
