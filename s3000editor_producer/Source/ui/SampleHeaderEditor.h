@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
+#include "../s3000/Offsets.h"
 
 class SampleHeaderEditor : public juce::Component
 {
@@ -15,7 +16,7 @@ public:
     SampleHeader currentHeader;
     std::function<void(const SampleHeader&)> onSampleHeaderChanged;
     void updateLoopDwellStatus();
-    juce::String SampleHeaderEditor::midiNoteName(int note);
+    juce::String midiNoteName(int note);
 
 private:
 

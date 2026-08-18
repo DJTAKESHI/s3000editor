@@ -32,7 +32,7 @@ private:
 
     static int8_t readS8(const std::vector<uint8_t>& d, size_t offset);
     static uint16_t readU16(const std::vector<uint8_t>& d, size_t offset);
-    static double ProgramParser::readTune(
+    static double readTune(
         const std::vector<uint8_t>& d,
         size_t offset);
 

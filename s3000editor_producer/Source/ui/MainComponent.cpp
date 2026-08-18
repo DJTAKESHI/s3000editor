@@ -205,24 +205,7 @@ MainComponent::MainComponent()
 
 
 
-    // ===== TEST PROGRAM =====
 
-    //currentProgramData.programNumber = 0;
-    //currentProgramData.name = "TEST PROGRAM";
-
-    //currentProgramData.keygroups.resize(3);
-
-
-    //currentProgramData.keygroups[0].lowNote = 36;
-    //currentProgramData.keygroups[0].highNote = 36;
-
-
-    //currentProgramData.keygroups[1].lowNote = 37;
-    //currentProgramData.keygroups[1].highNote = 60;
-
-
-    //currentProgramData.keygroups[2].lowNote = 61;
-    //currentProgramData.keygroups[2].highNote = 127;
 
     DBG("========== BEFORE PROGRAM TREE ==========");
 
@@ -296,7 +279,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(requestButton);
     requestButton.onClick = [this]
         {
-            sendRPLIST();
+            sysExSender.sendRPLIST();
         };
 
     DBG("SETTING requestRPDATAButton CALLBACK");
@@ -321,7 +304,8 @@ MainComponent::MainComponent()
             DBG("========== GET PROGRAM BUTTON CLICKED ==========");
             DBG("REQUEST PROGRAM HEADER");
 
-            sendProgramHeader(0);
+//            sendProgramHeader(0);
+            sysExSender.sendProgramHeader(0);
         };
 
     DBG(
@@ -336,17 +320,24 @@ MainComponent::MainComponent()
             const int programIndex = 0;
 
             // 1. Program Header
-            sendProgramHeader(programIndex);
+//            sendProgramHeader(programIndex);
+            sysExSender.sendProgramHeader(programIndex);
 
             // 2. Keygroup Header
             juce::Timer::callAfterDelay(
                 100,
                 [this, programIndex]
                 {
-                    sendKGHeader(
+//                    sendKGHeader(
+//                        programIndex,
+//                        0
+//                    );
+                    sysExSender.sendKGHeader(
                         programIndex,
                         0
                     );
+                    
+                    
                 }
             );
 
@@ -355,7 +346,11 @@ MainComponent::MainComponent()
                 200,
                 [this, programIndex]
                 {
-                    sendKData(
+//                    sendKData(
+//                        programIndex,
+//                        0
+//                    );
+                    sysExSender.sendKData(
                         programIndex,
                         0
                     );
@@ -376,32 +371,12 @@ MainComponent::MainComponent()
 
     DBG("requestRPDATAButton CALLBACK SET");
 
-    //addAndMakeVisible(requestRPDATAButton);
 
-    //requestRPDATAButton.onClick = [this]
-    //    {
-    //        DBG("TEST REQUEST SAMPLE HEADER ID=0");
-
-    //        sendSampleHeader(0);
-
-    //        juce::Timer::callAfterDelay(
-    //            200,
-    //            [this]
-    //            {
-    //                DBG("TEST REQUEST SAMPLE HEADER ID=2");
-
-    //                sendSampleHeader(2);
-    //            }
-    //        );
-    //    };
 
     addAndMakeVisible(programLabel);
     programLabel.setText("No program", juce::dontSendNotification);
 
-    //addAndMakeVisible(treeView);
 
-    //treeView.setRootItemVisible(false);
-    //treeView.setDefaultOpenness(true);
 
     keyGroupEditor.onKeygroupChanged =
         [this](
@@ -473,8 +448,8 @@ MainComponent::MainComponent()
                 }
             }
 
-            // 実機へ送信
-            sendKeygroupData(
+
+            sysExSender.sendKeygroupData(
                 loadedProgram.programNumber,
                 keygroupIndex,
                 encoded
@@ -488,27 +463,6 @@ MainComponent::MainComponent()
         {
             DBG("VELOCITY ZONE CHANGED");
 
-            //// Sample name から ID を再解決
-            //if (!zone.sampleName.trim().isEmpty())
-            //{
-            //    const int resolvedId =
-            //        findSampleId(
-            //            zone.sampleName.trim()
-            //        );
-
-            //    zone.sampleId = resolvedId;
-
-            //    DBG(
-            //        "ZONE SAMPLE RESOLVE ["
-            //        + zone.sampleName
-            //        + "] -> "
-            //        + juce::String(resolvedId)
-            //    );
-            //}
-            //else
-            //{
-            //    zone.sampleId = -1;
-            //}
 
 
             // 選択中のKeygroupが有効か確認
@@ -602,7 +556,13 @@ MainComponent::MainComponent()
                 }
             }
 
-            sendKeygroupData(
+//            sendKeygroupData(
+//                loadedProgram.programNumber,
+//                currentKeygroup,
+//                encoded
+//            );
+            
+            sysExSender.sendKeygroupData(
                 loadedProgram.programNumber,
                 currentKeygroup,
                 encoded
@@ -685,6 +645,9 @@ MainComponent::MainComponent()
         if (midiOutput)
         {
             DBG("MIDI OUTPUT OPENED");
+            sysExSender.setMidiOutput(
+                    midiOutput.get()
+                );
         }
     }
 
@@ -1374,7 +1337,12 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
 
         for (int i = 0; i < loadedProgram.groups; i++)
         {
-            sendKGHeader(
+//            sendKGHeader(
+//                loadedProgram.programNumber,
+//                i
+//            );
+            
+            sysExSender.sendKGHeader(
                 loadedProgram.programNumber,
                 i
             );
@@ -1466,9 +1434,13 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
         sendRSLIST();
 
 
-        sendKData(
-            loadedProgram.programNumber,
-            currentKeygroup
+//        sendKData(
+//            loadedProgram.programNumber,
+//            currentKeygroup
+//        );
+        sysExSender.sendKData(
+              loadedProgram.programNumber,
+              currentKeygroup
         );
 
         /*sendSampleHeader(
@@ -1977,28 +1949,11 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
             });
         break;
 
-        //std::vector<uint8_t> raw;
-        //raw.assign(data, data + size);
-        //DBG("PLIST RECEIVED");
-        //parsePLIST(raw);
-        //break;
+   
 
     }
 
-    //case 0x03:
-    //{
-    //    DBG("PLIST RECEIVED");
 
-    //    DBG("decoded size = " + juce::String((int)decoded.size()));
-
-    //    for (int i = 0; i < 32 && i < decoded.size(); ++i)
-    //        DBG(juce::String(i) + " : "
-    //            + juce::String::toHexString(decoded[i]));
-
-    //    parsePLIST(decoded);
-
-    //    break;
-    //}
 
     default:
         DBG("Unknown Opcode = 0x" + juce::String::toHexString((int)opcode));
@@ -2012,17 +1967,7 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput*, const juce::Midi
 
 }
 
-//int findSampleId(
-//    const std::string& name)
-//{
-//    for (auto& s : samples)
-//    {
-//        if (s.name == name)
-//            return s.id;
-//    }
-//
-//    return -1;
-//}FIND
+
 
 int MainComponent::findSampleId(
     const juce::String& name)
@@ -2226,37 +2171,7 @@ void MainComponent::parseSLIST(
 
 }
 
-//void MainComponent::sendRSLIST()
-//{
-//    DBG("sendRSLIST CALLED");
-//
-//    if (!midiOutput)
-//    {
-//        DBG("NO MIDI OUTPUT");
-//        return;
-//    }
-//
-//
-//    uint8_t data[]
-//    {
-//        0x47,   // Akai manufacturer
-//        0x00,   // MIDI channel
-//        0x04,   // RSLIST request
-//        0x48    // S1000 identity
-//    };
-//
-//
-//    auto msg =
-//        juce::MidiMessage::createSysExMessage(
-//            data,
-//            sizeof(data));
-//
-//
-//    midiOutput->sendMessageNow(msg);
-//
-//
-//    DBG("RSLIST SENT");
-//}
+
 
 
 void MainComponent::saveDump(const juce::String& name)
@@ -2363,218 +2278,18 @@ void MainComponent::compareDumps(const juce::File& fileA, const juce::File& file
 
 }
 
-void MainComponent::sendRPLIST()
+
+
+void MainComponent::sendSampleHeader(int sampleId)
 {
-    if (!midiOutput)
-    {
-        return;
-    }
-
-    uint8_t data[]
-    {
-        0x47,
-        0x00,
-        0x02,
-        0x48
-    };
-
-    auto msg = juce::MidiMessage::createSysExMessage(
-        data,
-        sizeof(data));
-    midiOutput->sendMessageNow(msg);
-
-    DBG("RPLIST SENT");
-
-
-
-
-}
-
-void MainComponent::sendProgramHeader(int programIndex)
-{
-    DBG("========== sendProgramHeader CALLED ==========");
-    DBG(
-        "PROGRAM INDEX = "
-        + juce::String(programIndex)
-    );
-
-    if (!midiOutput)
-    {
-        DBG("NO MIDI OUTPUT");
-        return;
-    }
-
-    DBG("MIDI OUTPUT OK");
-
-    uint8_t data[]
-    {
-        0x47,
-        0x00,
-        0x27,
-        0x48,
-
-        static_cast<uint8_t>(programIndex & 0x7F),
-        static_cast<uint8_t>((programIndex >> 7) & 0x7F),
-
-        0x00,
-        0x00,
-        0x00,
-
-        0x00,
-        0x01
-    };
-
-    DBG("REQUEST DATA BUILT");
-
-    auto msg =
-        juce::MidiMessage::createSysExMessage(
-            data,
-            sizeof(data)
-        );
-
-    DBG("SYSEX MESSAGE CREATED");
-
-    midiOutput->sendMessageNow(msg);
-
-    DBG("PROGRAM HEADER REQUEST SENT");
-}
-
-void MainComponent::sendKGHeader(
-    int programIndex,
-    int keygroup)
-{
-    DBG("sendKGHeader called");
-    DBG("program = " + juce::String(programIndex));
-    DBG("keygroup = " + juce::String(keygroup));
-
-    if (!midiOutput)
-    {
-        DBG("NO MIDI OUTPUT");
-        return;
-    }
-
-    uint8_t data[]
-    {
-        0x47, //Akai
-        0x00, //MIDI exclusive channel
-        0x29, //Request Keygroup Header bytes
-        0x48, // S1000 identity
-
-        (uint8_t)(programIndex & 0x7F),
-        (uint8_t)((programIndex >> 7) & 0x7F),
-
-        (uint8_t)(keygroup & 0x7F),
-
-        //offset 00,00
-        0x00, 
-        0x00, 
-
-        //number of bytes nn,nn
-        0x40, 
-        //// number of bytes = 192
-        //0xC0,
-        0x00 
-
-
-    };
-
-    auto msg = juce::MidiMessage::createSysExMessage(
-        data,
-        sizeof(data));
-
-    midiOutput->sendMessageNow(msg);
-
-    DBG("KG HEADER SENT");
-}
-
-void MainComponent::sendSampleHeader(
-    int sampleId)
-{
-    constexpr int headerLength = SampleHeaderFormat::Size;
-    //currentRequestedSampleIndex = sampleId;
     pendingSampleRequests.push(sampleId);
 
-
-    DBG("sendSampleHeader called");
-    DBG("sampleId = "
-        + juce::String(sampleId));
-
-    DBG("LOW BYTE = "
-        + juce::String(sampleId & 0x7F));
-
-    DBG("HIGH BYTE = "
-        + juce::String((sampleId >> 7) & 0x7F));
-
-
-
-
-    uint8_t data[]
-    {
-        0x47,       // Akai
-        0x00,       // MIDI channel
-
-        0x2B,       // Request Sample Header
-
-        0x48,       // S1000 identity
-
-
-        // Sample number (14bit)
-        (uint8_t)(sampleId & 0x7F),
-        (uint8_t)((sampleId >> 7) & 0x7F),
-
-
-
-        // reserved
-        0x00,
-
-
-        // offset
-        0x00,
-        0x00,
-
-
-        // length 141 bytes
-        //0x0D,
-        //0x01
-
-        (uint8_t)(headerLength & 0x7F),
-        (uint8_t)((headerLength >> 7) & 0x7F)
-    };
-
-    DBG("CHECK DATA ARRAY");
-
-    for (int i = 0; i < sizeof(data); i++)
-    {
-        DBG(
-            juce::String(i)
-            + " : "
-            + juce::String::toHexString(
-                (int)data[i])
-        );
-    }
-
-    DBG("Sending Sample Header Request");
-    for (int i = 0; i < sizeof(data); i++)
-    {
-        DBG(
-            juce::String(i)
-            + " : 0x"
-            + juce::String::toHexString(data[i])
-        );
-    }
-
-
-    auto msg =
-        juce::MidiMessage::createSysExMessage(
-            data,
-            sizeof(data));
-
-
-    midiOutput->sendMessageNow(msg);
-
-
-    DBG("SAMPLE HEADER REQUEST SENT");
+    sysExSender.sendSampleHeader(sampleId);
 }
+
+
+
+
 
 
 void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
@@ -2596,11 +2311,7 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
         decoded.size()
     );
 
-    //int panOffset = 0x50;
-    //int freqOffset = 0x51;
-    //int filterOffset = 0x52;
 
-    //auto params = parseParams(decoded);
 
 
     DBG("DECODED SIZE = "
@@ -2682,49 +2393,10 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
     }
 
 
-    //auto params = parseParams(decoded);
-
-    //DBG("PAN = " + juce::String(params.pan));
-    //DBG("FREQ = " + juce::String(params.frequency));
-    //DBG("FILTER = " + juce::String(params.filter));
+  
 }
 
-void MainComponent::sendKData(
-    int programIndex,
-    int keygroup)
-{
-    DBG("sendKData called");
 
-
-    uint8_t data[]
-    {
-        0x47, // Akai
-        0x00, // channel
-        0x08, // RKDATA
-        0x48, // S1000
-
-
-        // program number
-        (uint8_t)(programIndex & 0x7F),
-        (uint8_t)((programIndex >> 7) & 0x7F),
-
-
-        // keygroup
-        (uint8_t)(keygroup & 0x7F)
-    };
-
-
-    auto msg =
-        juce::MidiMessage::createSysExMessage(
-            data,
-            sizeof(data));
-
-
-    midiOutput->sendMessageNow(msg);
-
-
-    DBG("RKDATA SENT");
-}
 
 void MainComponent::sendRSLIST()
 {
@@ -2924,41 +2596,6 @@ uint8_t MainComponent::unpack7bit(const std::vector<uint8_t>& d, int& bitPos)
 }
 
 
-//std::vector<uint8_t> MainComponent::decodeNibbleData(const juce::MemoryBlock& data)
-//{
-//    std::vector<uint8_t> decoded;
-//
-//    const uint8_t* p = (const uint8_t*)(data.getData());
-//
-//    size_t size = data.getSize();
-//    const int headerSize = 4;
-//
-//    DBG("RAW HEX:");
-//    for (int i = 0; i < 32; ++i)
-//        DBG(juce::String::toHexString(((uint8_t*)data.getData())[i]));
-//
-//    for (size_t i = headerSize; i + 1 < size; i += 2)
-//    {
-//        uint8_t low = p[i];
-//        uint8_t high = p[i + 1];
-//
-//        if (low > 0x0F || high > 0x0F)
-//        {
-//            DBG("INVALID NIBBLE at " + juce::String(i));
-//        }
-//
-//
-//        uint8_t value = (high << 4) | low;
-//
-//        decoded.push_back(value);
-//
-//    }
-//
-//    DBG("decoded size = " + juce::String((int)decoded.size()));
-//
-//    return decoded;
-//
-//}
 
 std::vector<uint8_t> MainComponent::decodeNibbleData(const juce::MemoryBlock& data)
 {
@@ -3264,112 +2901,6 @@ void MainComponent::saveRawRPDATA(const juce::String& name,
     DBG("Save Raw SysEx: " + file.getFullPathName());
 }
 
-//ProgramParams MainComponent::parseParams(const std::vector<uint8_t>& d,
-//    int panOffset,
-//    int freqOffset,
-//    int filterOffset)
-//
-//{
-//    ProgramParams p{};
-//
-//    
-//
-//    if (freqOffset >= (int)d.size())
-//    {
-//        DBG("parseParams OUT OF RANGE");
-//        return p;
-//    }
-//
-//    p.pan = (int8_t)d[panOffset];
-//    p.frequency = d[freqOffset];
-//    p.filter = d[filterOffset];
-//
-//    return p;
-//}
-
-//Program MainComponent::parseParams(const std::vector<uint8_t>& d)
-//{
-//    Program p{};
-//
-//    if (d.size() < 80)
-//        return p;
-//
-//    p.programNumber = d[15];
-//    p.midiChannel = d[16];
-//    p.polyphony = d[17] + 1;
-//    p.priority = d[18];
-//
-//    p.playLow = d[19];
-//    p.playHigh = d[20];
-//
-//    p.output = d[22];
-//    p.stereo = d[23];
-//
-//    p.panPos = (int8_t)d[24];   // -50..+50系は注意
-//    p.loudness = d[25];
-//    p.velocityLoud = (int8_t)d[26];
-//
-//    p.lfo2Rate = d[29];
-//    p.lfo2Depth = d[30];
-//
-//    p.lfo1Rate = d[33];
-//    p.lfo1Depth = d[34];
-//
-//    p.bendUp = d[39];
-//    p.bendDown = d[73];
-//
-//    p.transpose = (int8_t)d[75];
-//
-//    return p;
-//}
-
-//Keygroup parseKeygroup(const std::vector<uint8_t>& d)
-//{
-//    Keygroup k{};
-//
-//    if (d.size() < 34)
-//        return k;
-//
-//    k.id = d[0];
-//    k.nextBlock = (d[1] | (d[2] << 7)); // 2-byte block addr
-//
-//    k.lowNote = d[3];
-//    k.highNote = d[4];
-//
-//    k.tune = (int8_t)d[5]; // signed-ish (要調整)
-//
-//    k.filterFreq = d[7];
-//    k.keyFollow = d[8];
-//
-//    k.env1_attack = d[12];
-//    k.env1_decay = d[13];
-//    k.env1_sustain = d[14];
-//    k.env1_release = d[15];
-//
-//    k.env1_velAttack = (int8_t)d[16];
-//    k.env1_velRelease = (int8_t)d[17];
-//
-//    k.env1_noteOffRelease = (int8_t)d[18];
-//    k.env1_keyDecayRelease = (int8_t)d[19];
-//
-//    k.env2_attack = d[20];
-//    k.env2_decay = d[21];
-//    k.env2_sustain = d[22];
-//    k.env2_release = d[23];
-//
-//    k.env2_velAttack = (int8_t)d[24];
-//    k.env2_velRelease = (int8_t)d[25];
-//
-//    k.env2_noteOffRelease = (int8_t)d[26];
-//    k.env2_keyDecayRelease = (int8_t)d[27];
-//
-//    k.env2_velocityScale = (int8_t)d[28];
-//
-//    k.velocityXfade = d[30];
-//
-//    return k;
-//}
-
 
 
 int MainComponent::getNumRows()
@@ -3427,88 +2958,10 @@ void MainComponent::listBoxItemClicked(
     );
 
 
-    sendProgramHeader(
-        currentProgramIndex
-    );
+//    sendProgramHeader(
+//        currentProgramIndex
+//    );
+    
+    sysExSender.sendProgramHeader(currentProgramIndex);
 }
 
-void MainComponent::sendKeygroupData(
-    int programIndex,
-    int keygroupIndex,
-    const std::vector<uint8_t>& data)
-{
-    if (!midiOutput)
-    {
-        DBG("NO MIDI OUTPUT");
-        return;
-    }
-
-    std::vector<uint8_t> sysex;
-
-    // Akai header
-    sysex.push_back(0x47);
-    sysex.push_back(0x00);
-    sysex.push_back(0x09);
-    sysex.push_back(0x48);
-
-    // Program number (14 bit)
-    sysex.push_back(
-        static_cast<uint8_t>(
-            programIndex & 0x7F
-            )
-    );
-
-    sysex.push_back(
-        static_cast<uint8_t>(
-            (programIndex >> 7) & 0x7F
-            )
-    );
-
-    // Keygroup number
-    sysex.push_back(
-        static_cast<uint8_t>(
-            keygroupIndex & 0x7F
-            )
-    );
-
-    // 192 bytes → nibble encoding
-    for (uint8_t value : data)
-    {
-        sysex.push_back(
-            value & 0x0F
-        );
-
-        sysex.push_back(
-            (value >> 4) & 0x0F
-        );
-    }
-
-    DBG(
-        "KEYGROUP SYSEX SIZE = "
-        + juce::String((int)sysex.size())
-    );
-
-    auto message =
-        juce::MidiMessage::createSysExMessage(
-            sysex.data(),
-            sysex.size()
-        );
-
-    midiOutput->sendMessageNow(message);
-
-    DBG("KEYGROUP DATA SENT");
-}
-
-
-//void MainComponent::saveRawSysEx(const uint8_t* data, size_t size)
-//{
-//    auto file = juce::File::getSpecialLocation(
-//        juce::File::userDesktopDirectory);
-//
-//    file = file.getChildFile(isCaptureA ? "rpdata_raw_A.bin"
-//        : "rpdata_raw_B.bin");
-//
-//    file.appendData(data, size);
-//
-//    DBG("Saved RAW SysEx: " + file.getFullPathName());
-//}

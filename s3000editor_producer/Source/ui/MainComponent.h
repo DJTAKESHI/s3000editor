@@ -8,7 +8,7 @@
 #include "VelocityZoneEditor.h"
 #include "KeyGroupEditor.h"
 #include "ProgramEditor.h"
-
+#include "../midi/SysExSender.h"
 
 
 
@@ -92,36 +92,38 @@ private:
     KeyGroupEditor keyGroupEditor;
 
     juce::TextButton requestButton{ "Request PLIST" };
-    void sendRPLIST();
+//    void sendRPLIST();
     /*void sendRPDATA(int programIndex);*/
-    void sendProgramHeader(int programIndex);
-    void sendKGHeader(int programIndex, int keygroup);
+//    void sendProgramHeader(int programIndex);
+//    void sendKGHeader(int programIndex, int keygroup);
     //void sendSampleHeader(int program, int keygroup);
-    void MainComponent::sendSampleHeader(
+    void sendSampleHeader(
         //int program,
         int sampleId);
-    void MainComponent::sendKData(
-        int programIndex,
-        int keygroup);
+//    void sendKData(
+//        int programIndex,
+//        int keygroup);
 
-    void MainComponent::sendKeygroupData(
-        int programIndex,
-        int keygroupIndex,
-        const std::vector<uint8_t>& data);
+//    void sendKeygroupData(
+//        int programIndex,
+//        int keygroupIndex,
+//        const std::vector<uint8_t>& data);
+    
+    SysExSender sysExSender;
 
     /*void parseRPDATA(const juce::MemoryBlock& data);*/
     void parseRPDATA(const std::vector<uint8_t>& decoded);
     void parseProgram(const std::vector<uint8_t>& decoded);
     void parseKeygroup(const std::vector<uint8_t>& decoded);
     void parsePLIST(const std::vector<uint8_t>& d);
-    void MainComponent::sendRSLIST();
+    void sendRSLIST();
     std::queue<int> pendingSampleRequests;
 
     void dumpKeygroup(const std::vector<uint8_t>& decoded);
     Keygroup parseKeygroupStruct(const std::vector<uint8_t>& d);
 
     uint8_t unpack7bit(const std::vector<uint8_t>& d, int& bitPos);
-    std::vector<uint8_t> MainComponent::decodeProgramHeader(
+    std::vector<uint8_t> decodeProgramHeader(
         const juce::MemoryBlock& data);
 
     SampleHeaderEditor sampleHeaderEditor;
@@ -163,10 +165,10 @@ private:
     std::vector<uint8_t> decodeNibbleData(
         const juce::MemoryBlock& data);
 
-    std::vector<uint8_t> MainComponent::decodeKeygroupHeader(const juce::MemoryBlock& data);
+    std::vector<uint8_t> decodeKeygroupHeader(const juce::MemoryBlock& data);
     std::vector<uint8_t> decodeKeygroupFull(
         const juce::MemoryBlock& data);
-    std::vector<uint8_t> MainComponent::decodeSampleHeader(
+    std::vector<uint8_t> decodeSampleHeader(
         const juce::MemoryBlock& data);
 
 
@@ -207,9 +209,9 @@ private:
     void compareDumps(const juce::File& fileA, const juce::File& fileB);
 
     void saveRawSysEx(const uint8_t* data, size_t size);
-    char MainComponent::decodePlistChar(uint8_t v);
+    char decodePlistChar(uint8_t v);
 
-    void MainComponent::parseSLIST(
+    void parseSLIST(
         const juce::MemoryBlock& data);
 
     int currentRequestedSampleIndex = -1;
@@ -261,6 +263,9 @@ private:
 
     ProgramEditor programEditor;
     juce::Viewport programEditorViewport;
+    
+//    SysExSender sysExSender;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
+// write-test

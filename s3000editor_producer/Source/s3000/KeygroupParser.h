@@ -22,7 +22,7 @@ private:
         return static_cast<T>(d[offset]);
     }
 
-    void KeygroupParser::resolveSampleNames(
+    void resolveSampleNames(
         Keygroup& k,
         const std::vector<std::string>& sampleNames);
 
