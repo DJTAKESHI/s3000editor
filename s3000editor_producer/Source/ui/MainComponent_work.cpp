@@ -16,7 +16,7 @@ char decodeAkaiChar(uint8_t v)
     if (v == 0x0A || v == 0x00)
         return ' ';
 
-    // printable ASCII fallbackÅií¥èdóvÅ
+    // printable ASCII fallbackÅií¥èdóvÅj
     if (v >= 0x20 && v <= 0x7E)
         return (char)v;
 
@@ -797,13 +797,31 @@ void MainComponent::processIncomingSysEx(
 
     saveRawRPDATA(name, programBuffer);
 
-//    std::vector<uint8_t> decoded;
+    std::vector<uint8_t> decoded;
 
     switch (opcode)
     {
         case 0x05:
         {
-            handleSampleListResponse();
+            
+
+            DBG("SLIST RECEIVED");
+
+            DBG("BEFORE parseSLIST");
+
+            parseSLIST(programBuffer);
+
+            DBG("AFTER parseSLIST");
+
+            for (int i = 0; i < programBuffer.getSize(); i++)
+            {
+                DBG(
+                    juce::String(i)
+                    + " : 0x"
+                    + juce::String::toHexString(programBuffer[i])
+                );
+            }
+
             break;
         }
 
@@ -840,35 +858,460 @@ void MainComponent::processIncomingSysEx(
 
         case 0x2C:
         {
+            DBG("SAMPLE HEADER RECEIVED");
+            DBG("RAW SAMPLE HEADER SYSEX");
+
+            auto* p =
+                (uint8_t*)programBuffer.getData();
+
+            const int rawSize =
+                (int)programBuffer.getSize();
+
+            // ==============================
+            // Raw SysExêÊì™ämîF
+            // ==============================
+
+            for (int i = 0;
+                i < juce::jmin(30, rawSize);
+                ++i)
+            {
+                DBG(
+                    juce::String(i)
+                    + " : "
+                    + juce::String::toHexString(p[i])
+                );
+            }
+
+            DBG("=== RAW SYSEX END ===");
+
+            // ==============================
+            // Raw SysExññîˆämîF
+            // ==============================
+
+            for (int i =
+                juce::jmax(0, rawSize - 30);
+                i < rawSize;
+                ++i)
+            {
+                DBG(
+                    juce::String(i)
+                    + " : 0x"
+                    + juce::String::toHexString(p[i])
+                );
+            }
+
+            // ==============================
+            // Decode
+            // ==============================
+
+//            decoded =
+//                decodeSampleHeader(programBuffer);
+            
+            auto decoded =
+                decodeSampleHeader(programBuffer);
+
+            DBG(
+                "FULL SAMPLE HEADER SIZE = "
+                + juce::String((int)decoded.size())
+            );
+
+            if (decoded.size() < 141)
+            {
+                DBG("INVALID SAMPLE HEADER SIZE");
+                return;
+            }
+
+            // ==============================
+            // Loop area debug
+            // ==============================
+
+            DBG("=== LOOP HEADER ===");
+
+            for (int i = 16;
+                i < juce::jmin(86, (int)decoded.size());
+                ++i)
+            {
+                DBG(
+                    juce::String::formatted(
+                        "%03d : 0x%02X (%d)",
+                        i,
+                        (unsigned int)decoded[i],
+                        (unsigned int)decoded[i]
+                    )
+                );
+            }
+
+            // ==============================
+            // DecodeêÊì™ämîF
+            // ==============================
+
+            for (int i = 0;
+                i < juce::jmin(20, (int)decoded.size());
+                ++i)
+            {
+                DBG(
+                    "decoded "
+                    + juce::String(i)
+                    + " : "
+                    + juce::String::toHexString(decoded[i])
+                );
+            }
+
+            // ==============================
+            // pending requestämîF
+            // ==============================
+
+            if (pendingSampleRequests.empty())
+            {
+                DBG(
+                    "SAMPLE HEADER RECEIVED "
+                    "BUT NO PENDING SAMPLE REQUEST"
+                );
+
+                return;
+            }
+
+            // ==============================
+            // ëŒè€Sample IDÇéÊìæ
+            // ==============================
+
+            const int sampleId =
+                pendingSampleRequests.front();
+
+            pendingSampleRequests.pop();
+
+            DBG(
+                "PENDING SAMPLE ID = "
+                + juce::String(sampleId)
+            );
+
+            // ==============================
+            // Parse
+            // ==============================
+
+            SampleHeader sh =
+                SampleHeaderParser::parse(
+                    decoded,
+                    sampleId
+                );
+
+            // ==============================
+            // Store
+            // ==============================
+
+            sampleHeaders[sh.id] = sh;
+
+            DBG("=== SAMPLE HEADER VERIFY ===");
+
+            DBG("ID = " + juce::String(sh.id));
+            DBG("NAME = [" + sh.name + "]");
+            DBG("PITCH = " + juce::String(sh.originalPitch));
+            DBG("TUNE = " + juce::String(sh.tune, 2));
+
+            DBG(
+                "SAMPLE RATE = "
+                + juce::String(sh.sampleRate)
+            );
+
+            DBG(
+                "SAMPLE RATE VALID = "
+                + juce::String(sh.sampleRateValid)
+            );
+
+            DBG("NUM LOOPS = " + juce::String(sh.numLoops));
+            DBG("ACTIVE LOOP = " + juce::String(sh.activeLoop));
+            DBG("PLAY TYPE = " + juce::String(sh.playType));
+            DBG(
+                "NUM LOOPS = "
+                + juce::String(sh.numLoops)
+            );
+
+            DBG(
+                "ACTIVE LOOP = "
+                + juce::String(sh.activeLoop)
+            );
+
+            DBG(
+                "PLAY TYPE = "
+                + juce::String(sh.playType)
+            );
+
+            DBG(
+                "START = "
+                + juce::String(sh.start)
+            );
+
+            DBG(
+                "END = "
+                + juce::String(sh.end)
+            );
+
+            DBG(
+                "HOLD LOOP TUNE = "
+                + juce::String((int)sh.holdLoopTune)
+            );
+
+            DBG(
+                "LOOP1 POSITION = "
+                + juce::String(sh.loops[0].position)
+            );
+
+            DBG(
+                "LOOP1 LENGTH = "
+                + juce::String(sh.loops[0].length, 3)
+            );
+
+            DBG(
+                "LOOP1 DWELL = "
+                + juce::String(sh.loops[0].dwell)
+            );
 
 
-            
+            if (currentKeygroup >= 0 &&
+                currentKeygroup < (int)loadedProgram.keygroups.size())
+            {
+                const auto& kg =
+                    loadedProgram.keygroups[currentKeygroup];
 
-            
+                if (currentZone >= 0 &&
+                    currentZone < (int)kg.zones.size())
+                {
+                    const auto& selectedZone =
+                        kg.zones[currentZone];
 
-            
-            
+                    if (selectedZone.sampleId == sh.id)
+                    {
+                        DBG(
+                            "UPDATE SAMPLE HEADER EDITOR ID="
+                            + juce::String(sh.id)
+                        );
 
-            
-            
-            
+                        juce::MessageManager::callAsync(
+                            [this, sh]
+                            {
+                                sampleHeaderEditor.setSampleHeader(
+                                    sh
+                                );
+                            }
+                        );
+                    }
+                }
+            }
+
+
+            DBG(
+                "STORED SAMPLE HEADER ID="
+                + juce::String(sh.id)
+                + " NAME=["
+                + sh.name
+                + "]"
+            );
+
+            DBG(
+                "sampleHeaders.size = "
+                + juce::String(
+                    (int)sampleHeaders.size()
+                )
+            );
+
+            for (const auto& [id, header] :
+                sampleHeaders)
+            {
+                DBG(
+                    "HEADER ID="
+                    + juce::String(id)
+                    + " NAME=["
+                    + header.name
+                    + "]"
+                );
+            }
+
+            // ==============================
+            // Sample HeaderèÓïÒ
+            // ==============================
+
+            DBG("=== SAMPLE HEADER ===");
+
+            DBG(
+                "ID = "
+                + juce::String(sh.id)
+            );
+
+            DBG(
+                "NAME = "
+                + sh.name
+            );
+
+            DBG(
+                "PITCH = "
+                + juce::String(sh.originalPitch)
+            );
+
+            DBG(
+                "LENGTH = "
+                + juce::String(
+                    (juce::int64)sh.length
+                )
+            );
+
+            DBG(
+                "LOOPS = "
+                + juce::String(sh.numLoops)
+            );
+
+            DBG(
+                "PLAY TYPE = "
+                + juce::String(sh.playType)
+            );
+
+            // ==============================
+            // ëSSample HeaderéÛêMäÆóπÅH
+            // ==============================
+
+            if (pendingSampleRequests.empty())
+            {
+                DBG("ALL SAMPLE HEADERS RECEIVED");
+
+                juce::MessageManager::callAsync(
+                    [this]
+                    {
+                        DBG("CALL ASYNC START");
+
+                        // Sample Name -> Sample ID çƒâåà
+                        resolveAllSampleIds();
+
+                        DBG(
+                            "AFTER resolveAllSampleIds"
+                        );
+
+                        // ämîFÉçÉO
+                        for (int k = 0;
+                            k <
+                            (int)loadedProgram
+                            .keygroups.size();
+                            ++k)
+                        {
+                            const auto& kg =
+                                loadedProgram.keygroups[k];
+
+                            for (int z = 0;
+                                z <
+                                (int)kg.zones.size();
+                                ++z)
+                            {
+                                const auto& zone =
+                                    kg.zones[z];
+
+                                DBG(
+                                    "KG="
+                                    + juce::String(k)
+                                    + " ZONE="
+                                    + juce::String(z)
+                                    + " SAMPLE=["
+                                    + zone.sampleName
+                                    + "] ID="
+                                    + juce::String(
+                                        zone.sampleId
+                                    )
+                                );
+                            }
+                        }
+
+                        // ç≈êVÉfÅ[É^Ç≈Treeçƒç\íz
+                        programTree.setProgram(
+                            loadedProgram,
+                            sampleHeaders
+                        );
+
+                        DBG(
+                            "PROGRAM TREE UPDATED "
+                            "AFTER ALL SAMPLE HEADERS"
+                        );
+                    }
+                );
+            }
+            else
+            {
+                DBG(
+                    "WAITING FOR MORE SAMPLE HEADERS. "
+                    "pending="
+                    + juce::String(
+                        (int)pendingSampleRequests.size()
+                    )
+                );
+            }
+
+            // ==============================
+            // Full decoded dump
+            // ==============================
+
+            for (int i = 0;
+                i < (int)decoded.size();
+                ++i)
+            {
+                DBG(
+                    juce::String(i)
+                    + " : 0x"
+                    + juce::String::toHexString(
+                        decoded[i]
+                    )
+                );
+            }
+
+            for (int i = 1; i < 4; ++i)
+            {
+                DBG(
+                    "LOOP "
+                    + juce::String(i + 1)
+                    + " POSITION = "
+                    + juce::String(sh.loops[i].position)
+                );
+
+                DBG(
+                    "LOOP "
+                    + juce::String(i + 1)
+                    + " LENGTH = "
+                    + juce::String(sh.loops[i].length, 3)
+                );
+
+                DBG(
+                    "LOOP "
+                    + juce::String(i + 1)
+                    + " DWELL = "
+                    + juce::String(sh.loops[i].dwell)
+                );
+            }
+
+
+            saveDecodedDump(
+                "sample_header_0.bin",
+                decoded
+            );
+
+            break;
         }
 
             
         case 0x03:
         {
             
-
-            handleProgramListResponse(data, size);
-            break;
-        }
+            //std::vector<uint8_t> raw(data,data + size);
+            //DBG("=== PLIST RAW HEX ===");
             
-        case 0x09:
-        {
-            handleKeygroupDataResponse(message);
+            //for (int i = 0; i < size; ++i)
+            //{
+            //    DBG(juce::String(i) + ": " +
+            //        juce::String::toHexString((int)data[i]));
+            //}
+            
+            auto rawCopy = std::vector<uint8_t>(data, data + size);
+            juce::MessageManager::callAsync([this, rawCopy]()
+                                            {
+                parsePLIST(rawCopy);
+            });
             break;
         }
-        
+
        
 
       
@@ -883,485 +1326,6 @@ void MainComponent::processIncomingSysEx(
         }
     captureIndex++;
     }
-
-void MainComponent::handleSampleHeaderResponse()
-{
-    DBG("SAMPLE HEADER RECEIVED");
-    DBG("RAW SAMPLE HEADER SYSEX");
-
-    auto* p =
-        (uint8_t*)programBuffer.getData();
-
-    const int rawSize =
-        (int)programBuffer.getSize();
-
-    // ==============================
-    // Raw SysExêÊì™ämîF
-    // ==============================
-
-    for (int i = 0;
-        i < juce::jmin(30, rawSize);
-        ++i)
-    {
-        DBG(
-            juce::String(i)
-            + " : "
-            + juce::String::toHexString(p[i])
-        );
-    }
-
-    DBG("=== RAW SYSEX END ===");
-
-    // ==============================
-    // Raw SysExññîˆämîF
-    // ==============================
-    
-    for (int i =
-        juce::jmax(0, rawSize - 30);
-        i < rawSize;
-        ++i)
-    {
-        DBG(
-            juce::String(i)
-            + " : 0x"
-            + juce::String::toHexString(p[i])
-        );
-    }
-
-    // ==============================
-    // Decode
-    // ==============================
-
-//            decoded =
-//                decodeSampleHeader(programBuffer);
-    
-    auto decoded =
-        decodeSampleHeader(programBuffer);
-
-    DBG(
-        "FULL SAMPLE HEADER SIZE = "
-        + juce::String((int)decoded.size())
-    );
-    
-    if (decoded.size() < 141)
-    {
-        DBG("INVALID SAMPLE HEADER SIZE");
-        return;
-    }
-
-    // ==============================
-    // Loop area debug
-    // ==============================
-
-    DBG("=== LOOP HEADER ===");
-
-    for (int i = 16;
-        i < juce::jmin(86, (int)decoded.size());
-        ++i)
-    {
-        DBG(
-            juce::String::formatted(
-                "%03d : 0x%02X (%d)",
-                i,
-                (unsigned int)decoded[i],
-                (unsigned int)decoded[i]
-            )
-        );
-    }
-
-    // ==============================
-    // DecodeêÊì™ämîF
-    // ==============================
-
-    for (int i = 0;
-        i < juce::jmin(20, (int)decoded.size());
-        ++i)
-    {
-        DBG(
-            "decoded "
-            + juce::String(i)
-            + " : "
-            + juce::String::toHexString(decoded[i])
-        );
-    }
-    
-    // ==============================
-    // pending requestämîF
-    // ==============================
-
-    if (pendingSampleRequests.empty())
-    {
-        DBG(
-            "SAMPLE HEADER RECEIVED "
-            "BUT NO PENDING SAMPLE REQUEST"
-        );
-
-        return;
-    }
-
-    // ==============================
-    // ëŒè€Sample IDÇéÊìæ
-    // ==============================
-
-    const int sampleId =
-        pendingSampleRequests.front();
-
-    pendingSampleRequests.pop();
-
-    DBG(
-        "PENDING SAMPLE ID = "
-        + juce::String(sampleId)
-    );
-
-    // ==============================
-    // Parse
-    // ==============================
-
-    SampleHeader sh =
-        SampleHeaderParser::parse(
-            decoded,
-            sampleId
-        );
-
-    // ==============================
-    // Store
-    // ==============================
-
-    sampleHeaders[sh.id] = sh;
-    
-    DBG("=== SAMPLE HEADER VERIFY ===");
-
-    DBG("ID = " + juce::String(sh.id));
-    DBG("NAME = [" + sh.name + "]");
-    DBG("PITCH = " + juce::String(sh.originalPitch));
-    DBG("TUNE = " + juce::String(sh.tune, 2));
-
-    DBG(
-        "SAMPLE RATE = "
-        + juce::String(sh.sampleRate)
-    );
-
-    DBG(
-        "SAMPLE RATE VALID = "
-        + juce::String(sh.sampleRateValid)
-    );
-
-    DBG("NUM LOOPS = " + juce::String(sh.numLoops));
-    DBG("ACTIVE LOOP = " + juce::String(sh.activeLoop));
-    DBG("PLAY TYPE = " + juce::String(sh.playType));
-    DBG(
-        "NUM LOOPS = "
-        + juce::String(sh.numLoops)
-    );
-
-    DBG(
-        "ACTIVE LOOP = "
-        + juce::String(sh.activeLoop)
-    );
-
-    DBG(
-        "PLAY TYPE = "
-        + juce::String(sh.playType)
-    );
-
-    DBG(
-        "START = "
-        + juce::String(sh.start)
-    );
-
-    DBG(
-        "END = "
-        + juce::String(sh.end)
-    );
-
-    DBG(
-        "HOLD LOOP TUNE = "
-        + juce::String((int)sh.holdLoopTune)
-    );
-
-    DBG(
-        "LOOP1 POSITION = "
-        + juce::String(sh.loops[0].position)
-    );
-
-    DBG(
-        "LOOP1 LENGTH = "
-        + juce::String(sh.loops[0].length, 3)
-    );
-
-    DBG(
-        "LOOP1 DWELL = "
-        + juce::String(sh.loops[0].dwell)
-    );
-    
-    
-    if (currentKeygroup >= 0 &&
-        currentKeygroup < (int)loadedProgram.keygroups.size())
-    {
-        const auto& kg =
-            loadedProgram.keygroups[currentKeygroup];
-
-        if (currentZone >= 0 &&
-            currentZone < (int)kg.zones.size())
-        {
-            const auto& selectedZone =
-                kg.zones[currentZone];
-
-            if (selectedZone.sampleId == sh.id)
-            {
-                DBG(
-                    "UPDATE SAMPLE HEADER EDITOR ID="
-                    + juce::String(sh.id)
-                );
-
-                juce::MessageManager::callAsync(
-                    [this, sh]
-                    {
-                        sampleHeaderEditor.setSampleHeader(
-                            sh
-                        );
-                    }
-                );
-            }
-        }
-    }
-
-
-    DBG(
-        "STORED SAMPLE HEADER ID="
-        + juce::String(sh.id)
-        + " NAME=["
-        + sh.name
-        + "]"
-    );
-
-    DBG(
-        "sampleHeaders.size = "
-        + juce::String(
-            (int)sampleHeaders.size()
-        )
-    );
-
-    for (const auto& [id, header] :
-        sampleHeaders)
-    {
-        DBG(
-            "HEADER ID="
-            + juce::String(id)
-            + " NAME=["
-            + header.name
-            + "]"
-        );
-    }
-
-    // ==============================
-    // Sample HeaderèÓï
-    // ==============================
-
-    DBG("=== SAMPLE HEADER ===");
-
-    DBG(
-        "ID = "
-        + juce::String(sh.id)
-    );
-
-    DBG(
-        "NAME = "
-        + sh.name
-    );
-
-    DBG(
-        "PITCH = "
-        + juce::String(sh.originalPitch)
-    );
-
-    DBG(
-        "LENGTH = "
-        + juce::String(
-            (juce::int64)sh.length
-        )
-    );
-
-    DBG(
-        "LOOPS = "
-        + juce::String(sh.numLoops)
-    );
-
-    DBG(
-        "PLAY TYPE = "
-        + juce::String(sh.playType)
-    );
-    
-    // ==============================
-    // ëSSample HeaderéÛêMäÆóπÅH
-    // ==============================
-
-    if (pendingSampleRequests.empty())
-    {
-        DBG("ALL SAMPLE HEADERS RECEIVED");
-
-        juce::MessageManager::callAsync(
-            [this]
-            {
-                DBG("CALL ASYNC START");
-
-                // Sample Name -> Sample ID çƒâåà
-                resolveAllSampleIds();
-
-                DBG(
-                    "AFTER resolveAllSampleIds"
-                );
-
-                // ämîFÉçÉO
-                for (int k = 0;
-                    k <
-                    (int)loadedProgram
-                    .keygroups.size();
-                    ++k)
-                {
-                    const auto& kg =
-                        loadedProgram.keygroups[k];
-
-                    for (int z = 0;
-                        z <
-                        (int)kg.zones.size();
-                        ++z)
-                    {
-                        const auto& zone =
-                            kg.zones[z];
-
-                        DBG(
-                            "KG="
-                            + juce::String(k)
-                            + " ZONE="
-                            + juce::String(z)
-                            + " SAMPLE=["
-                            + zone.sampleName
-                            + "] ID="
-                            + juce::String(
-                                zone.sampleId
-                            )
-                        );
-                    }
-                }
-
-                // ç≈êVÉfÅ[É^Ç≈Treeçƒç\íz
-                programTree.setProgram(
-                    loadedProgram,
-                    sampleHeaders
-                );
-
-                DBG(
-                    "PROGRAM TREE UPDATEd "
-                    "AFTER ALL SAMPLE HEADERS"
-                );
-            }
-        );
-    }
-    else
-    {
-        DBG(
-            "WAITING FOR MORE SAMPLE HEADERS. "
-            "pending="
-            + juce::String(
-                (int)pendingSampleRequests.size()
-            )
-        );
-    }
-    
-    // ==============================
-    // Full decoded dump
-    // ==============================
-
-    for (int i = 0;
-        i < (int)decoded.size();
-        ++i)
-    {
-        DBG(
-            juce::String(i)
-            + " : 0x"
-            + juce::String::toHexString(
-                decoded[i]
-            )
-        );
-    }
-
-    for (int i = 1; i < 4; ++i)
-    {
-        DBG(
-            "LOOP "
-            + juce::String(i + 1)
-            + " POSITION = "
-            + juce::String(sh.loops[i].position)
-        );
-
-        DBG(
-            "LOOP "
-            + juce::String(i + 1)
-            + " LENGTH = "
-            + juce::String(sh.loops[i].length, 3)
-        );
-
-        DBG(
-            "LOOP "
-            + juce::String(i + 1)
-            + " DWELL = "
-            + juce::String(sh.loops[i].dwell)
-        );
-    }
-
-
-    saveDecodedDump(
-        "sample_header_0.bin",
-        decoded
-    );
-
-
-
-
-
-    
-}
-
-void MainComponent::handleSampleListResponse()
-{
-    DBG("SLIST RECEIVED");
-    DBG("BEFORE parseSLIST");
-
-    parseSLIST(programBuffer);
-
-    DBG("AFTER parseSLIST");
-
-    for (int i = 0; i < programBuffer.getSize(); ++i)
-    {
-        DBG(
-            juce::String(i)
-            + " : 0x"
-            + juce::String::toHexString(programBuffer[i])
-        );
-    }
-    
-   
-//    break;
-}
-
-void MainComponent::handleProgramListResponse(
-    const uint8_t* data,
-    int size)
-{
-    auto rawCopy =
-        std::vector<uint8_t>(
-            data,
-            data + size
-        );
-
-    juce::MessageManager::callAsync(
-        [this, rawCopy]()
-        {
-            parsePLIST(rawCopy);
-        }
-    );
-}
 
 void MainComponent::handleKeygroupDataResponse(
     const juce::MidiMessage& message)

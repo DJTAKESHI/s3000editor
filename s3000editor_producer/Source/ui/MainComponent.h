@@ -9,6 +9,7 @@
 #include "KeyGroupEditor.h"
 #include "ProgramEditor.h"
 #include "../midi/SysExSender.h"
+#include "../midi/MidiManager.h"
 
 
 
@@ -221,8 +222,8 @@ private:
 
 
 
-    std::unique_ptr<juce::MidiInput> midiInput;
-    std::unique_ptr<juce::MidiOutput> midiOutput;
+//    std::unique_ptr<juce::MidiInput> midiInput;
+//    std::unique_ptr<juce::MidiOutput> midiOutput;
     std::string decodeName(const uint8_t* p);
     std::string trimRightSpaces(std::string s);
 
@@ -263,6 +264,28 @@ private:
 
     ProgramEditor programEditor;
     juce::Viewport programEditorViewport;
+    
+    MidiManager midiManager;
+    void processIncomingSysEx(
+                               const juce::MidiMessage& message);
+    void handleCommandReply(
+        const uint8_t* data,
+        int size);
+    
+    void handleProgramHeaderResponse();
+    void handleKeygroupHeaderResponse();
+    void handleKeygroupDataResponse(
+        const juce::MidiMessage& message);
+    void handleKeygroupFullResponse();
+    void handleRPDataResponse();
+    void handleSampleHeaderResponse();
+    void handleSampleListResponse();
+    void handleProgramListResponse(
+        const uint8_t* data,
+        int size);
+//    void handleSampleHeaderResponse();
+    
+//    SysExSender sysExSender;
     
 //    SysExSender sysExSender;
 

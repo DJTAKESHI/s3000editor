@@ -278,3 +278,56 @@ void SysExSender::sendKeygroupData(
 
     DBG("KEYGROUP DATA SENT");
 }
+
+void SysExSender::sendSysEx(
+    const std::vector<uint8_t>& data)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    if (data.empty())
+    {
+        DBG("EMPTY SYSEX DATA");
+        return;
+    }
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data.data(),
+            data.size()
+        );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG("SYSEX SENT");
+}
+
+void SysExSender::sendRSLIST()
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    uint8_t data[]
+    {
+        0x47,
+        0x00,
+        0x04,
+        0x48
+    };
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG("RSLIST REQUEST SENT");
+}

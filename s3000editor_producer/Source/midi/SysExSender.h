@@ -10,6 +10,8 @@ public:
     void setMidiOutput(juce::MidiOutput* output);
 
     void sendRPLIST();
+    void sendRSLIST();
+    
     void sendProgramHeader(int programIndex);
     void sendKGHeader(
         int programIndex,
@@ -25,6 +27,8 @@ public:
         int programIndex,
         int keygroupIndex,
         const std::vector<uint8_t>& data);
+    
+    void sendSysEx(const std::vector<uint8_t>& data);
     
     
     
