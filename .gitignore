@@ -20,3 +20,6 @@ ipch/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local diff/debug files
+diff.txt
