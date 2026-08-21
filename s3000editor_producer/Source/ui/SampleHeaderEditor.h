@@ -17,6 +17,7 @@ public:
     std::function<void(const SampleHeader&)> onSampleHeaderChanged;
     void updateLoopDwellStatus();
     juce::String midiNoteName(int note);
+    void clear();
 
 private:
 
@@ -96,6 +97,7 @@ private:
 
     int selectedLoopIndex = 0;
     bool hasValidHeader = false;
+    
 
     //juce::Label playTypeLabel;
     //juce::ComboBox playTypeCombo;

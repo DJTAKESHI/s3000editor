@@ -247,6 +247,9 @@ SampleHeaderEditor::SampleHeaderEditor()
 
     startEditor.onFocusLost = [this]()
         {
+            if (!hasValidHeader)
+                return;
+
             const auto newStart =
                 static_cast<uint32_t>(
                     startEditor.getText().getLargeIntValue()
@@ -1237,4 +1240,67 @@ juce::String SampleHeaderEditor::midiNoteName(int note)
 
     return juce::String(names[noteIndex])
         + juce::String(octave);
+}
+
+void SampleHeaderEditor::clear()
+{
+    hasValidHeader = false;
+
+    idEditor.clear();
+    nameEditor.clear();
+    sampleRateEditor.clear();
+    pitchEditor.clear();
+    //pitchNoteLabel.clear();
+    pitchNoteLabel.setText(
+        "",
+        juce::dontSendNotification
+    );
+
+    highestLoopEditor.clear();
+    tuneEditor.clear();
+    locationEditor.clear();
+    lengthEditor.clear();
+    startEditor.clear();
+    endEditor.clear();
+    holdLoopTuneEditor.clear();
+
+    loopsEditor.clear();
+
+    loopPositionEditor.clear();
+    loopLengthEditor.clear();
+    loopDwellEditor.clear();
+
+    bandwidthCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    sampleRateValidCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    numLoopsCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    activeLoopCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    playTypeCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    loopSelectCombo.setSelectedId(
+        0,
+        juce::dontSendNotification
+    );
+
+    selectedLoopIndex = 0;
+
+    DBG("SAMPLE HEADER EDITOR CLEARED");
 }

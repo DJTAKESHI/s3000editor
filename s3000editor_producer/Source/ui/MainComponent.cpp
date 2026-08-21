@@ -16,7 +16,7 @@ char decodeAkaiChar(uint8_t v)
     if (v == 0x0A || v == 0x00)
         return ' ';
 
-    // printable ASCII fallbackÅií¥èdóvÅ
+    // printable ASCII fallbackÅií¥èdóvÅE
     if (v >= 0x20 && v <= 0x7E)
         return (char)v;
 
@@ -167,7 +167,13 @@ MainComponent::MainComponent()
             // Sample HeaderÇ‡IDÇ©ÇÁíTÇ∑
             // ==============================
 
-            if (zone.sampleId >= 0)
+            if (zone.sampleId < 0)
+            {
+                DBG("EMPTY ZONE -> CLEAR SAMPLE HEADER EDITOR");
+
+                sampleHeaderEditor.clear();
+            }
+            else
             {
                 auto it =
                     sampleHeaders.find(
@@ -840,17 +846,10 @@ void MainComponent::processIncomingSysEx(
 
         case 0x2C:
         {
+            handleSampleHeaderResponse();
+            break;
 
 
-            
-
-            
-
-            
-            
-
-            
-            
             
         }
 
@@ -1155,7 +1154,7 @@ void MainComponent::handleSampleHeaderResponse()
     }
 
     // ==============================
-    // Sample HeaderèÓï
+    // Sample HeaderèÓÅE
     // ==============================
 
     DBG("=== SAMPLE HEADER ===");
