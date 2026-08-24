@@ -1387,6 +1387,18 @@ void MainComponent::handleKeygroupDataResponse(
             message.getSysExData(),
             message.getSysExDataSize()
         );
+
+    saveDecodedDump(
+        "keygroup_basic",
+        decoded
+    );
+
+    DBG(
+        "FIXTURE SIZE = "
+        + juce::String((int)decoded.size())
+    );
+
+
     DBG(
         "ZONE1 LOW XFADE RAW = "
         + juce::String((int)decoded[78])

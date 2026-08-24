@@ -115,3 +115,9 @@ Experimental / Work in Progress.
 
 SysEx parsing and editing behavior is still being verified against the
 hardware.
+
+## Testing 
+
+- Unit tests for Keygroup velocity and pan encoding
+- Byte-level mutation tests
+- Lossless Parser -> Model -> Encoder round-trip tests using real 192-byte S3000XL keygroup dumps

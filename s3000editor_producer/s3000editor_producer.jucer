@@ -4,6 +4,12 @@
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="c4SuyX" name="s3000editor_producer">
     <GROUP id="{0B4A6806-AA35-EFCF-7296-36DF564D3DE3}" name="Source">
+      <GROUP id="{40F5D40B-D961-CB5D-5352-56BBEEA2B353}" name="tests">
+        <FILE id="UvWPRL" name="KeygroupEncoderTests.cpp" compile="1" resource="0"
+              file="Source/tests/KeygroupEncoderTests.cpp"/>
+        <FILE id="rwp0cX" name="SampleHeaderEncoderTests.cpp" compile="1" resource="0"
+              file="Source/tests/SampleHeaderEncoderTests.cpp"/>
+      </GROUP>
       <GROUP id="{293077FE-5789-4832-86B5-557EF4AA0727}" name="s3000">
         <FILE id="B8jQZO" name="Decode.cpp" compile="1" resource="0" file="Source/s3000/Decode.cpp"/>
         <FILE id="aowFqh" name="Decode.h" compile="0" resource="0" file="Source/s3000/Decode.h"/>
