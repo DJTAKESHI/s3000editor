@@ -251,7 +251,12 @@ private:
 
     //int currentProgram = 0;    // 選択中のProgram番号
 
+    // UIで現在選択しているKeygroup
     int currentKeygroup = 0;
+
+    // SysExで現在ロード中のKeygroup
+    int loadingKeygroup = 0;
+
     int totalKeygroups = 0;
 
     juce::TreeView treeView;

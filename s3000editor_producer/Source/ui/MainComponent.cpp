@@ -1663,27 +1663,27 @@ void MainComponent::handleKeygroupDataResponse(
     // Store completed Keygroup
     // ========================================
 
-    if (currentKeygroup < 0)
+    if (loadingKeygroup < 0)
     {
-        DBG("INVALID currentKeygroup");
+        DBG("INVALID loadingKeygroup");
         return;
     }
 
-    if (currentKeygroup >=
+    if (loadingKeygroup >=
         (int)loadedProgram.keygroups.size())
     {
         loadedProgram.keygroups.resize(
-            currentKeygroup + 1
+            loadingKeygroup + 1
         );
     }
 
-    loadedProgram.keygroups[currentKeygroup] = kg;
+    loadedProgram.keygroups[loadingKeygroup] = kg;
 
 
 
     DBG(
         "STORED KEYGROUP INDEX = "
-        + juce::String(currentKeygroup)
+        + juce::String(loadingKeygroup)
     );
 
     DBG(
@@ -1699,7 +1699,7 @@ void MainComponent::handleKeygroupDataResponse(
     // ========================================
 
     for (const auto& zone :
-        loadedProgram.keygroups[currentKeygroup].zones)
+        loadedProgram.keygroups[loadingKeygroup].zones)
     {
         if (zone.sampleId < 0)
             continue;
@@ -1717,13 +1717,7 @@ void MainComponent::handleKeygroupDataResponse(
             continue;
         }
 
-        DBG(
-            "REQUEST SAMPLE HEADER ID="
-            + juce::String(zone.sampleId)
-            + " NAME=["
-            + zone.sampleName
-            + "]"
-        );
+
 
         DBG(
             "REQUEST SAMPLE HEADER ID="
@@ -1856,18 +1850,18 @@ void MainComponent::handleKeygroupDataResponse(
 // Continue loading Keygroups
 // ========================================
 
-    ++currentKeygroup;
+    ++loadingKeygroup;
 
-    if (currentKeygroup < totalKeygroups)
+    if (loadingKeygroup < totalKeygroups)
     {
         DBG(
             "REQUEST NEXT KG HEADER INDEX="
-            + juce::String(currentKeygroup)
+            + juce::String(loadingKeygroup)
         );
 
         sysExSender.sendKGHeader(
             loadedProgram.programNumber,
-            currentKeygroup
+            loadingKeygroup
         );
     }
     else
@@ -1877,8 +1871,8 @@ void MainComponent::handleKeygroupDataResponse(
             + juce::String(totalKeygroups)
         );
 
-        currentKeygroup = 0;
-        currentZone = 0;
+        // 通信側だけリセット
+        loadingKeygroup = 0;
     }
 
     
@@ -1939,6 +1933,9 @@ void MainComponent::handleProgramHeaderResponse()
     totalKeygroups =
         loadedProgram.groups;
 
+    // SysExロード専用index
+    loadingKeygroup = 0;
+
     DBG(
         "TOTAL KEYGROUPS = "
         + juce::String(totalKeygroups)
@@ -1961,45 +1958,19 @@ void MainComponent::handleProgramHeaderResponse()
     );
 
     // ==============================
-    // Request all Keygroups
+    // Request first Keygroup
     // ==============================
 
-    for (int i = 0;
-        i < totalKeygroups;
-        ++i)
+    if (totalKeygroups > 0)
     {
-        const int keygroupIndex = i;
+        DBG(
+            "REQUEST KG HEADER INDEX="
+            + juce::String(loadingKeygroup)
+        );
 
-        juce::Timer::callAfterDelay(
-            i * 200,
-            [this, keygroupIndex]
-            {
-                DBG(
-                    "REQUEST KG HEADER INDEX="
-                    + juce::String(keygroupIndex)
-                );
-
-                sysExSender.sendKGHeader(
-                    loadedProgram.programNumber,
-                    keygroupIndex
-                );
-
-                juce::Timer::callAfterDelay(
-                    100,
-                    [this, keygroupIndex]
-                    {
-                        DBG(
-                            "REQUEST KDATA INDEX="
-                            + juce::String(keygroupIndex)
-                        );
-
-                        sysExSender.sendKData(
-                            loadedProgram.programNumber,
-                            keygroupIndex
-                        );
-                    }
-                );
-            }
+        sysExSender.sendKGHeader(
+            loadedProgram.programNumber,
+            loadingKeygroup
         );
     }
 }
@@ -2065,21 +2036,21 @@ void MainComponent::handleKeygroupHeaderResponse()
         );
     }
 
-    if (currentKeygroup >=
-        loadedProgram.keygroups.size())
+    if (loadingKeygroup >=
+        (int)loadedProgram.keygroups.size())
     {
         loadedProgram.keygroups.resize(
-            currentKeygroup + 1
+            loadingKeygroup + 1
         );
     }
 
-    loadedProgram.keygroups[currentKeygroup] = kg;
+    loadedProgram.keygroups[loadingKeygroup] = kg;
 
     sysExSender.sendRSLIST();
 
     sysExSender.sendKData(
         loadedProgram.programNumber,
-        currentKeygroup
+        loadingKeygroup
     );
 
     DBG("ENV1 SUSTAIN = "
@@ -2821,6 +2792,8 @@ void MainComponent::loadProgram(
 
     currentKeygroup = 0;
     currentZone = 0;
+
+    loadingKeygroup = 0;
 
     loadedProgram.programNumber =
         programIndex;
