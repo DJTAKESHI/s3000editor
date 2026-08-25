@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
 #include "../s3000/Offsets.h"
+#include "SamplePositionBar.h"
 
 class SampleHeaderEditor : public juce::Component
 {
@@ -39,6 +40,8 @@ private:
     juce::Label endLabel;
     juce::Label loopsLabel;
     juce::Label pitchNoteLabel;
+
+    SamplePositionBar samplePositionBar;
 
     //juce::Label loop1PositionLabel;
     ////juce::TextEditor loop1PositionEditor;

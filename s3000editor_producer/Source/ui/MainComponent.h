@@ -118,7 +118,8 @@ private:
     void parseKeygroup(const std::vector<uint8_t>& decoded);
     void parsePLIST(const std::vector<uint8_t>& d);
     void sendRSLIST();
-    std::queue<int> pendingSampleRequests;
+    //std::queue<int> pendingSampleRequests;
+    std::set<int> pendingSampleRequests;
 
     void dumpKeygroup(const std::vector<uint8_t>& decoded);
     Keygroup parseKeygroupStruct(const std::vector<uint8_t>& d);
@@ -288,6 +289,13 @@ private:
 //    SysExSender sysExSender;
     
 //    SysExSender sysExSender;
+
+    juce::ComboBox programCombo;
+
+    std::vector<juce::String> programNames;
+    int currentProgram = -1;
+
+    void loadProgram(int programIndex);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

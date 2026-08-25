@@ -64,6 +64,14 @@
               file="Source/ui/SampleHeaderEditor.cpp"/>
         <FILE id="OOPQwU" name="SampleHeaderEditor.h" compile="0" resource="0"
               file="Source/ui/SampleHeaderEditor.h"/>
+        <FILE id="u0aqKD" name="SamplePositionBar.cpp" compile="1" resource="0"
+              file="Source/ui/SamplePositionBar.cpp"/>
+        <FILE id="jB8jDJ" name="SamplePositionBar.h" compile="0" resource="0"
+              file="Source/ui/SamplePositionBar.h"/>
+        <FILE id="PGCvuF" name="VelocityRangeBar.cpp" compile="1" resource="0"
+              file="Source/ui/VelocityRangeBar.cpp"/>
+        <FILE id="VtyfYt" name="VelocityRangeBar.h" compile="0" resource="0"
+              file="Source/ui/VelocityRangeBar.h"/>
         <FILE id="Ivo44i" name="VelocityZoneEditor.cpp" compile="1" resource="0"
               file="Source/ui/VelocityZoneEditor.cpp"/>
         <FILE id="xD3X6D" name="VelocityZoneEditor.h" compile="0" resource="0"

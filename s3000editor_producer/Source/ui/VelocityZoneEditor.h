@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "VelocityRangeBar.h"
 #include "../s3000/s3000Types.h"  
 
 class VelocityZoneEditor : public juce::Component
@@ -21,6 +22,7 @@ public:
 
 private:
     VelocityZone currentZone;
+    VelocityRangeBar velocityRangeBar;
 
     juce::Label titleLabel;
 

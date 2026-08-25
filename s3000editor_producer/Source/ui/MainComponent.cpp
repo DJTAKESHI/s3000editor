@@ -261,7 +261,7 @@ MainComponent::MainComponent()
     //programTree.setProgram(currentProgramData, sampleHeaders);
 
     //addAndMakeVisible(velocityZoneEditor);
-    addAndMakeVisible(captureAButton);
+   /* addAndMakeVisible(captureAButton);
 
     captureAButton.onClick = [this]
         {
@@ -280,7 +280,69 @@ MainComponent::MainComponent()
     compareButton.onClick = [this]
         {
             compareLatest();
+        };*/
+
+#if JUCE_DEBUG
+
+    addAndMakeVisible(captureAButton);
+
+    captureAButton.onClick = [this]
+        {
+            saveDump("dump_A");
+            DBG("Captured A");
         };
+
+    addAndMakeVisible(captureBButton);
+
+    captureBButton.onClick = [this]
+        {
+            saveDump("dump_B");
+            DBG("Captured B");
+        };
+
+    addAndMakeVisible(compareButton);
+
+    compareButton.onClick = [this]
+        {
+            compareLatest();
+        };
+
+#endif
+
+    addAndMakeVisible(programCombo);
+
+    programCombo.setTextWhenNothingSelected(
+        "Select Program"
+    );
+
+    programCombo.onChange =
+        [this]()
+        {
+            const int selectedId =
+                programCombo.getSelectedId();
+
+            if (selectedId <= 0)
+                return;
+
+            const int programIndex =
+                selectedId - 1;
+
+            DBG(
+                "PROGRAM SELECTED INDEX="
+                + juce::String(programIndex)
+            );
+
+            DBG(
+                "PROGRAM SELECTED NAME=["
+                + programCombo.getText()
+                + "]"
+            );
+
+            loadProgram(
+                programIndex
+            );
+        };
+
 
     addAndMakeVisible(requestButton);
     requestButton.onClick = [this]
@@ -305,14 +367,30 @@ MainComponent::MainComponent()
 
     requestRPDATAButton.setTriggeredOnMouseDown(true);
 
-    requestRPDATAButton.onClick = [this]()
-        {
-            DBG("========== GET PROGRAM BUTTON CLICKED ==========");
-            DBG("REQUEST PROGRAM HEADER");
-
-//            sendProgramHeader(0);
-            sysExSender.sendProgramHeader(0);
-        };
+//    requestRPDATAButton.onClick = [this]()
+//        {
+//            DBG("========== GET PROGRAM BUTTON CLICKED ==========");
+//            DBG("REQUEST PROGRAM HEADER");
+//
+////            sendProgramHeader(0);
+//            //sysExSender.sendProgramHeader(0);
+//
+//            if (currentProgram < 0)
+//            {
+//                DBG("GET PROGRAM: NO PROGRAM SELECTED");
+//                return;
+//            }
+//
+//            DBG(
+//                "REQUEST PROGRAM HEADER INDEX="
+//                + juce::String(currentProgram)
+//            );
+//
+//            sysExSender.sendProgramHeader(
+//                currentProgram
+//            );
+//
+//        };
 
     DBG(
         "HAS ONCLICK = "
@@ -321,57 +399,17 @@ MainComponent::MainComponent()
         )
     );
 
-    requestRPDATAButton.onClick = [this]
+    requestRPDATAButton.onClick =
+        [this]
         {
-            const int programIndex = 0;
+            if (currentProgram < 0)
+            {
+                DBG("GET PROGRAM: NO PROGRAM SELECTED");
+                return;
+            }
 
-            // 1. Program Header
-//            sendProgramHeader(programIndex);
-            sysExSender.sendProgramHeader(programIndex);
-
-            // 2. Keygroup Header
-            juce::Timer::callAfterDelay(
-                100,
-                [this, programIndex]
-                {
-//                    sendKGHeader(
-//                        programIndex,
-//                        0
-//                    );
-                    sysExSender.sendKGHeader(
-                        programIndex,
-                        0
-                    );
-                    
-                    
-                }
-            );
-
-            // 3. KDATA
-            juce::Timer::callAfterDelay(
-                200,
-                [this, programIndex]
-                {
-//                    sendKData(
-//                        programIndex,
-//                        0
-//                    );
-                    sysExSender.sendKData(
-                        programIndex,
-                        0
-                    );
-                }
-            );
-
-            // 4. Sample Header
-            juce::Timer::callAfterDelay(
-                400,
-                [this]
-                {
-                    DBG("FORCE RELOAD SAMPLE HEADER ID=1");
-
-                    sendSampleHeader(1);
-                }
+            loadProgram(
+                currentProgram
             );
         };
 
@@ -469,6 +507,22 @@ MainComponent::MainComponent()
         {
             DBG("VELOCITY ZONE CHANGED");
 
+            DBG(
+                "NAME = ["
+                + zone.sampleName
+                + "]"
+            );
+
+            DBG(
+                "SAMPLE ID = "
+                + juce::String(zone.sampleId)
+            );
+
+            DBG(
+                "CURRENT ZONE = "
+                + juce::String(currentZone)
+            );
+
 
 
             // 選択中のKeygroupが有効か確認
@@ -493,87 +547,43 @@ MainComponent::MainComponent()
             // PC側のProgramデータを更新
             kg.zones[currentZone] = zone;
 
-            DBG("===== LOADED PROGRAM UPDATED =====");
+            // Sample Header Editorを追従
+            if (zone.sampleId >= 0)
+            {
+                auto it =
+                    sampleHeaders.find(zone.sampleId);
 
-            DBG(
-                "KEYGROUP = "
-                + juce::String(currentKeygroup)
-            );
+                if (it != sampleHeaders.end())
+                {
+                    sampleHeaderEditor.setSampleHeader(
+                        it->second
+                    );
+                }
+                else
+                {
+                    sendSampleHeader(
+                        zone.sampleId
+                    );
+                }
+            }
 
-            DBG(
-                "ZONE = "
-                + juce::String(currentZone)
-            );
-
-            DBG(
-                "SAMPLE = ["
-                + kg.zones[currentZone].sampleName
-                + "]"
-            );
-
-            DBG(
-                "LOW = "
-                + juce::String(
-                    kg.zones[currentZone].lowVel
-                )
-            );
-
-            DBG(
-                "HIGH = "
-                + juce::String(
-                    kg.zones[currentZone].highVel
-                )
-            );
-
+            // Tree更新
             programTree.setProgram(
                 loadedProgram,
                 sampleHeaders
             );
 
+            // Encode → 実機送信
             auto encoded =
                 KeygroupEncoder::encode(
                     loadedProgram.keygroups[currentKeygroup]
                 );
 
-            DBG(
-                "ENCODED LOW = "
-                + juce::String(
-                    encoded[
-                        KeygroupFullOffset::Zone::LOVEL[currentZone]
-                    ]
-                )
-            );
-
-            const auto& raw =
-                loadedProgram.keygroups[currentKeygroup].rawData;
-
-            for (int i = 0; i < (int)encoded.size(); ++i)
-            {
-                if (raw[i] != encoded[i])
-                {
-                    DBG(
-                        "ENCODE DIFF offset="
-                        + juce::String(i)
-                        + " "
-                        + juce::String((int)raw[i])
-                        + " -> "
-                        + juce::String((int)encoded[i])
-                    );
-                }
-            }
-
-//            sendKeygroupData(
-//                loadedProgram.programNumber,
-//                currentKeygroup,
-//                encoded
-//            );
-            
             sysExSender.sendKeygroupData(
                 loadedProgram.programNumber,
                 currentKeygroup,
                 encoded
             );
-
         };
 
 
@@ -612,6 +622,17 @@ MainComponent::MainComponent()
             midiManager.getOutput()
         );
     }
+
+    juce::Timer::callAfterDelay(
+        500,
+        [this]
+        {
+            DBG("AUTO REQUEST PROGRAM LIST");
+            sysExSender.sendRPLIST();
+        }
+    );
+
+
     sampleHeaderEditor.onSampleHeaderChanged =
         [this](const SampleHeader& header)
         {
@@ -686,8 +707,12 @@ MainComponent::MainComponent()
 
             sysExSender.sendSysEx(sysex);
 
+
+
             DBG("SAMPLE HEADER SYSEX SENT");
         };
+
+
 }
 
 MainComponent::~MainComponent()
@@ -711,9 +736,20 @@ void MainComponent::resized()
 {
     auto area = getLocalBounds();
 
+    programCombo.setBounds(
+        20,
+        20,
+        250,
+        30
+    );
+
+    #if JUCE_DEBUG  
     captureAButton.setBounds(area.removeFromTop(50));
     captureBButton.setBounds(area.removeFromTop(50));
     compareButton.setBounds(area.removeFromTop(50));
+    #endif  
+
+
     requestButton.setBounds(area.removeFromTop(50));
     requestRPDATAButton.setBounds(area.removeFromTop(50));
     programLabel.setBounds(area.removeFromTop(30));
@@ -1002,25 +1038,63 @@ void MainComponent::handleSampleHeaderResponse()
     // 対象Sample IDを取得
     // ==============================
 
-    const int sampleId =
-        pendingSampleRequests.front();
+    //const int sampleId =
+    //    pendingSampleRequests.front();
 
-    pendingSampleRequests.pop();
+    //pendingSampleRequests.pop();
 
-    DBG(
-        "PENDING SAMPLE ID = "
-        + juce::String(sampleId)
-    );
+    //DBG(
+    //    "PENDING SAMPLE ID = "
+    //    + juce::String(sampleId)
+    //);
 
     // ==============================
     // Parse
     // ==============================
 
+    //SampleHeader sh =
+    //    SampleHeaderParser::parse(
+    //        decoded,
+    //        sampleId
+    //    );
+
+    // まずID未確定としてparse
     SampleHeader sh =
         SampleHeaderParser::parse(
             decoded,
-            sampleId
+            -1
         );
+
+    // 実際に返ってきたSample名からIDを解決
+    const int resolvedSampleId =
+        findSampleId(
+            sh.name.trim()
+        );
+
+    DBG(
+        "RECEIVED SAMPLE NAME=["
+        + sh.name
+        + "]"
+    );
+
+    DBG(
+        "RESOLVED SAMPLE ID = "
+        + juce::String(resolvedSampleId)
+    );
+
+    if (resolvedSampleId < 0)
+    {
+        DBG(
+            "FAILED TO RESOLVE SAMPLE HEADER ID"
+        );
+
+        return;
+    }
+
+    sh.id = resolvedSampleId;
+
+
+
 
     // ==============================
     // Store
@@ -1722,12 +1796,40 @@ void MainComponent::handleKeygroupDataResponse(
                 sampleHeaders
             );
 
+            // =====================================
+            // 起動時・Program切替時に
+            // 最初のKeygroup / Zoneを自動表示
+            // =====================================
+
+            if (!loadedProgram.keygroups.empty())
+            {
+                currentKeygroup = 0;
+
+                auto& kg =
+                    loadedProgram.keygroups[0];
+
+                keyGroupEditor.setKeygroup(
+                    kg,
+                    0
+                );
+
+                if (!kg.zones.empty())
+                {
+                    currentZone = 0;
+
+                    velocityZoneEditor.setZone(
+                        kg.zones[0]
+                    );
+                }
+            }
+
             DBG(
-                "PROGRAM TREE UPDATED "
+                "PROGRAM TREE + EDITORS UPDATED "
                 "FROM KEYGROUP"
             );
         }
     );
+  
 
     if (!pendingSampleRequests.empty())
     {
@@ -2227,9 +2329,28 @@ void MainComponent::compareDumps(const juce::File& fileA, const juce::File& file
 
 
 
+//void MainComponent::sendSampleHeader(int sampleId)
+//{
+//    pendingSampleRequests.push(sampleId);
+//
+//    sysExSender.sendSampleHeader(sampleId);
+//}
+
 void MainComponent::sendSampleHeader(int sampleId)
 {
-    pendingSampleRequests.push(sampleId);
+    // すでに待っているなら重複requestしない
+    if (pendingSampleRequests.find(sampleId)
+        != pendingSampleRequests.end())
+    {
+        DBG(
+            "SAMPLE HEADER ALREADY PENDING ID="
+            + juce::String(sampleId)
+        );
+
+        return;
+    }
+
+    pendingSampleRequests.insert(sampleId);
 
     sysExSender.sendSampleHeader(sampleId);
 }
@@ -2377,6 +2498,9 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
 void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 {
     programList.clear();
+    programCombo.clear(
+        juce::dontSendNotification
+    );
 
     int i = 4;
 
@@ -2411,7 +2535,21 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 
         programList.push_back(entry);
 
+        // ComboBoxにも追加
+        programCombo.addItem(
+            juce::String(name),
+            p + 1
+        );
+
         DBG(juce::String(p) + " : " + name);
+    }
+
+    if (programCombo.getNumItems() > 0)
+    {
+        programCombo.setSelectedId(
+            1,
+            juce::sendNotification
+        );
     }
 
     listBox.updateContent();
@@ -2599,6 +2737,55 @@ std::vector<uint8_t> MainComponent::decodeKeygroupNibbleData(
 
     return decoded;
 }
+
+void MainComponent::loadProgram(
+    int programIndex)
+{
+    if (programIndex < 0)
+        return;
+
+    currentProgram = programIndex;
+
+    currentKeygroup = 0;
+    currentZone = 0;
+
+    loadedProgram.programNumber =
+        programIndex;
+
+    loadedProgram.keygroups.clear();
+
+    DBG(
+        "LOAD PROGRAM INDEX="
+        + juce::String(programIndex)
+    );
+
+    sysExSender.sendProgramHeader(
+        programIndex
+    );
+
+    juce::Timer::callAfterDelay(
+        100,
+        [this, programIndex]
+        {
+            sysExSender.sendKGHeader(
+                programIndex,
+                0
+            );
+        }
+    );
+
+    juce::Timer::callAfterDelay(
+        200,
+        [this, programIndex]
+        {
+            sysExSender.sendKData(
+                programIndex,
+                0
+            );
+        }
+    );
+}
+
 
 std::vector<uint8_t> MainComponent::decodeKeygroupHeader(
     const juce::MemoryBlock& data)

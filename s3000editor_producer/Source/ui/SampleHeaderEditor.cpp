@@ -23,6 +23,179 @@ SampleHeaderEditor::SampleHeaderEditor()
 
 
     addAndMakeVisible(titleLabel);
+    addAndMakeVisible(samplePositionBar);
+
+    samplePositionBar.onRangeChanged =
+        [this](
+            uint32_t start,
+            uint32_t end)
+        {
+            if (!hasValidHeader)
+                return;
+
+            currentHeader.start = start;
+            currentHeader.end = end;
+
+            auto& loop =
+                currentHeader.loops[selectedLoopIndex];
+
+            // ==============================
+            // START側の制約
+            // ==============================
+
+            if (loop.position < currentHeader.start)
+            {
+                const double oldLoopEnd =
+                    static_cast<double>(loop.position)
+                    + loop.length;
+
+                loop.position =
+                    currentHeader.start;
+
+                if (oldLoopEnd > currentHeader.start)
+                {
+                    loop.length =
+                        oldLoopEnd
+                        - static_cast<double>(
+                            currentHeader.start
+                            );
+                }
+                else
+                {
+                    loop.length = 0.0;
+                }
+            }
+
+            // ==============================
+            // END側の制約
+            // ==============================
+
+            const double loopEnd =
+                static_cast<double>(loop.position)
+                + loop.length;
+
+            if (loopEnd > currentHeader.end)
+            {
+                if (loop.position <= currentHeader.end)
+                {
+                    loop.length =
+                        static_cast<double>(
+                            currentHeader.end
+                            - loop.position
+                            );
+                }
+                else
+                {
+                    loop.position =
+                        currentHeader.end;
+
+                    loop.length = 0.0;
+                }
+            }
+
+            // ==============================
+            // 数値欄更新
+            // ==============================
+
+            startEditor.setText(
+                juce::String(currentHeader.start),
+                false
+            );
+
+            endEditor.setText(
+                juce::String(currentHeader.end),
+                false
+            );
+
+            loopPositionEditor.setText(
+                juce::String(
+                    (juce::int64)loop.position
+                ),
+                false
+            );
+
+            loopLengthEditor.setText(
+                juce::String(
+                    loop.length,
+                    3
+                ),
+                false
+            );
+
+            // ==============================
+            // バー更新
+            // ==============================
+
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                loop.position,
+                static_cast<uint32_t>(
+                    loop.position
+                    + loop.length
+                    )
+            );
+        };
+
+
+    samplePositionBar.onLoopRangeChanged =
+        [this](
+            uint32_t loopStart,
+            uint32_t loopEnd)
+        {
+            if (!hasValidHeader)
+                return;
+
+            auto& loop =
+                currentHeader.loops[selectedLoopIndex];
+
+            loop.position = loopStart;
+
+            loop.length =
+                static_cast<double>(
+                    loopEnd - loopStart
+                    );
+
+            loopPositionEditor.setText(
+                juce::String(
+                    (juce::int64)loop.position
+                ),
+                false
+            );
+
+            loopLengthEditor.setText(
+                juce::String(
+                    loop.length,
+                    3
+                ),
+                false
+            );
+
+            //if (onSampleHeaderChanged)
+            //{
+            //    onSampleHeaderChanged(
+            //        currentHeader
+            //    );
+            //}
+        };
+
+
+    samplePositionBar.onEditFinished =
+        [this]()
+        {
+            if (!hasValidHeader)
+                return;
+
+            if (onSampleHeaderChanged)
+            {
+                onSampleHeaderChanged(
+                    currentHeader
+                );
+            }
+        };
+
+
 
     nameEditor.onFocusLost = [this]()
         {
@@ -266,6 +439,19 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             currentHeader.start = newStart;
 
+            const auto& loop =
+                currentHeader.loops[selectedLoopIndex];
+
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                loop.position,
+                static_cast<uint32_t>(
+                    loop.position + loop.length
+                    )
+            );
+
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
         };
@@ -289,6 +475,19 @@ SampleHeaderEditor::SampleHeaderEditor()
             }
 
             currentHeader.end = newEnd;
+
+            const auto& loop =
+                currentHeader.loops[selectedLoopIndex];
+
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                loop.position,
+                static_cast<uint32_t>(
+                    loop.position + loop.length
+                    )
+            );
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
@@ -317,18 +516,44 @@ SampleHeaderEditor::SampleHeaderEditor()
             const auto& loop =
                 currentHeader.loops[selectedLoopIndex];
 
-            if (newPosition > currentHeader.length)
+            // Loop EndがSample Endを超えない
+            if (newPosition > currentHeader.end ||
+                static_cast<double>(newPosition) + loop.length >
+                static_cast<double>(currentHeader.end))
             {
                 loopPositionEditor.setText(
-                    juce::String((juce::int64)loop.position),
+                    juce::String(
+                        (juce::int64)loop.position
+                    ),
                     false
                 );
+
                 return;
             }
 
+            // Model更新
             currentHeader.loops[selectedLoopIndex].position =
                 newPosition;
 
+            const auto& updatedLoop =
+                currentHeader.loops[selectedLoopIndex];
+
+            const auto loopEnd =
+                static_cast<uint32_t>(
+                    updatedLoop.position
+                    + updatedLoop.length
+                    );
+
+            // オレンジのLoop範囲も更新
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                updatedLoop.position,
+                loopEnd
+            );
+
+            // 実機へ反映
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
         };
@@ -345,7 +570,7 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             if (newLength < 0.0 ||
                 static_cast<double>(loop.position) + newLength >
-                static_cast<double>(currentHeader.length))
+                static_cast<double>(currentHeader.end))
             {
                 loopLengthEditor.setText(
                     juce::String(loop.length, 3),
@@ -356,6 +581,20 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             currentHeader.loops[selectedLoopIndex].length =
                 newLength;
+
+            const auto& updatedLoop =
+                currentHeader.loops[selectedLoopIndex];
+
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                updatedLoop.position,
+                static_cast<uint32_t>(
+                    updatedLoop.position
+                    + updatedLoop.length
+                    )
+            );
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
@@ -644,6 +883,16 @@ SampleHeaderEditor::SampleHeaderEditor()
                 false
             );
 
+            samplePositionBar.setPositions(
+                currentHeader.length,
+                currentHeader.start,
+                currentHeader.end,
+                loop.position,
+                static_cast<uint32_t>(
+                    loop.position + loop.length
+                    )
+            );
+
 
             updateLoopDwellStatus();
         };
@@ -771,7 +1020,7 @@ SampleHeaderEditor::SampleHeaderEditor()
     //addAndMakeVisible(highestLoopLabel);
     addAndMakeVisible(playTypeLabel);
     addAndMakeVisible(tuneLabel);
-    addAndMakeVisible(locationLabel);
+    //addAndMakeVisible(locationLabel);
     addAndMakeVisible(lengthLabel);
     addAndMakeVisible(startLabel);
     addAndMakeVisible(endLabel);
@@ -794,7 +1043,7 @@ SampleHeaderEditor::SampleHeaderEditor()
     //addAndMakeVisible(highestLoopEditor);
     addAndMakeVisible(playTypeCombo);
     addAndMakeVisible(tuneEditor);
-    addAndMakeVisible(locationEditor);
+    //addAndMakeVisible(locationEditor);
     addAndMakeVisible(lengthEditor);
     addAndMakeVisible(startEditor);
     addAndMakeVisible(endEditor);
@@ -936,10 +1185,10 @@ void SampleHeaderEditor::setSampleHeader(
         false
     );
 
-    locationEditor.setText(
-        juce::String(header.location),
-        false
-    );
+    //locationEditor.setText(
+    //    juce::String(header.location),
+    //    false
+    //);
 
     lengthEditor.setText(
         juce::String(header.length),
@@ -965,6 +1214,24 @@ void SampleHeaderEditor::setSampleHeader(
         juce::String((int)currentHeader.holdLoopTune),
         false
     );
+
+    const auto loopStart =
+        header.loops[0].position;
+
+    const auto loopEnd =
+        static_cast<uint32_t>(
+            header.loops[0].position
+            + header.loops[0].length
+            );
+
+    samplePositionBar.setPositions(
+        header.length,
+        header.start,
+        header.end,
+        loopStart,
+        loopEnd
+    );
+
 
     //loop1PositionEditor.setText(
     //    juce::String(
@@ -1112,6 +1379,8 @@ void SampleHeaderEditor::resized()
     }
 
 
+
+
     
     addRow(pitchLabel, pitchEditor);
     pitchNoteLabel.setBounds(
@@ -1171,7 +1440,7 @@ void SampleHeaderEditor::resized()
     // 追加
     addRow(holdLoopTuneLabel, holdLoopTuneEditor);
 
-    addRow(locationLabel, locationEditor);
+    //addRow(locationLabel, locationEditor);
     addRow(lengthLabel, lengthEditor);
     addRow(startLabel, startEditor);
     addRow(endLabel, endEditor);
@@ -1185,6 +1454,12 @@ void SampleHeaderEditor::resized()
 
         loopSelectCombo.setBounds(row);
     }
+
+    samplePositionBar.setBounds(
+        area.removeFromTop(80)
+        .reduced(5)
+    );
+
 
     addRow(
         loopPositionLabel,

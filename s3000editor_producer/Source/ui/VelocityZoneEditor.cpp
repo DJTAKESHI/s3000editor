@@ -88,6 +88,25 @@ VelocityZoneEditor::VelocityZoneEditor()
     addAndMakeVisible(panLabel);
     addAndMakeVisible(panEditor);
 
+    addAndMakeVisible(velocityRangeBar);
+
+    velocityRangeBar.onRangeChanged =
+        [this](int low, int high)
+        {
+            currentZone.lowVel =
+                static_cast<uint8_t>(low);
+
+            currentZone.highVel =
+                static_cast<uint8_t>(high);
+
+            if (onZoneChanged)
+            {
+                onZoneChanged(
+                    currentZone
+                );
+            }
+        };
+
     // ‚Ü‚¸•\Ž¦‚¾‚¯
     //sampleNameEditor.setReadOnly(true);
     sampleIdEditor.setReadOnly(true);
@@ -524,6 +543,12 @@ void VelocityZoneEditor::setZone(
         false
     );
 
+    velocityRangeBar.setRange(
+        zone.lowVel,
+        zone.highVel
+    );
+
+
     //lowVelXFadeEditor.setText(
     //    juce::String(zone.lowVelXFade),
     //    false
@@ -584,6 +609,13 @@ void VelocityZoneEditor::resized()
     addRow(filterFreqLabel, filterFreqEditor);
     //addRow(lowVelXFadeLabel, lowVelXFadeEditor);
     //addRow(highVelXFadeLabel, highVelXFadeEditor);
+
+    velocityRangeBar.setBounds(
+        area.removeFromTop(80)
+    );
+
+
+
 }
 
 void VelocityZoneEditor::setResidentSamples(
