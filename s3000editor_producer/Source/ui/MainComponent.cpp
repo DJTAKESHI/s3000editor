@@ -634,6 +634,11 @@ MainComponent::MainComponent()
             loadedProgram.keygroups[keygroupIndex] =
                 keygroup;
 
+            // Keygroup MapÇ…Ç‡ïœçXÇîΩâf
+            keygroupMap.setProgram(
+                loadedProgram
+            );
+
             DBG("LOADED PROGRAM KEYGROUP UPDATED");
 
             auto& updatedKeygroup =
