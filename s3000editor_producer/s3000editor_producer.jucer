@@ -48,6 +48,8 @@
         <FILE id="Cqy7Bk" name="KeygroupItem.cpp" compile="1" resource="0"
               file="Source/ui/KeygroupItem.cpp"/>
         <FILE id="HZ7Stt" name="KeygroupItem.h" compile="0" resource="0" file="Source/ui/KeygroupItem.h"/>
+        <FILE id="e9GYnY" name="KeygroupMap.cpp" compile="1" resource="0" file="Source/ui/KeygroupMap.cpp"/>
+        <FILE id="FDWjGj" name="KeygroupMap.h" compile="0" resource="0" file="Source/ui/KeygroupMap.h"/>
         <FILE id="N5ysuu" name="MainComponent.cpp" compile="1" resource="0"
               file="Source/ui/MainComponent.cpp"/>
         <FILE id="yGArYO" name="MainComponent.h" compile="0" resource="0" file="Source/ui/MainComponent.h"/>

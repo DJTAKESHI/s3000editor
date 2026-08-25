@@ -10,6 +10,7 @@
 #include "ProgramEditor.h"
 #include "../midi/SysExSender.h"
 #include "../midi/MidiManager.h"
+#include "KeygroupMap.h"
 
 
 
@@ -89,6 +90,8 @@ private:
     juce::TextButton captureAButton{ "capture A" };
     juce::TextButton captureBButton{ "capture B" };
     juce::TextButton compareButton{ "compare" };
+
+    //KeygroupMap keygroupMap;
 
     KeyGroupEditor keyGroupEditor;
 
@@ -301,6 +304,9 @@ private:
     int currentProgram = -1;
 
     void loadProgram(int programIndex);
+
+    juce::Viewport keygroupMapViewport;
+    KeygroupMap keygroupMap;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
