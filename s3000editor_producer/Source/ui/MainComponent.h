@@ -190,7 +190,7 @@ private:
     std::map<int, SampleHeader> sampleHeaders;
     std::map<int, juce::String> sampleList;
     std::map<int, juce::String> residentSamples;
-    juce::Label programLabel;
+    //juce::Label programLabel;
 
     juce::File dumpA;
     juce::File dumpB;

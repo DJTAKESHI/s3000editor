@@ -140,10 +140,30 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(filterKeyFollowLabel);
     addAndMakeVisible(filterKeyFollowEditor);
 
-    env1AttackLabel.setText("ENV1 Attack", juce::dontSendNotification);
-    env1DecayLabel.setText("ENV1 Decay", juce::dontSendNotification);
-    env1SustainLabel.setText("ENV1 Sustain", juce::dontSendNotification);
-    env1ReleaseLabel.setText("ENV1 Release", juce::dontSendNotification);
+    env1AttackLabel.setText("Attack", juce::dontSendNotification);
+    env1DecayLabel.setText("Decay", juce::dontSendNotification);
+    env1SustainLabel.setText("Sustain", juce::dontSendNotification);
+    env1ReleaseLabel.setText("Release", juce::dontSendNotification);
+
+    addAndMakeVisible(env1SectionLabel);
+    env1SectionLabel.setText(
+        "ENV1",
+        juce::dontSendNotification
+    );
+
+    env1SectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
+
+    addAndMakeVisible(env2SectionLabel);
+    env2SectionLabel.setText(
+        "ENV2",
+        juce::dontSendNotification
+    );
+
+    env2SectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
 
     addAndMakeVisible(env1AttackLabel);
     addAndMakeVisible(env1AttackEditor);
@@ -163,56 +183,64 @@ KeyGroupEditor::KeyGroupEditor()
     //env2ReleaseLabel.setText("ENV2 Release", juce::dontSendNotification);
 
     env2R1Label.setText(
-        "ENV2 Attack Rate (R1)",
+        "R1 (Attack)",
         juce::dontSendNotification
     );
 
     env2L1Label.setText(
-        "ENV2 Attack Level (L1)",
+        "L1 (Attack)",
         juce::dontSendNotification
     );
 
     env2R2Label.setText(
-        "ENV2 Phase 2 Rate (R2)",
+        "R2 (Phase 2)",
         juce::dontSendNotification
     );
 
     env2L2Label.setText(
-        "ENV2 Phase 2 Level (L2)",
+        "L2 (Phase 2)",
         juce::dontSendNotification
     );
 
     env2R3Label.setText(
-        "ENV2 Decay Rate (R3)",
+        "R3 (Decay)",
         juce::dontSendNotification
     );
 
     env2L3Label.setText(
-        "ENV2 Sustain Level (L3)",
+        "L3 (Sustain)",
         juce::dontSendNotification
     );
 
     env2R4Label.setText(
-        "ENV2 Release Rate (R4)",
+        "R4 (Release)",
         juce::dontSendNotification
     );
 
     env2L4Label.setText(
-        "ENV2 Final Level (L4)",
+        "L4 (Final)",
         juce::dontSendNotification
     );
 
-    //addAndMakeVisible(env2AttackLabel);
-    //addAndMakeVisible(env2AttackEditor);
+    addAndMakeVisible(keyRangeSectionLabel);
+    keyRangeSectionLabel.setText(
+        "KEY RANGE",
+        juce::dontSendNotification
+    );
 
-    //addAndMakeVisible(env2DecayLabel);
-    //addAndMakeVisible(env2DecayEditor);
+    addAndMakeVisible(filterSectionLabel);
+    filterSectionLabel.setText(
+        "FILTER",
+        juce::dontSendNotification
+    );
 
-    //addAndMakeVisible(env2SustainLabel);
-    //addAndMakeVisible(env2SustainEditor);
+    keyRangeSectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
 
-    //addAndMakeVisible(env2ReleaseLabel);
-    //addAndMakeVisible(env2ReleaseEditor);
+    filterSectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
 
     addAndMakeVisible(env2R1Label);
     addAndMakeVisible(env2R1Editor);
@@ -281,6 +309,57 @@ KeyGroupEditor::KeyGroupEditor()
 
     rightKeyXFadeLabel.setText(
         "Right Key XFade",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(modulationSectionLabel);
+    modulationSectionLabel.setText(
+        "MODULATION",
+        juce::dontSendNotification
+    );
+
+    modulationSectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
+
+    keyXFadeSectionLabel.setFont(
+        juce::Font(15.0f, juce::Font::bold)
+    );
+
+
+    addAndMakeVisible(keyXFadeSectionLabel);
+    keyXFadeSectionLabel.setText(
+        "KEY XFADE",
+        juce::dontSendNotification
+    );
+
+    velocityEnv2Label.setText(
+        "Vel -> ENV2",
+        juce::dontSendNotification
+    );
+
+    ePtchLabel.setText(
+        "Env -> Pitch",
+        juce::dontSendNotification
+    );
+
+    velocityXFadeLabel.setText(
+        "Velocity XFade",
+        juce::dontSendNotification
+    );
+
+    velocityZonesLabel.setText(
+        "Velocity Zones",
+        juce::dontSendNotification
+    );
+
+    leftKeyXFadeLabel.setText(
+        "Left",
+        juce::dontSendNotification
+    );
+
+    rightKeyXFadeLabel.setText(
+        "Right",
         juce::dontSendNotification
     );
 
@@ -1175,22 +1254,22 @@ KeyGroupEditor::KeyGroupEditor()
 
 
     env2VelAttackLabel.setText(
-        "ENV2 Vel Attack",
+        "Vel Attack",
         juce::dontSendNotification
     );
 
     env2VelReleaseLabel.setText(
-        "ENV2 Vel Release",
+        "Vel Release",
         juce::dontSendNotification
     );
 
     env2NoteOffReleaseLabel.setText(
-        "ENV2 NoteOff Rel",
+        "NoteOff Rel",
         juce::dontSendNotification
     );
 
     env2KeyTrackingLabel.setText(
-        "ENV2 Key Track",
+        "Key Track",
         juce::dontSendNotification
     );
 
@@ -1417,6 +1496,12 @@ void KeyGroupEditor::setKeygroup(
 
 void KeyGroupEditor::resized()
 {
+    const int fieldLabelWidth = 110;
+    const int editorWidth = 130;
+    const int editorHeight = 24;
+    const int envLabelWidth = 65;
+    const int envEditorWidth = 100;
+
     auto area =
         getLocalBounds().reduced(10);
 
@@ -1443,30 +1528,222 @@ void KeyGroupEditor::resized()
 
             editor.setBounds(row);
         };
+    keyRangeSectionLabel.setBounds(
+        area.removeFromTop(24)
+    );
 
-\
-    addRow(lowNoteLabel, lowNoteEditor);
-    addRow(highNoteLabel, highNoteEditor);
-    addRow(tuneLabel, tuneEditor);
 
-    addRow(filterFreqLabel, filterFreqEditor);
-    addRow(filterKeyFollowLabel, filterKeyFollowEditor);
+    {
+        auto section =
+            area.removeFromTop(36);
 
-    addRow(velocityToFreqLabel, velocityToFreqEditor);
-    addRow(pressureToFreqLabel, pressureToFreqEditor);
-    addRow(envelopeToFreqLabel, envelopeToFreqEditor);
+        auto row =
+            section.removeFromTop(30);
 
-    addRow(env1AttackLabel, env1AttackEditor);
-    addRow(env1DecayLabel, env1DecayEditor);
-    addRow(env1SustainLabel, env1SustainEditor);
-    addRow(env1ReleaseLabel, env1ReleaseEditor);
+        const int itemWidth =
+            row.getWidth() / 3;
+
+        auto lowArea =
+            row.removeFromLeft(itemWidth);
+
+        auto highArea =
+            row.removeFromLeft(itemWidth);
+
+        auto tuneArea =
+            row;
+
+
+        // Low Note
+        lowNoteLabel.setBounds(
+            lowArea.removeFromLeft(fieldLabelWidth)
+        );
+
+        lowNoteEditor.setBounds(
+            lowArea.removeFromLeft(editorWidth)
+            
+        );
+
+
+        // High Note
+        highNoteLabel.setBounds(
+            highArea.removeFromLeft(fieldLabelWidth)
+        );
+
+        highNoteEditor.setBounds(
+            highArea.removeFromLeft(editorWidth)
+            
+        );
+
+
+        // Tune
+        tuneLabel.setBounds(
+            tuneArea.removeFromLeft(fieldLabelWidth)
+        );
+
+        tuneEditor.setBounds(
+            tuneArea.removeFromLeft(editorWidth)
+            
+        );
+    }
+
+    filterSectionLabel.setBounds(
+        area.removeFromTop(24)
+    );
+
+
+{
+    auto section =
+        area.removeFromTop(64);
+
+    // 1çsñ⁄
+    auto row1 =
+        section.removeFromTop(30);
+
+    const int itemWidth =
+        row1.getWidth() / 3;
+
+    auto freqArea =
+        row1.removeFromLeft(itemWidth);
+
+    auto keyFollowArea =
+        row1.removeFromLeft(itemWidth);
+
+    auto velocityArea =
+        row1;
+
+
+    filterFreqLabel.setBounds(
+        freqArea.removeFromLeft(fieldLabelWidth)
+    );
+
+    filterFreqEditor.setBounds(
+        freqArea.removeFromLeft(editorWidth)
+        
+    );
+
+
+    filterKeyFollowLabel.setBounds(
+        keyFollowArea.removeFromLeft(fieldLabelWidth)
+    );
+
+    filterKeyFollowEditor.setBounds(
+        keyFollowArea.removeFromLeft(editorWidth)
+    );
+
+
+    velocityToFreqLabel.setBounds(
+        velocityArea.removeFromLeft(fieldLabelWidth)
+    );
+
+    velocityToFreqEditor.setBounds(
+        velocityArea.removeFromLeft(editorWidth)
+    );
+
+
+    // 2çsñ⁄
+    auto row2 =
+        section.removeFromTop(30);
+
+    auto pressureArea =
+        row2.removeFromLeft(itemWidth);
+
+    auto envelopeArea =
+        row2.removeFromLeft(itemWidth);
+
+
+    pressureToFreqLabel.setBounds(
+        pressureArea.removeFromLeft(fieldLabelWidth)
+    );
+
+    pressureToFreqEditor.setBounds(
+        pressureArea.removeFromLeft(editorWidth)
+    );
+
+
+    envelopeToFreqLabel.setBounds(
+        envelopeArea.removeFromLeft(fieldLabelWidth)
+    );
+
+    envelopeToFreqEditor.setBounds(
+        envelopeArea.removeFromLeft(editorWidth)
+    );
+}
+
+env1SectionLabel.setBounds(
+    area.removeFromTop(24)
+);
+
+
+// =========================
+// ENV1
+// =========================
+{
+    auto section =
+        area.removeFromTop(36);
+
+    auto row =
+        section.removeFromTop(30);
+
+    const int itemWidth =
+        row.getWidth() / 4;
+
+    auto attackArea =
+        row.removeFromLeft(itemWidth);
+
+    auto decayArea =
+        row.removeFromLeft(itemWidth);
+
+    auto sustainArea =
+        row.removeFromLeft(itemWidth);
+
+    auto releaseArea =
+        row;
+
+    // Attack
+    env1AttackLabel.setBounds(
+        attackArea.removeFromLeft(envLabelWidth)
+    );
+
+    env1AttackEditor.setBounds(
+        attackArea.removeFromLeft(envEditorWidth)
+    );
+
+    // Decay
+    env1DecayLabel.setBounds(
+        decayArea.removeFromLeft(envLabelWidth)
+    );
+
+    env1DecayEditor.setBounds(
+        decayArea.removeFromLeft(envEditorWidth)
+    );
+
+    // Sustain
+    env1SustainLabel.setBounds(
+        sustainArea.removeFromLeft(envLabelWidth)
+    );
+
+    env1SustainEditor.setBounds(
+        sustainArea.removeFromLeft(envEditorWidth)
+    );
+
+    // Release
+    env1ReleaseLabel.setBounds(
+        releaseArea.removeFromLeft(envLabelWidth)
+    );
+
+    env1ReleaseEditor.setBounds(
+        releaseArea.removeFromLeft(envEditorWidth)
+    );
+}
+
+area.removeFromTop(6);
 
     /*ddRow(env2AttackLabel, env2AttackEditor);
     addRow(env2DecayLabel, env2DecayEditor);
     addRow(env2SustainLabel, env2SustainEditor);
     addRow(env2ReleaseLabel, env2ReleaseEditor);*/
 
-    addRow(env2R1Label, env2R1Editor);
+    /*addRow(env2R1Label, env2R1Editor);
     addRow(env2L1Label, env2L1Editor);
 
     addRow(env2R2Label, env2R2Editor);
@@ -1481,36 +1758,345 @@ void KeyGroupEditor::resized()
     addRow(env2VelAttackLabel, env2VelAttackEditor);
     addRow(env2VelReleaseLabel, env2VelReleaseEditor);
     addRow(env2NoteOffReleaseLabel, env2NoteOffReleaseEditor);
-    addRow(env2KeyTrackingLabel, env2KeyTrackingEditor);
+    addRow(env2KeyTrackingLabel, env2KeyTrackingEditor);*/
 
-    addRow(
-        velocityEnv2Label,
-        velocityEnv2Editor
+env2SectionLabel.setBounds(
+    area.removeFromTop(24)
+);
+
+    // =========================
+// ENV2
+// =========================
+{
+    auto section =
+        area.removeFromTop(96);
+
+    const int envLabelWidth = 70;
+    const int envEditorWidth = 90;
+
+    // -------------------------
+    // Row 1
+    // R1 / L1 / R2 / L2
+    // -------------------------
+
+    auto row1 =
+        section.removeFromTop(30);
+
+    const int itemWidth =
+        row1.getWidth() / 4;
+
+    auto r1Area =
+        row1.removeFromLeft(itemWidth);
+
+    auto l1Area =
+        row1.removeFromLeft(itemWidth);
+
+    auto r2Area =
+        row1.removeFromLeft(itemWidth);
+
+    auto l2Area =
+        row1;
+
+    env2R1Label.setBounds(
+        r1Area.removeFromLeft(envLabelWidth)
     );
 
-    addRow(ePtchLabel, ePtchEditor);
-
-    addRow(
-        velocityXFadeLabel,
-        velocityXFadeEditor
+    env2R1Editor.setBounds(
+        r1Area.removeFromLeft(envEditorWidth)
     );
 
-    addRow(
-        velocityZonesLabel,
-        velocityZonesEditor
+    env2L1Label.setBounds(
+        l1Area.removeFromLeft(envLabelWidth)
     );
 
-    addRow(
-        leftKeyXFadeLabel,
-        leftKeyXFadeEditor
+    env2L1Editor.setBounds(
+        l1Area.removeFromLeft(envEditorWidth)
     );
 
-    addRow(
-        rightKeyXFadeLabel,
-        rightKeyXFadeEditor
+    env2R2Label.setBounds(
+        r2Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2R2Editor.setBounds(
+        r2Area.removeFromLeft(envEditorWidth)
+    );
+
+    env2L2Label.setBounds(
+        l2Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2L2Editor.setBounds(
+        l2Area.removeFromLeft(envEditorWidth)
     );
 
 
+    // -------------------------
+    // Row 2
+    // R3 / L3 / R4 / L4
+    // -------------------------
+
+    auto row2 =
+        section.removeFromTop(30);
+
+    auto r3Area =
+        row2.removeFromLeft(itemWidth);
+
+    auto l3Area =
+        row2.removeFromLeft(itemWidth);
+
+    auto r4Area =
+        row2.removeFromLeft(itemWidth);
+
+    auto l4Area =
+        row2;
+
+    env2R3Label.setBounds(
+        r3Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2R3Editor.setBounds(
+        r3Area.removeFromLeft(envEditorWidth)
+    );
+
+    env2L3Label.setBounds(
+        l3Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2L3Editor.setBounds(
+        l3Area.removeFromLeft(envEditorWidth)
+    );
+
+    env2R4Label.setBounds(
+        r4Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2R4Editor.setBounds(
+        r4Area.removeFromLeft(envEditorWidth)
+    );
+
+    env2L4Label.setBounds(
+        l4Area.removeFromLeft(envLabelWidth)
+    );
+
+    env2L4Editor.setBounds(
+        l4Area.removeFromLeft(envEditorWidth)
+    );
 
 
+    // -------------------------
+    // Row 3
+    // Vel Attack / Vel Release
+    // NoteOff Release / Key Track
+    // -------------------------
+
+    auto row3 =
+        section.removeFromTop(30);
+
+    auto velAttackArea =
+        row3.removeFromLeft(itemWidth);
+
+    auto velReleaseArea =
+        row3.removeFromLeft(itemWidth);
+
+    auto noteOffArea =
+        row3.removeFromLeft(itemWidth);
+
+    auto keyTrackArea =
+        row3;
+
+    env2VelAttackLabel.setBounds(
+        velAttackArea.removeFromLeft(envLabelWidth)
+    );
+
+    env2VelAttackEditor.setBounds(
+        velAttackArea.removeFromLeft(envEditorWidth)
+    );
+
+    env2VelReleaseLabel.setBounds(
+        velReleaseArea.removeFromLeft(envLabelWidth)
+    );
+
+    env2VelReleaseEditor.setBounds(
+        velReleaseArea.removeFromLeft(envEditorWidth)
+    );
+
+    env2NoteOffReleaseLabel.setBounds(
+        noteOffArea.removeFromLeft(envLabelWidth)
+    );
+
+    env2NoteOffReleaseEditor.setBounds(
+        noteOffArea.removeFromLeft(envEditorWidth)
+    );
+
+    env2KeyTrackingLabel.setBounds(
+        keyTrackArea.removeFromLeft(envLabelWidth)
+    );
+
+    env2KeyTrackingEditor.setBounds(
+        keyTrackArea.removeFromLeft(envEditorWidth)
+    );
+}
+
+area.removeFromTop(6);
+
+modulationSectionLabel.setBounds(
+    area.removeFromTop(24)
+);
+
+// =========================
+// MODULATION
+// =========================
+{
+    auto row =
+        area.removeFromTop(30);
+
+    const int itemWidth =
+        row.getWidth() / 4;
+
+    const int modLabelWidth = 100;
+    const int modEditorWidth = 90;
+
+    auto velEnvArea =
+        row.removeFromLeft(itemWidth);
+
+    auto pitchArea =
+        row.removeFromLeft(itemWidth);
+
+    auto velXFadeArea =
+        row.removeFromLeft(itemWidth);
+
+    auto velZonesArea =
+        row;
+
+
+    velocityEnv2Label.setBounds(
+        velEnvArea.removeFromLeft(modLabelWidth)
+    );
+
+    velocityEnv2Editor.setBounds(
+        velEnvArea.removeFromLeft(modEditorWidth)
+    );
+
+
+    ePtchLabel.setBounds(
+        pitchArea.removeFromLeft(modLabelWidth)
+    );
+
+    ePtchEditor.setBounds(
+        pitchArea.removeFromLeft(modEditorWidth)
+    );
+
+
+    velocityXFadeLabel.setBounds(
+        velXFadeArea.removeFromLeft(modLabelWidth)
+    );
+
+    velocityXFadeEditor.setBounds(
+        velXFadeArea.removeFromLeft(modEditorWidth)
+    );
+
+
+    velocityZonesLabel.setBounds(
+        velZonesArea.removeFromLeft(modLabelWidth)
+    );
+
+    velocityZonesEditor.setBounds(
+        velZonesArea.removeFromLeft(modEditorWidth)
+    );
+}
+
+area.removeFromTop(6);
+
+area.removeFromTop(6);
+
+keyXFadeSectionLabel.setBounds(
+    area.removeFromTop(24)
+);
+
+
+// =========================
+// KEY XFADE
+// =========================
+{
+    auto row =
+        area.removeFromTop(30);
+
+    const int itemWidth =
+        row.getWidth() / 2;
+
+    const int xfadeLabelWidth = 100;
+    const int xfadeEditorWidth = 90;
+
+    auto leftArea =
+        row.removeFromLeft(itemWidth);
+
+    auto rightArea =
+        row;
+
+
+    leftKeyXFadeLabel.setBounds(
+        leftArea.removeFromLeft(xfadeLabelWidth)
+    );
+
+    leftKeyXFadeEditor.setBounds(
+        leftArea.removeFromLeft(xfadeEditorWidth)
+    );
+
+
+    rightKeyXFadeLabel.setBounds(
+        rightArea.removeFromLeft(xfadeLabelWidth)
+    );
+
+    rightKeyXFadeEditor.setBounds(
+        rightArea.removeFromLeft(xfadeEditorWidth)
+    );
+}
+
+
+
+
+}
+
+
+void KeyGroupEditor::paint(
+    juce::Graphics& g)
+{
+    g.setColour(
+        juce::Colours::white.withAlpha(0.18f)
+    );
+
+    auto drawSectionLine =
+        [&g](const juce::Label& label)
+        {
+            const float y =
+                static_cast<float>(
+                    label.getY()
+                    + label.getHeight() / 2
+                    );
+
+            const float startX =
+                static_cast<float>(
+                    label.getX() + 110
+                    );
+
+            const float endX =
+                static_cast<float>(
+                    label.getRight()
+                    );
+
+            g.drawLine(
+                startX,
+                y,
+                endX,
+                y,
+                1.0f
+            );
+        };
+
+    drawSectionLine(keyRangeSectionLabel);
+    drawSectionLine(filterSectionLabel);
+    drawSectionLine(env1SectionLabel);
+    drawSectionLine(env2SectionLabel);
+    drawSectionLine(modulationSectionLabel);
+    drawSectionLine(keyXFadeSectionLabel);
 }

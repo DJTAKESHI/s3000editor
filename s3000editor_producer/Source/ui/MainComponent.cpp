@@ -91,6 +91,12 @@ MainComponent::MainComponent()
         false
     );
 
+    keyGroupViewport.setScrollBarsShown(
+        false,   // vertical
+        false    // horizontal
+    );
+
+
     editorTabs.addTab(
         "Keygroup",
         juce::Colours::darkgrey,
@@ -344,6 +350,8 @@ MainComponent::MainComponent()
         };
 
 
+    #if JUCE_DEBUG
+
     addAndMakeVisible(requestButton);
     requestButton.onClick = [this]
         {
@@ -366,6 +374,7 @@ MainComponent::MainComponent()
         };
 
     requestRPDATAButton.setTriggeredOnMouseDown(true);
+#endif
 
 //    requestRPDATAButton.onClick = [this]()
 //        {
@@ -417,8 +426,8 @@ MainComponent::MainComponent()
 
 
 
-    addAndMakeVisible(programLabel);
-    programLabel.setText("No program", juce::dontSendNotification);
+    //addAndMakeVisible(programLabel);
+    //programLabel.setText("No program", juce::dontSendNotification);
 
 
 
@@ -752,7 +761,7 @@ void MainComponent::resized()
 
     requestButton.setBounds(area.removeFromTop(50));
     requestRPDATAButton.setBounds(area.removeFromTop(50));
-    programLabel.setBounds(area.removeFromTop(30));
+    //programLabel.setBounds(area.removeFromTop(30));
 
     // ç∂ë§
     auto left = area.removeFromLeft(350);
@@ -1670,6 +1679,8 @@ void MainComponent::handleKeygroupDataResponse(
 
     loadedProgram.keygroups[currentKeygroup] = kg;
 
+
+
     DBG(
         "STORED KEYGROUP INDEX = "
         + juce::String(currentKeygroup)
@@ -1803,7 +1814,7 @@ void MainComponent::handleKeygroupDataResponse(
 
             if (!loadedProgram.keygroups.empty())
             {
-                currentKeygroup = 0;
+                //currentKeygroup = 0;
 
                 auto& kg =
                     loadedProgram.keygroups[0];
@@ -1839,6 +1850,35 @@ void MainComponent::handleKeygroupDataResponse(
                 (int)pendingSampleRequests.size()
             )
         );
+    }
+
+    // ========================================
+// Continue loading Keygroups
+// ========================================
+
+    ++currentKeygroup;
+
+    if (currentKeygroup < totalKeygroups)
+    {
+        DBG(
+            "REQUEST NEXT KG HEADER INDEX="
+            + juce::String(currentKeygroup)
+        );
+
+        sysExSender.sendKGHeader(
+            loadedProgram.programNumber,
+            currentKeygroup
+        );
+    }
+    else
+    {
+        DBG(
+            "ALL KEYGROUPS LOADED count="
+            + juce::String(totalKeygroups)
+        );
+
+        currentKeygroup = 0;
+        currentZone = 0;
     }
 
     
@@ -1892,6 +1932,18 @@ void MainComponent::handleProgramHeaderResponse()
     loadedProgram.keygroups =
         std::move(existingKeygroups);
 
+    // ==============================
+    // Keygroup count
+    // ==============================
+
+    totalKeygroups =
+        loadedProgram.groups;
+
+    DBG(
+        "TOTAL KEYGROUPS = "
+        + juce::String(totalKeygroups)
+    );
+
     const Program programForUI =
         loadedProgram;
 
@@ -1908,25 +1960,46 @@ void MainComponent::handleProgramHeaderResponse()
         }
     );
 
-    DBG(
-        "GROUPS = "
-        + juce::String(loadedProgram.groups)
-    );
-
-    DBG(
-        "KEYGROUPS PRESERVED = "
-        + juce::String(
-            (int)loadedProgram.keygroups.size()
-        )
-    );
+    // ==============================
+    // Request all Keygroups
+    // ==============================
 
     for (int i = 0;
-         i < loadedProgram.groups;
-         ++i)
+        i < totalKeygroups;
+        ++i)
     {
-        sysExSender.sendKGHeader(
-            loadedProgram.programNumber,
-            i
+        const int keygroupIndex = i;
+
+        juce::Timer::callAfterDelay(
+            i * 200,
+            [this, keygroupIndex]
+            {
+                DBG(
+                    "REQUEST KG HEADER INDEX="
+                    + juce::String(keygroupIndex)
+                );
+
+                sysExSender.sendKGHeader(
+                    loadedProgram.programNumber,
+                    keygroupIndex
+                );
+
+                juce::Timer::callAfterDelay(
+                    100,
+                    [this, keygroupIndex]
+                    {
+                        DBG(
+                            "REQUEST KDATA INDEX="
+                            + juce::String(keygroupIndex)
+                        );
+
+                        sysExSender.sendKData(
+                            loadedProgram.programNumber,
+                            keygroupIndex
+                        );
+                    }
+                );
+            }
         );
     }
 }

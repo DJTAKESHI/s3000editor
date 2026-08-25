@@ -199,58 +199,27 @@ void VelocityZoneItem::paintItem(
     int width,
     int height)
 {
-    g.setColour(juce::Colours::white);
+    g.setColour(
+        juce::Colours::white
+    );
 
-    juce::String text;
+    juce::String sampleName;
 
-    text = "Zone "
-        + juce::String(zoneIndex)
-        + "   ";
-
-    // Sample
     if (zoneData.sampleName.trim().isEmpty())
     {
-        text += "[Empty]";
+        sampleName = "[Empty]";
     }
     else
     {
-        text += zoneData.sampleName.trim();
+        sampleName =
+            zoneData.sampleName.trim();
     }
 
-    // Velocity
-    text += "   Vel:"
-        + juce::String(zoneData.lowVel)
-        + "-"
-        + juce::String(zoneData.highVel);
-
-    //// Tune
-    //text += "   Tune:"
-    //    + juce::String(zoneData.tune);
-
-    // Tune
-    const int cents =
-        juce::roundToInt(
-            zoneData.fineTuneRaw * 100.0 / 256.0
-        );
-
-    text += "   SEM:"
-        + juce::String(zoneData.semitone);
-
-    text += "   CNT:"
-        + juce::String(cents);
-
-
-    // Loudness
-    text += "   Loud:"
-        + juce::String(zoneData.loudness);
-
-    // Pan
-    text += "   Pan:"
-        + juce::String(zoneData.pan);
-
-    // Play mode
-    text += "   Play:"
-        + juce::String(static_cast<int>(zoneData.playMode));
+    const juce::String text =
+        "Zone "
+        + juce::String(zoneIndex + 1)
+        + "    "
+        + sampleName;
 
     g.drawText(
         text,

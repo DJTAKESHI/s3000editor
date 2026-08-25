@@ -20,6 +20,8 @@ public:
         const Keygroup&
         )> onKeygroupChanged;
 
+    void paint(juce::Graphics& g) override;
+
 private:
     juce::Label titleLabel;
 
@@ -128,6 +130,15 @@ private:
 
     juce::Label rightKeyXFadeLabel;
     juce::TextEditor rightKeyXFadeEditor;
+
+    juce::Label env1SectionLabel;
+    juce::Label env2SectionLabel;
+
+    juce::Label modulationSectionLabel;
+    juce::Label keyXFadeSectionLabel;
+
+    juce::Label keyRangeSectionLabel;
+    juce::Label filterSectionLabel;
 
 
 };
