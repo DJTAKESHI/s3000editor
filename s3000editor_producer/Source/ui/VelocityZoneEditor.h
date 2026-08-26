@@ -3,13 +3,18 @@
 #include <JuceHeader.h>
 #include "VelocityRangeBar.h"
 #include "../s3000/s3000Types.h"  
+#include "VelocityZoneMap.h"
 
 class VelocityZoneEditor : public juce::Component
 {
 public:
     VelocityZoneEditor();
+    VelocityZoneMap velocityZoneMap;
 
     void setZone(const VelocityZone& zone);
+    void setZones(
+        const std::array<VelocityZone, 4>& zones
+    );
 
     std::function<void(const VelocityZone&)> onZoneChanged;
 
@@ -17,12 +22,21 @@ public:
         const std::map<int, juce::String>& samples
     );
 
+    std::function<void(int)>
+        onZoneSelected;
+
+
 
     void resized() override;
 
+    void setSelectedZone(int index);
+
 private:
+    
     VelocityZone currentZone;
     VelocityRangeBar velocityRangeBar;
+
+    static constexpr int noneSampleComboId = 10000;
 
     juce::Label titleLabel;
 

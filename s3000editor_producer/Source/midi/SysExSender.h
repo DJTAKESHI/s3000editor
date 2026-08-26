@@ -29,6 +29,14 @@ public:
         const std::vector<uint8_t>& data);
     
     void sendSysEx(const std::vector<uint8_t>& data);
+
+    void sendProgramData(
+        int programIndex,
+        const std::vector<uint8_t>& data);
+
+    void sendDeleteKeygroup(
+        int programIndex,
+        int keygroupIndex);
     
     
     

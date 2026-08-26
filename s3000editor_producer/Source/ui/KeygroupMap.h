@@ -2,11 +2,17 @@
 
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
+#include <functional>
+
 
 class KeygroupMap : public juce::Component
 {
 public:
+    KeygroupMap();
     void setProgram(const Program& program);
+
+    //static constexpr int rowHeight = 32;
+    static constexpr int buttonAreaHeight = 44;
 
     // Keygroup‚ðƒNƒŠƒbƒN‚µ‚½‚Æ‚«
     std::function<void(int)>
@@ -41,8 +47,28 @@ public:
 
     void resized() override;
 
+    juce::TextButton addKeygroupButton{
+    "+ Add KG"
+    };
+
+    juce::TextButton deleteKeygroupButton{
+        "Delete KG"
+    };
+
+    std::function<void()> onAddKeygroup;
+    std::function<void(int)> onDeleteKeygroup;
+
 private:
     static constexpr int rowHeight = 32;
+
+    //juce::TextButton addKeygroupButton{
+    //"+ Add KG"
+    //};
+
+    //juce::TextButton deleteKeygroupButton{
+    //    "Delete KG"
+    //};
+
 
     enum class DragMode
     {

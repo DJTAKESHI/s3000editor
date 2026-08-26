@@ -73,6 +73,9 @@ VelocityZoneEditor::VelocityZoneEditor()
         "CNT",
         juce::dontSendNotification
     );
+    addAndMakeVisible(
+        velocityZoneMap
+    );
 
     addAndMakeVisible(semitoneLabel);
     addAndMakeVisible(semitoneEditor);
@@ -94,10 +97,21 @@ VelocityZoneEditor::VelocityZoneEditor()
         [this](int low, int high)
         {
             currentZone.lowVel =
-                static_cast<uint8_t>(low);
+                low;
 
             currentZone.highVel =
-                static_cast<uint8_t>(high);
+                high;
+
+            // 数値表示も追従
+            lowVelEditor.setText(
+                juce::String(low),
+                juce::dontSendNotification
+            );
+
+            highVelEditor.setText(
+                juce::String(high),
+                juce::dontSendNotification
+            );
 
             if (onZoneChanged)
             {
@@ -127,6 +141,12 @@ VelocityZoneEditor::VelocityZoneEditor()
 
             currentZone.lowVel = value;
 
+            // バーも更新
+            velocityRangeBar.setRange(
+                currentZone.lowVel,
+                currentZone.highVel
+            );
+
             if (onZoneChanged)
                 onZoneChanged(currentZone);
         };
@@ -148,9 +168,16 @@ VelocityZoneEditor::VelocityZoneEditor()
 
             currentZone.highVel = value;
 
+            // バーも更新
+            velocityRangeBar.setRange(
+                currentZone.lowVel,
+                currentZone.highVel
+            );
+
             if (onZoneChanged)
                 onZoneChanged(currentZone);
         };
+    
 
     //sampleNameEditor.setReadOnly(true);
     //sampleNameEditor.onFocusLost = [this]()
@@ -193,12 +220,51 @@ VelocityZoneEditor::VelocityZoneEditor()
     //    };
     sampleCombo.onChange = [this]()
         {
-            const int selectedId =
-                sampleCombo.getSelectedId() - 1;
+            const int comboId =
+                sampleCombo.getSelectedId();
 
-            if (selectedId < 0 ||
-                selectedId >= (int)residentSamples.size())
+            // ========================================
+            // None → ZoneからSampleを解除
+            // ========================================
+
+            if (comboId == noneSampleComboId)
             {
+                if (currentZone.sampleId == -1 &&
+                    currentZone.sampleName.trim().isEmpty())
+                {
+                    return;
+                }
+
+                currentZone.sampleId = -1;
+                currentZone.sampleName = "";
+
+                DBG("SAMPLE CLEARED");
+
+                if (onZoneChanged)
+                {
+                    onZoneChanged(currentZone);
+                }
+
+                return;
+            }
+
+            // ========================================
+            // 通常のSample選択
+            // ========================================
+
+            const int selectedId =
+                comboId - 1;
+
+            const auto it =
+                residentSamples.find(selectedId);
+
+            if (it == residentSamples.end())
+            {
+                DBG(
+                    "INVALID SAMPLE ID="
+                    + juce::String(selectedId)
+                );
+
                 return;
             }
 
@@ -209,7 +275,7 @@ VelocityZoneEditor::VelocityZoneEditor()
                 selectedId;
 
             currentZone.sampleName =
-                residentSamples[selectedId];
+                it->second;
 
             DBG(
                 "SAMPLE COMBO CHANGED ID="
@@ -393,6 +459,21 @@ VelocityZoneEditor::VelocityZoneEditor()
         juce::dontSendNotification
     );
 
+    velocityZoneMap.onZoneSelected =
+        [this](int zoneIndex)
+        {
+            velocityZoneMap.setSelectedZone(
+                zoneIndex
+            );
+
+            if (onZoneSelected)
+            {
+                onZoneSelected(
+                    zoneIndex
+                );
+            }
+        };
+
     //lowVelXFadeLabel.setText(
     //    "Low Vel XFade",
     //    juce::dontSendNotification
@@ -415,6 +496,37 @@ VelocityZoneEditor::VelocityZoneEditor()
 
 }
 
+void VelocityZoneEditor::setSelectedZone(
+    int index)
+{
+    velocityZoneMap.setSelectedZone(
+        index
+    );
+}
+
+void VelocityZoneEditor::setZones(
+    const std::array<VelocityZone, 4>& zones)
+{
+    DBG("===== VelocityZoneEditor::setZones CALLED =====");
+
+    for (int i = 0; i < 4; ++i)
+    {
+        DBG(
+            "SET ZONE "
+            + juce::String(i)
+            + " SAMPLE=["
+            + zones[i].sampleName
+            + "] LOW="
+            + juce::String(zones[i].lowVel)
+            + " HIGH="
+            + juce::String(zones[i].highVel)
+        );
+    }
+
+    velocityZoneMap.setZones(
+        zones
+    );
+}
 
 void VelocityZoneEditor::setZone(
     const VelocityZone& zone)
@@ -500,6 +612,11 @@ void VelocityZoneEditor::setZone(
         false
     );
 
+    velocityRangeBar.setRange(
+        currentZone.lowVel,
+        currentZone.highVel
+    );
+
     /*tuneEditor.setText(
         juce::String(zone.tune),
         false
@@ -543,10 +660,10 @@ void VelocityZoneEditor::setZone(
         false
     );
 
-    velocityRangeBar.setRange(
-        zone.lowVel,
-        zone.highVel
-    );
+    //velocityRangeBar.setRange(
+    //    zone.lowVel,
+    //    zone.highVel
+    //);
 
 
     //lowVelXFadeEditor.setText(
@@ -566,11 +683,22 @@ void VelocityZoneEditor::setZone(
 
 void VelocityZoneEditor::resized()
 {
-    auto area = getLocalBounds().reduced(10);
+    auto area =
+        getLocalBounds().reduced(10);
 
     titleLabel.setBounds(
         area.removeFromTop(30)
     );
+
+    // ========================================
+    // 4 Zone Overview
+    // ========================================
+
+    velocityZoneMap.setBounds(
+        area.removeFromTop(130)
+    );
+
+    area.removeFromTop(8);
 
     const int rowHeight = 26;
     const int labelWidth = 120;
@@ -592,30 +720,71 @@ void VelocityZoneEditor::resized()
             editor.setBounds(row);
         };
 
-    // ★ Sample Combo
-    addRow(sampleNameLabel, sampleCombo);
-
-    addRow(sampleIdLabel, sampleIdEditor);
-    addRow(lowVelLabel, lowVelEditor);
-    addRow(highVelLabel, highVelEditor);
-
-    addRow(semitoneLabel, semitoneEditor);
-    addRow(fineTuneLabel, fineTuneEditor);
-
-    addRow(loudnessLabel, loudnessEditor);
-    addRow(panLabel, panEditor);
-    addRow(playModeLabel, playModeCombo);
-
-    addRow(filterFreqLabel, filterFreqEditor);
-    //addRow(lowVelXFadeLabel, lowVelXFadeEditor);
-    //addRow(highVelXFadeLabel, highVelXFadeEditor);
-
-    velocityRangeBar.setBounds(
-        area.removeFromTop(80)
+    // Sample
+    addRow(
+        sampleNameLabel,
+        sampleCombo
     );
 
+    addRow(
+        sampleIdLabel,
+        sampleIdEditor
+    );
 
+    // Velocity
+    addRow(
+        lowVelLabel,
+        lowVelEditor
+    );
 
+    addRow(
+        highVelLabel,
+        highVelEditor
+    );
+
+    area.removeFromTop(6);
+
+    // ========================================
+    // Selected Zone Velocity Range
+    // ========================================
+
+    velocityRangeBar.setBounds(
+        area.removeFromTop(60)
+    );
+
+    area.removeFromTop(6);
+
+    // Tune
+    addRow(
+        semitoneLabel,
+        semitoneEditor
+    );
+
+    addRow(
+        fineTuneLabel,
+        fineTuneEditor
+    );
+
+    // その他
+    addRow(
+        loudnessLabel,
+        loudnessEditor
+    );
+
+    addRow(
+        panLabel,
+        panEditor
+    );
+
+    addRow(
+        playModeLabel,
+        playModeCombo
+    );
+
+    addRow(
+        filterFreqLabel,
+        filterFreqEditor
+    );
 }
 
 void VelocityZoneEditor::setResidentSamples(
@@ -628,6 +797,13 @@ void VelocityZoneEditor::setResidentSamples(
     sampleCombo.clear(
         juce::dontSendNotification
     );
+
+    // Sample解除用
+    sampleCombo.addItem(
+        "--- None ---",
+        noneSampleComboId
+    );
+
 
     for (const auto& [id, name] : residentSamples)
     {

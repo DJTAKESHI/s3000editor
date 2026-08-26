@@ -42,11 +42,33 @@ void KeygroupMap::setProgram(
 
 void KeygroupMap::resized()
 {
-    DBG(
-        "KEYGROUP MAP RESIZED "
-        + juce::String(getWidth())
-        + " x "
-        + juce::String(getHeight())
+    auto area =
+        getLocalBounds();
+
+    auto buttonArea =
+        area.removeFromBottom(
+            buttonAreaHeight
+        );
+
+    buttonArea.reduce(
+        8,
+        5
+    );
+
+    auto addArea =
+        buttonArea.removeFromLeft(100);
+
+    buttonArea.removeFromLeft(8);
+
+    auto deleteArea =
+        buttonArea.removeFromLeft(100);
+
+    addKeygroupButton.setBounds(
+        addArea
+    );
+
+    deleteKeygroupButton.setBounds(
+        deleteArea
     );
 }
 
@@ -73,8 +95,13 @@ float KeygroupMap::noteToX(
 void KeygroupMap::paint(
     juce::Graphics& g)
 {
+    auto bounds =
+        getLocalBounds();
+
+    bounds.removeFromBottom(buttonAreaHeight);
+
     auto area =
-        getLocalBounds()
+        bounds
         .toFloat()
         .reduced(10.0f);
 
@@ -95,7 +122,7 @@ void KeygroupMap::paint(
             currentProgram.keygroups.size()
             );
 
-    const float rowHeight = 32.0f;
+    //const float rowHeight = 32.0f;
     const float labelWidth = 55.0f;
 
     //// ç∂ë§ÇKGî‘çÜópÇ…ämï€
@@ -154,7 +181,7 @@ void KeygroupMap::paint(
         );
 
         g.drawText(
-            "KG " + juce::String(i),
+            "KG " + juce::String(i + 1),
             static_cast<int>(area.getX()),
             static_cast<int>(y),
             static_cast<int>(labelWidth),
@@ -268,8 +295,13 @@ void KeygroupMap::paint(
 int KeygroupMap::keygroupAtPosition(
     juce::Point<float> position) const
 {
+    auto bounds =
+        getLocalBounds();
+
+    bounds.removeFromBottom(34);
+
     auto area =
-        getLocalBounds()
+        bounds
         .toFloat()
         .reduced(10.0f);
 
@@ -380,6 +412,39 @@ void KeygroupMap::mouseDown(
         onKeygroupSelected(index);
 }
 
+KeygroupMap::KeygroupMap()
+{
+    addAndMakeVisible(
+        addKeygroupButton
+    );
+
+    addAndMakeVisible(
+        deleteKeygroupButton
+    );
+
+    addKeygroupButton.onClick =
+        [this]()
+        {
+            if (onAddKeygroup)
+            {
+                onAddKeygroup();
+            }
+        };
+
+    deleteKeygroupButton.onClick =
+        [this]()
+        {
+            if (onDeleteKeygroup &&
+                selectedKeygroup >= 0)
+            {
+                onDeleteKeygroup(
+                    selectedKeygroup
+                );
+            }
+        };
+}
+
+
 void KeygroupMap::mouseDrag(
     const juce::MouseEvent& event)
 {
@@ -488,8 +553,13 @@ KeygroupMap::getBarBounds(
         return {};
     }
 
+    auto bounds =
+        getLocalBounds();
+
+    bounds.removeFromBottom(buttonAreaHeight);
+
     auto area =
-        getLocalBounds()
+        bounds
         .toFloat()
         .reduced(10.0f);
 

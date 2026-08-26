@@ -34,6 +34,95 @@ void SysExSender::sendRPLIST()
     DBG("RPLIST SENT");
 }
 
+void SysExSender::sendProgramData(
+    int programIndex,
+    const std::vector<uint8_t>& data)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    std::vector<uint8_t> sysex;
+
+    sysex.push_back(0x47);
+    sysex.push_back(0x00); // exclusive channel
+    sysex.push_back(0x07); // PDATA
+    sysex.push_back(0x48);
+
+    // Program number
+    sysex.push_back(
+        static_cast<uint8_t>(
+            programIndex & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            (programIndex >> 7) & 0x7F
+            )
+    );
+
+    DBG(
+        "PDATA RAW STEREO OFFSET 23 = "
+        + juce::String(
+            (int)data[
+                ProgramOffset::Output::Stereo
+            ]
+        )
+    );
+
+    DBG(
+        "PDATA STEREO NIBBLES LOW="
+        + juce::String(
+            (int)(data[23] & 0x0F)
+        )
+        + " HIGH="
+        + juce::String(
+            (int)((data[23] >> 4) & 0x0F)
+        )
+    );
+
+
+    // Program Common Data
+    // 1 byte -> low nibble / high nibble
+    for (const auto byte : data)
+    {
+        sysex.push_back(
+            static_cast<uint8_t>(
+                byte & 0x0F
+                )
+        );
+
+        sysex.push_back(
+            static_cast<uint8_t>(
+                (byte >> 4) & 0x0F
+                )
+        );
+    }
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            sysex.data(),
+            static_cast<int>(sysex.size())
+        );
+
+    DBG(
+        "SEND PDATA PROGRAM="
+        + juce::String(programIndex)
+        + " RAW SIZE="
+        + juce::String((int)data.size())
+        + " SYSEX SIZE="
+        + juce::String((int)sysex.size())
+    );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG("PDATA SENT");
+}
+
+
 void SysExSender::sendProgramHeader(int programIndex)
 {
     DBG("========== sendProgramHeader CALLED ==========");
@@ -57,13 +146,22 @@ void SysExSender::sendProgramHeader(int programIndex)
         0x00,
         0x27,
         0x48,
-        static_cast<uint8_t>(programIndex & 0x7F),
-        static_cast<uint8_t>((programIndex >> 7) & 0x7F),
+
+        static_cast<uint8_t>(
+            programIndex & 0x7F
+        ),
+
+        static_cast<uint8_t>(
+            (programIndex >> 7) & 0x7F
+        ),
+
+        0x00, // Reserved
+
         0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x01
+        0x00, // offset = 0
+
+        0x40,
+        0x01  // length = 192
     };
 
     DBG("REQUEST DATA BUILT");
@@ -80,6 +178,65 @@ void SysExSender::sendProgramHeader(int programIndex)
 
     DBG("PROGRAM HEADER REQUEST SENT");
 }
+
+void SysExSender::sendDeleteKeygroup(
+    int programIndex,
+    int keygroupIndex)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    std::vector<uint8_t> sysex;
+
+    // Akai header
+    sysex.push_back(0x47);
+    sysex.push_back(0x00);
+    sysex.push_back(0x13); // DELK
+    sysex.push_back(0x48);
+
+    // Program number
+    sysex.push_back(
+        static_cast<uint8_t>(
+            programIndex & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            (programIndex >> 7) & 0x7F
+            )
+    );
+
+    // Keygroup number
+    sysex.push_back(
+        static_cast<uint8_t>(
+            keygroupIndex & 0x7F
+            )
+    );
+
+    DBG(
+        "DELETE KEYGROUP PROGRAM="
+        + juce::String(programIndex)
+        + " KG="
+        + juce::String(keygroupIndex)
+    );
+
+    auto message =
+        juce::MidiMessage::createSysExMessage(
+            sysex.data(),
+            sysex.size()
+        );
+
+    midiOutput->sendMessageNow(
+        message
+    );
+
+    DBG("DELETE KEYGROUP SENT");
+}
+
 
 void SysExSender::sendKGHeader(
     int programIndex,

@@ -91,9 +91,29 @@ private:
     juce::TextButton captureBButton{ "capture B" };
     juce::TextButton compareButton{ "compare" };
 
+    //bool waitingForDeleteReply = false;
+
     //KeygroupMap keygroupMap;
+    int pendingDeleteKeygroup = -1;
+    bool waitingForDeleteReply = false;
+
+    enum class PendingAddStage
+    {
+        none,
+        waitingForKeygroupReply,
+        waitingForProgramReply
+    };
+
+    PendingAddStage pendingAddStage =
+        PendingAddStage::none;
+
+    Keygroup pendingAddedKeygroup;
+    int pendingAddKeygroupIndex = -1;
+
 
     KeyGroupEditor keyGroupEditor;
+
+    void addKeygroup();
 
     juce::TextButton requestButton{ "Request PLIST" };
 //    void sendRPLIST();

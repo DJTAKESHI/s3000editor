@@ -134,7 +134,7 @@ void KeygroupItem::paintItem(
 
     g.drawText(
         "Keygroup "
-        + juce::String(index)
+        + juce::String(index + 1)
         + "  Note "
         + juce::String(keygroup.lowNote)
         + "-"

@@ -9,6 +9,7 @@
 #include "../s3000/S3000Types.h"
 #include "../s3000/SampleHeaderEncoder.h"
 #include "../s3000/KeygroupEncoder.h"
+#include "../s3000/ProgramEncoder.h"
 
 char decodeAkaiChar(uint8_t v)
 {
@@ -99,10 +100,33 @@ MainComponent::MainComponent()
             const auto& kg =
                 loadedProgram.keygroups[index];
 
+            DBG(
+                "SELECTED KG "
+                + juce::String(index)
+                + " ZONE0 SAMPLE=["
+                + kg.zones[0].sampleName
+                + "] LOW="
+                + juce::String(kg.zones[0].lowVel)
+                + " HIGH="
+                + juce::String(kg.zones[0].highVel)
+            );
+
             keyGroupEditor.setKeygroup(
                 kg,
                 index
             );
+
+            // ========================================
+            // 4 Zone全部をOverviewへ
+            // ========================================
+
+            velocityZoneEditor.setZones(
+                kg.zones
+            );
+
+            // ========================================
+            // Zone 1を詳細Editorへ
+            // ========================================
 
             if (!kg.zones.empty())
             {
@@ -186,6 +210,60 @@ MainComponent::MainComponent()
 
     //addAndMakeVisible(programTree);
 
+    velocityZoneEditor.onZoneSelected =
+        [this](int zoneIndex)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >=
+                static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            if (zoneIndex < 0 ||
+                zoneIndex >= 4)
+            {
+                return;
+            }
+
+            currentZone =
+                zoneIndex;
+
+            auto& kg =
+                loadedProgram.keygroups[
+                    currentKeygroup
+                ];
+
+            // 選択したZoneを詳細Editorへ
+            velocityZoneEditor.setZone(
+                kg.zones[currentZone]
+            );
+
+            // Sample Headerも切り替える
+            const int sampleId =
+                kg.zones[currentZone].sampleId;
+
+            auto it =
+                sampleHeaders.find(
+                    sampleId
+                );
+
+            if (it != sampleHeaders.end())
+            {
+                sampleHeaderEditor.setSampleHeader(
+                    it->second
+                );
+            }
+
+            DBG(
+                "CURRENT ZONE = "
+                + juce::String(currentZone)
+            );
+        };
+
+
     programTree.setRootItemVisible(true);
     programTree.setDefaultOpenness(true);
 
@@ -212,8 +290,38 @@ MainComponent::MainComponent()
                 + juce::String(currentZone)
             );
 
-            velocityZoneEditor.setZone(zone);
-            sampleHeaderEditor.setSampleHeader(sampleHeader);
+            // ========================================
+            // 4 Zone全部をOverviewへ
+            // ========================================
+
+            if (currentKeygroup >= 0 &&
+                currentKeygroup <
+                static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                DBG("ABOUT TO CALL setZones");
+
+                velocityZoneEditor.setZones(
+                    loadedProgram
+                    .keygroups[currentKeygroup]
+                    .zones
+                );
+
+                DBG("AFTER CALL setZones");
+            }
+
+            // ========================================
+            // 選択Zoneを詳細Editorへ
+            // ========================================
+
+            velocityZoneEditor.setZone(
+                zone
+            );
+
+            sampleHeaderEditor.setSampleHeader(
+                sampleHeader
+            );
 
             editorTabs.setCurrentTabIndex(1);
         };
@@ -280,6 +388,25 @@ MainComponent::MainComponent()
         };
 
 
+#if JUCE_DEBUG
+
+    addAndMakeVisible(captureAButton);
+
+    captureAButton.setButtonText(
+        "TEST ADD KG"
+    );
+
+    captureAButton.onClick =
+        [this]()
+        {
+            addKeygroup();
+        };
+
+    
+
+#endif
+
+
 
 
 
@@ -314,12 +441,34 @@ MainComponent::MainComponent()
 
             currentKeygroup = keygroupIndex;
 
+            // Keygroupを選択したらZone 1を選択状態にする
+            currentZone = 0;
 
             editorTabs.setCurrentTabIndex(0);
 
             keyGroupEditor.setKeygroup(
                 keygroup,
                 keygroupIndex
+            );
+
+            // ========================================
+            // 4 Zone Overview更新
+            // ========================================
+
+            velocityZoneEditor.setZones(
+                keygroup.zones
+            );
+
+            velocityZoneEditor.setSelectedZone(
+                currentZone
+            );
+
+            // ========================================
+            // Zone 1を詳細Editorにもセット
+            // ========================================
+
+            velocityZoneEditor.setZone(
+                keygroup.zones[currentZone]
             );
         };
 
@@ -356,25 +505,85 @@ MainComponent::MainComponent()
 
 #if JUCE_DEBUG
 
+        // ========================================
+        // TEST ADD KEYGROUP
+        // ========================================
+
     addAndMakeVisible(captureAButton);
 
-    captureAButton.onClick = [this]
+    captureAButton.setButtonText(
+        "TEST ADD KG"
+    );
+
+    captureAButton.onClick =
+        [this]()
         {
-            saveDump("dump_A");
-            DBG("Captured A");
+            addKeygroup();
         };
+
+
+    // ========================================
+    // TEST DELETE KEYGROUP
+    // ========================================
 
     addAndMakeVisible(captureBButton);
 
-    captureBButton.onClick = [this]
+    captureBButton.setButtonText(
+        "TEST DELETE KG"
+    );
+
+    captureBButton.onClick =
+        [this]()
         {
-            saveDump("dump_B");
-            DBG("Captured B");
+            if (loadedProgram.groups <= 1)
+            {
+                DBG(
+                    "DELETE KG TEST: CANNOT DELETE LAST KG"
+                );
+                return;
+            }
+
+            const int deleteIndex =
+                loadedProgram.groups - 1;
+
+            DBG(
+                "===== TEST DELETE KEYGROUP ====="
+            );
+
+            DBG(
+                "DELETE KG INDEX="
+                + juce::String(deleteIndex)
+            );
+
+            sysExSender.sendDeleteKeygroup(
+                loadedProgram.programNumber,
+                deleteIndex
+            );
+
+            juce::Timer::callAfterDelay(
+                300,
+                [this]()
+                {
+                    DBG(
+                        "RELOAD AFTER DELETE KG"
+                    );
+
+                    loadProgram(
+                        loadedProgram.programNumber
+                    );
+                }
+            );
         };
+
+
+    // ========================================
+    // COMPARE
+    // ========================================
 
     addAndMakeVisible(compareButton);
 
-    compareButton.onClick = [this]
+    compareButton.onClick =
+        [this]()
         {
             compareLatest();
         };
@@ -417,6 +626,9 @@ MainComponent::MainComponent()
 
 
     #if JUCE_DEBUG
+
+
+
 
     addAndMakeVisible(requestButton);
     requestButton.onClick = [this]
@@ -599,6 +811,32 @@ MainComponent::MainComponent()
         };
 
 
+    keygroupMap.onDeleteKeygroup =
+        [this](int keygroupIndex)
+        {
+            if (loadedProgram.groups <= 1)
+                return;
+            pendingDeleteKeygroup =
+                keygroupIndex;
+
+            waitingForDeleteReply = true;
+
+            sysExSender.sendDeleteKeygroup(
+                loadedProgram.programNumber,
+                keygroupIndex
+            );
+        };
+
+    keygroupMap.onAddKeygroup =
+        [this]()
+        {
+            DBG("ADD KG UI CLICK");
+
+            addKeygroup();
+        };
+
+
+
     keyGroupEditor.onKeygroupChanged =
         [this](
             int keygroupIndex,
@@ -685,88 +923,54 @@ MainComponent::MainComponent()
 
 
     velocityZoneEditor.onZoneChanged =
-        [this](VelocityZone zone)
+        [this](const VelocityZone& zone)
         {
-            DBG("VELOCITY ZONE CHANGED");
-
-            DBG(
-                "NAME = ["
-                + zone.sampleName
-                + "]"
-            );
-
-            DBG(
-                "SAMPLE ID = "
-                + juce::String(zone.sampleId)
-            );
-
-            DBG(
-                "CURRENT ZONE = "
-                + juce::String(currentZone)
-            );
-
-
-
-            // 選択中のKeygroupが有効か確認
-            if (currentKeygroup < 0 ||
-                currentKeygroup >= (int)loadedProgram.keygroups.size())
-            {
-                DBG("INVALID CURRENT KEYGROUP");
-                return;
-            }
-
             auto& kg =
-                loadedProgram.keygroups[currentKeygroup];
+                loadedProgram.keygroups[
+                    currentKeygroup
+                ];
 
-            // 選択中のZoneが有効か確認
-            if (currentZone < 0 ||
-                currentZone >= (int)kg.zones.size())
-            {
-                DBG("INVALID CURRENT ZONE");
-                return;
-            }
+            // ========================================
+            // ローカルZone更新
+            // ========================================
 
-            // PC側のProgramデータを更新
-            kg.zones[currentZone] = zone;
+            kg.zones[currentZone] =
+                zone;
 
-            // Sample Header Editorを追従
-            if (zone.sampleId >= 0)
-            {
-                auto it =
-                    sampleHeaders.find(zone.sampleId);
+            // ========================================
+            // 4-Zone Overviewも即更新
+            // ========================================
 
-                if (it != sampleHeaders.end())
-                {
-                    sampleHeaderEditor.setSampleHeader(
-                        it->second
-                    );
-                }
-                else
-                {
-                    sendSampleHeader(
-                        zone.sampleId
-                    );
-                }
-            }
-
-            // Tree更新
-            programTree.setProgram(
-                loadedProgram,
-                sampleHeaders
+            velocityZoneEditor.setZones(
+                kg.zones
             );
 
-            // Encode → 実機送信
+            // 選択ハイライトも維持
+            velocityZoneEditor.setSelectedZone(
+                currentZone
+            );
+
+            // ========================================
+            // 実機へKDATA
+            // ========================================
+
             auto encoded =
                 KeygroupEncoder::encode(
-                    loadedProgram.keygroups[currentKeygroup]
+                    kg
                 );
+
+            if (encoded.empty())
+            {
+                DBG("ZONE CHANGE: ENCODE FAILED");
+                return;
+            }
 
             sysExSender.sendKeygroupData(
                 loadedProgram.programNumber,
                 currentKeygroup,
                 encoded
             );
-        };
+        };;
 
 
 
@@ -1914,6 +2118,51 @@ void MainComponent::handleKeygroupDataResponse(
         )
     );
 
+    // ========================================
+  // 初回ロード中もMap / Treeを逐次更新
+  // ========================================
+
+    const int mapUpdateIndex =
+        loadingKeygroup;
+
+    const Program programForMap =
+        loadedProgram;
+
+    DBG(
+        "QUEUE MAP UPDATE KG="
+        + juce::String(mapUpdateIndex)
+    );
+
+    juce::MessageManager::callAsync(
+        [this, programForMap, mapUpdateIndex]()
+        {
+            DBG(
+                "QUEUE MAP UPDATE KG="
+                + juce::String(mapUpdateIndex)
+                + " PROGRAM KG SIZE="
+                + juce::String(
+                    (int)programForMap.keygroups.size()
+                )
+            );
+
+            // KeygroupMap
+            keygroupMap.setProgram(
+                programForMap
+            );
+
+            // ProgramTree
+            programTree.setProgram(
+                programForMap,
+                sampleHeaders
+            );
+
+            DBG(
+                "PARTIAL MAP + TREE UPDATE KG="
+                + juce::String(mapUpdateIndex)
+            );
+        }
+    );
+
 
     // ========================================
     // Request Sample Headers
@@ -2139,6 +2388,8 @@ void MainComponent::handleKeygroupDataResponse(
                         static_cast<int>(
                             loadedProgram.keygroups.size()
                             ) * rowHeight
+                        + KeygroupMap::buttonAreaHeight
+                        + 20
                     );
 
                 // 先に最終サイズを確定
@@ -2178,12 +2429,349 @@ void MainComponent::handleCommandReply(
     if (size < 5)
         return;
 
-    uint8_t result = data[4];
+    uint8_t result =
+        data[4];
 
     DBG(
         "AKAI REPLY CODE = "
         + juce::String((int)result)
     );
+
+
+    // ========================================
+// ADD KG - STEP 1 KDATA Reply
+// ========================================
+
+    if (pendingAddStage ==
+        PendingAddStage::
+        waitingForKeygroupReply)
+    {
+        if (result != 0)
+        {
+            DBG("ADD KG: KDATA FAILED");
+
+            pendingAddStage =
+                PendingAddStage::none;
+
+            pendingAddKeygroupIndex = -1;
+
+            return;
+        }
+
+        DBG(
+            "ADD KG: KDATA REPLY OK"
+        );
+
+        // ========================================
+        // GROUPS + 1 のPDATAを作る
+        // ========================================
+
+        auto newProgram =
+            loadedProgram;
+
+        newProgram.groups =
+            loadedProgram.groups + 1;
+
+        auto encodedProgram =
+            ProgramEncoder::encode(
+                newProgram
+            );
+
+        if (encodedProgram.empty())
+        {
+            DBG(
+                "ADD KG: PROGRAM ENCODE FAILED"
+            );
+
+            pendingAddStage =
+                PendingAddStage::none;
+
+            pendingAddKeygroupIndex = -1;
+
+            return;
+        }
+
+        pendingAddStage =
+            PendingAddStage::
+            waitingForProgramReply;
+
+        DBG(
+            "STEP 2: SEND PDATA GROUPS + 1"
+        );
+
+        sysExSender.sendProgramData(
+            loadedProgram.programNumber,
+            encodedProgram
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ADD KG - STEP 2 PDATA Reply
+    // ========================================
+
+    if (pendingAddStage ==
+        PendingAddStage::
+        waitingForProgramReply)
+    {
+        if (result != 0)
+        {
+            DBG("ADD KG: PDATA FAILED");
+
+            pendingAddStage =
+                PendingAddStage::none;
+
+            pendingAddKeygroupIndex = -1;
+
+            return;
+        }
+
+        DBG(
+            "ADD KG: PDATA REPLY OK"
+        );
+
+        pendingAddStage =
+            PendingAddStage::none;
+
+        const int addedIndex =
+            pendingAddKeygroupIndex;
+
+        pendingAddKeygroupIndex = -1;
+
+        // MIDI callbackからUIを直接触らない
+        juce::MessageManager::callAsync(
+            [this, addedIndex]()
+            {
+                // ========================================
+                // ローカルProgram更新
+                // ========================================
+
+                loadedProgram.keygroups.push_back(
+                    pendingAddedKeygroup
+                );
+
+                loadedProgram.groups =
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        );
+
+                totalKeygroups =
+                    loadedProgram.groups;
+
+                currentKeygroup =
+                    addedIndex;
+
+                currentZone = 0;
+
+                DBG(
+                    "ADD LOCAL UPDATE GROUPS="
+                    + juce::String(
+                        loadedProgram.groups
+                    )
+                );
+
+                constexpr int rowHeightForMap = 32;
+                constexpr int extraHeight = 80;
+
+                const int contentHeight =
+                    juce::jmax(
+                        200,
+                        static_cast<int>(
+                            loadedProgram.keygroups.size()
+                            ) * rowHeightForMap
+                        + extraHeight
+                    );
+
+                keygroupMap.setSize(
+                    juce::jmax(
+                        1,
+                        keygroupMapViewport.getWidth() - 16
+                    ),
+                    contentHeight
+                );
+
+
+                // ========================================
+                // UIだけ更新
+                // ========================================
+
+                keygroupMap.setProgram(
+                    loadedProgram
+                );
+
+                programTree.setProgram(
+                    loadedProgram,
+                    sampleHeaders
+                );
+
+                auto& kg =
+                    loadedProgram.keygroups[
+                        currentKeygroup
+                    ];
+
+                keyGroupEditor.setKeygroup(
+                    kg,
+                    currentKeygroup
+                );
+
+
+
+                if (!kg.zones.empty())
+                {
+                    velocityZoneEditor.setZone(
+                        kg.zones[0]
+                    );
+                }
+
+                DBG(
+                    "ADD LOCAL UI UPDATE COMPLETE"
+                );
+            }
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // Delete Keygroup reply
+    // ========================================
+
+    if (waitingForDeleteReply)
+    {
+        waitingForDeleteReply = false;
+
+        if (result == 0)
+        {
+            DBG("DELETE REPLY OK");
+
+            const int deletedIndex =
+                pendingDeleteKeygroup;
+
+            pendingDeleteKeygroup = -1;
+
+            juce::MessageManager::callAsync(
+                [this, deletedIndex]()
+                {
+                    if (deletedIndex < 0 ||
+                        deletedIndex >=
+                        static_cast<int>(
+                            loadedProgram.keygroups.size()
+                            ))
+                    {
+                        DBG("DELETE LOCAL UPDATE: INVALID INDEX");
+                        return;
+                    }
+
+                    // =========================
+                    // Model更新
+                    // =========================
+
+                    loadedProgram.keygroups.erase(
+                        loadedProgram.keygroups.begin()
+                        + deletedIndex
+                    );
+
+                    loadedProgram.groups =
+                        static_cast<int>(
+                            loadedProgram.keygroups.size()
+                            );
+
+                    totalKeygroups =
+                        loadedProgram.groups;
+
+                    constexpr int rowHeightForMap = 32;
+                    constexpr int extraHeight = 80;
+
+                    const int contentHeight =
+                        juce::jmax(
+                            200,
+                            loadedProgram.groups
+                            * rowHeightForMap
+                            + extraHeight
+                        );
+
+                    keygroupMap.setSize(
+                        juce::jmax(
+                            1,
+                            keygroupMapViewport.getWidth() - 16
+                        ),
+                        contentHeight
+                    );
+
+
+                    DBG(
+                        "DELETE LOCAL UPDATE GROUPS="
+                        + juce::String(
+                            loadedProgram.groups
+                        )
+                    );
+
+                    // =========================
+                    // 選択位置を補正
+                    // =========================
+
+                    if (currentKeygroup >=
+                        loadedProgram.groups)
+                    {
+                        currentKeygroup =
+                            loadedProgram.groups - 1;
+                    }
+
+                    if (currentKeygroup < 0)
+                        currentKeygroup = 0;
+
+                    currentZone = 0;
+
+                    // =========================
+                    // UI更新
+                    // =========================
+
+                    keygroupMap.setProgram(
+                        loadedProgram
+                    );
+
+                    programTree.setProgram(
+                        loadedProgram,
+                        sampleHeaders
+                    );
+
+                    if (!loadedProgram.keygroups.empty())
+                    {
+                        auto& kg =
+                            loadedProgram.keygroups[
+                                currentKeygroup
+                            ];
+
+                        keyGroupEditor.setKeygroup(
+                            kg,
+                            currentKeygroup
+                        );
+
+                        if (!kg.zones.empty())
+                        {
+                            velocityZoneEditor.setZone(
+                                kg.zones[0]
+                            );
+                        }
+                    }
+
+                    DBG(
+                        "DELETE LOCAL UI UPDATE COMPLETE"
+                    );
+                }
+            );
+        }
+        else
+        {
+            DBG("DELETE KEYGROUP FAILED");
+            pendingDeleteKeygroup = -1;
+        }
+
+        return;
+    }
 }
 
     
@@ -2215,15 +2803,55 @@ void MainComponent::handleProgramHeaderResponse()
     loadedProgram.keygroups =
         std::move(existingKeygroups);
 
-    // ==============================
-    // Keygroup count
-    // ==============================
+    loadedProgram.rawData = decoded;
+
+
+
 
     totalKeygroups =
         loadedProgram.groups;
 
     // SysExロード専用index
     loadingKeygroup = 0;
+
+    // ========================================
+// Mapの領域を先に確保
+// ========================================
+
+    const int mapKeygroupCount =
+        totalKeygroups;
+
+    juce::MessageManager::callAsync(
+        [this, mapKeygroupCount]()
+        {
+            constexpr int rowHeightForMap = 32;
+            constexpr int extraHeight = 64;
+
+            const int contentHeight =
+                juce::jmax(
+                    200,
+                    mapKeygroupCount
+                    * rowHeightForMap
+                    + extraHeight
+                );
+
+            keygroupMap.setSize(
+                juce::jmax(
+                    1,
+                    keygroupMapViewport.getWidth() - 16
+                ),
+                contentHeight
+            );
+
+            DBG(
+                "INITIAL MAP SIZE SET "
+                + juce::String(keygroupMap.getWidth())
+                + " x "
+                + juce::String(keygroupMap.getHeight())
+            );
+        }
+    );
+
 
     DBG(
         "TOTAL KEYGROUPS = "
@@ -2262,6 +2890,106 @@ void MainComponent::handleProgramHeaderResponse()
             loadingKeygroup
         );
     }
+}
+
+void MainComponent::addKeygroup()
+{
+    if (loadedProgram.keygroups.empty())
+    {
+        DBG("ADD KG: NO KEYGROUPS");
+        return;
+    }
+
+    if (pendingAddStage !=
+        PendingAddStage::none)
+    {
+        DBG("ADD KG: ALREADY IN PROGRESS");
+        return;
+    }
+
+    const int oldGroups =
+        loadedProgram.groups;
+
+    if (oldGroups >= 99)
+    {
+        DBG("ADD KG: MAX KEYGROUPS");
+        return;
+    }
+
+    const int newKeygroupIndex =
+        oldGroups;
+
+    // ========================================
+    // 最後のKGをコピーして新KGを作る
+    // ========================================
+
+    if (currentKeygroup < 0 ||
+        currentKeygroup >=
+        static_cast<int>(
+            loadedProgram.keygroups.size()
+            ))
+    {
+        DBG("ADD KG: INVALID SOURCE KG");
+        return;
+    }
+
+    const int sourceKeygroupIndex =
+        currentKeygroup;
+
+    Keygroup newKg =
+        loadedProgram.keygroups[
+            sourceKeygroupIndex
+        ];
+
+    auto encodedKg =
+        KeygroupEncoder::encode(
+            newKg
+        );
+
+    if (encodedKg.empty())
+    {
+        DBG("ADD KG: KG ENCODE FAILED");
+        return;
+    }
+
+    // ========================================
+    // Reply後に必要なので保存
+    // ========================================
+
+    pendingAddedKeygroup =
+        newKg;
+
+    pendingAddKeygroupIndex =
+        newKeygroupIndex;
+
+    pendingAddStage =
+        PendingAddStage::
+        waitingForKeygroupReply;
+
+    DBG("===== ADD KEYGROUP =====");
+
+    DBG(
+        "GROUPS "
+        + juce::String(oldGroups)
+        + " -> "
+        + juce::String(oldGroups + 1)
+    );
+
+    DBG(
+        "STEP 1: SEND KDATA KG="
+        + juce::String(newKeygroupIndex)
+    );
+
+    // ========================================
+    // STEP 1
+    // KDATAだけ送る
+    // ========================================
+
+    sysExSender.sendKeygroupData(
+        loadedProgram.programNumber,
+        newKeygroupIndex,
+        encodedKg
+    );
 }
 
 void MainComponent::handleKeygroupFullResponse()
@@ -3121,6 +3849,9 @@ void MainComponent::loadProgram(
         programIndex;
 
     loadedProgram.keygroups.clear();
+
+    // Resident Sample Listを1回取得
+    sysExSender.sendRSLIST();
 
     DBG(
         "LOAD PROGRAM INDEX="
