@@ -29,6 +29,23 @@ VelocityZoneEditor::VelocityZoneEditor()
     //playModeCombo.addItem("Loop Until Release", 3);
     //playModeCombo.addItem("No Loop", 4);
     //playModeCombo.addItem("Play To End", 5);
+    velocityZoneMap.onZoneRangeChanged =
+        [this](
+            int zoneIndex,
+            int low,
+            int high
+            )
+        {
+            if (onZoneRangeChanged)
+            {
+                onZoneRangeChanged(
+                    zoneIndex,
+                    low,
+                    high
+                );
+            }
+        };
+
 
     addAndMakeVisible(playModeLabel);
     addAndMakeVisible(playModeCombo);
@@ -445,6 +462,47 @@ VelocityZoneEditor::VelocityZoneEditor()
     //            onZoneChanged(currentZone);
     //    };
 
+    auto setupSectionLabel =
+        [this](juce::Label& label,
+            const juce::String& text)
+        {
+            label.setText(
+                text,
+                juce::dontSendNotification
+            );
+
+            label.setColour(
+                juce::Label::textColourId,
+                juce::Colours::lightgrey
+            );
+
+            label.setFont(
+                juce::Font(13.0f).boldened()
+            );
+
+            addAndMakeVisible(label);
+        };
+
+    setupSectionLabel(
+        sampleSectionLabel,
+        "SAMPLE"
+    );
+
+    setupSectionLabel(
+        velocitySectionLabel,
+        "VELOCITY"
+    );
+
+    setupSectionLabel(
+        pitchSectionLabel,
+        "PITCH"
+    );
+
+    setupSectionLabel(
+        outputSectionLabel,
+        "OUTPUT"
+    );
+
     playModeCombo.addItem("As Sample", 1);
     playModeCombo.addItem("Normal Loop", 2);
     playModeCombo.addItem("Loop Until Release", 3);
@@ -494,6 +552,48 @@ VelocityZoneEditor::VelocityZoneEditor()
     //addAndMakeVisible(highVelXFadeEditor);
 
 
+}
+
+void VelocityZoneEditor::paint(
+    juce::Graphics& g)
+{
+    auto drawCard =
+        [&g](const juce::Rectangle<int>& bounds)
+        {
+            if (bounds.isEmpty())
+                return;
+
+            auto r =
+                bounds.toFloat();
+
+            // Card background
+            g.setColour(
+                juce::Colours::white
+                .withAlpha(0.045f)
+            );
+
+            g.fillRoundedRectangle(
+                r,
+                6.0f
+            );
+
+            // Subtle border
+            g.setColour(
+                juce::Colours::white
+                .withAlpha(0.10f)
+            );
+
+            g.drawRoundedRectangle(
+                r,
+                6.0f,
+                1.0f
+            );
+        };
+
+    drawCard(sampleCardBounds);
+    drawCard(velocityCardBounds);
+    drawCard(pitchCardBounds);
+    drawCard(outputCardBounds);
 }
 
 void VelocityZoneEditor::setSelectedZone(
@@ -686,107 +786,291 @@ void VelocityZoneEditor::resized()
     auto area =
         getLocalBounds().reduced(10);
 
+    const int rowHeight = 26;
+    const int sectionHeight = 22;
+    const int labelWidth = 90;
+
+    constexpr int cardPadding = 10;
+    constexpr int columnGap = 14;
+    constexpr int cardGap = 10;
+
+    // ========================================
+    // TITLE
+    // ========================================
+
     titleLabel.setBounds(
         area.removeFromTop(30)
     );
 
     // ========================================
-    // 4 Zone Overview
+    // 4-ZONE OVERVIEW
     // ========================================
 
     velocityZoneMap.setBounds(
-        area.removeFromTop(130)
+        area.removeFromTop(100)
     );
 
-    area.removeFromTop(8);
+    area.removeFromTop(10);
 
-    const int rowHeight = 26;
-    const int labelWidth = 120;
+
+
+    // ========================================
+    // CARD HEIGHTS
+    // ========================================
+
+    const int sampleCardHeight =
+        sectionHeight
+        + rowHeight * 2
+        + cardPadding * 2;
+
+    const int pitchCardHeight =
+        sectionHeight
+        + rowHeight * 2
+        + cardPadding * 2;
+
+    const int velocityCardHeight =
+        sectionHeight
+        + 45
+        + rowHeight * 2
+        + cardPadding * 2;
+
+    const int outputCardHeight =
+        sectionHeight
+        + rowHeight * 4
+        + cardPadding * 2;
+
+    // ========================================
+// CARD AREA
+// ========================================
+
+    auto cardArea =
+        area;
+
+    // 45 / 55
+    const int leftWidth =
+        static_cast<int>(
+            cardArea.getWidth() * 0.45f
+            );
+
+    // ========================================
+    // TOP ROW
+    // ========================================
+
+    auto topRow =
+        cardArea.removeFromTop(
+            juce::jmax(
+                sampleCardHeight,
+                velocityCardHeight
+            )
+        );
+
+    auto topLeft =
+        topRow.removeFromLeft(
+            leftWidth
+        );
+
+    topRow.removeFromLeft(
+        columnGap
+    );
+
+    auto topRight =
+        topRow;
+
+    sampleCardBounds =
+        topLeft.removeFromTop(
+            sampleCardHeight
+        );
+
+    velocityCardBounds =
+        topRight.removeFromTop(
+            velocityCardHeight
+        );
+
+    cardArea.removeFromTop(
+        cardGap
+    );
+
+    // ========================================
+    // BOTTOM ROW
+    // ========================================
+
+    auto bottomRow =
+        cardArea;
+
+    auto bottomLeft =
+        bottomRow.removeFromLeft(
+            leftWidth
+        );
+
+    bottomRow.removeFromLeft(
+        columnGap
+    );
+
+    auto bottomRight =
+        bottomRow;
+
+    pitchCardBounds =
+        bottomLeft.removeFromTop(
+            pitchCardHeight
+        );
+
+    outputCardBounds =
+        bottomRight.removeFromTop(
+            outputCardHeight
+        );
+
+    // ========================================
+    // Helper
+    // ========================================
 
     auto addRow =
-        [&area, rowHeight, labelWidth]
+        [rowHeight, labelWidth]
         (
+            juce::Rectangle<int>& column,
             juce::Label& label,
             auto& editor
             )
         {
             auto row =
-                area.removeFromTop(rowHeight);
+                column.removeFromTop(
+                    rowHeight
+                );
 
             label.setBounds(
-                row.removeFromLeft(labelWidth)
+                row.removeFromLeft(
+                    labelWidth
+                )
             );
 
-            editor.setBounds(row);
+            editor.setBounds(
+                row
+            );
         };
 
-    // Sample
+    // ========================================
+    // SAMPLE CARD
+    // ========================================
+
+    auto sampleArea =
+        sampleCardBounds.reduced(
+            cardPadding
+        );
+
+    sampleSectionLabel.setBounds(
+        sampleArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
     addRow(
+        sampleArea,
         sampleNameLabel,
         sampleCombo
     );
 
     addRow(
+        sampleArea,
         sampleIdLabel,
         sampleIdEditor
     );
 
-    // Velocity
-    addRow(
-        lowVelLabel,
-        lowVelEditor
-    );
-
-    addRow(
-        highVelLabel,
-        highVelEditor
-    );
-
-    area.removeFromTop(6);
-
     // ========================================
-    // Selected Zone Velocity Range
+    // PITCH CARD
     // ========================================
 
-    velocityRangeBar.setBounds(
-        area.removeFromTop(60)
+    auto pitchArea =
+        pitchCardBounds.reduced(
+            cardPadding
+        );
+
+    pitchSectionLabel.setBounds(
+        pitchArea.removeFromTop(
+            sectionHeight
+        )
     );
 
-    area.removeFromTop(6);
-
-    // Tune
     addRow(
+        pitchArea,
         semitoneLabel,
         semitoneEditor
     );
 
     addRow(
+        pitchArea,
         fineTuneLabel,
         fineTuneEditor
     );
 
-    // ‚»‚Ì‘¼
+    // ========================================
+    // VELOCITY CARD
+    // ========================================
+
+    auto velocityArea =
+        velocityCardBounds.reduced(
+            cardPadding
+        );
+
+    velocitySectionLabel.setBounds(
+        velocityArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
+    velocityRangeBar.setBounds(
+        velocityArea.removeFromTop(45)
+    );
+
     addRow(
+        velocityArea,
+        lowVelLabel,
+        lowVelEditor
+    );
+
+    addRow(
+        velocityArea,
+        highVelLabel,
+        highVelEditor
+    );
+
+    // ========================================
+    // OUTPUT CARD
+    // ========================================
+
+    auto outputArea =
+        outputCardBounds.reduced(
+            cardPadding
+        );
+
+    outputSectionLabel.setBounds(
+        outputArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
+    addRow(
+        outputArea,
         loudnessLabel,
         loudnessEditor
     );
 
     addRow(
+        outputArea,
         panLabel,
         panEditor
     );
 
     addRow(
-        playModeLabel,
-        playModeCombo
-    );
-
-    addRow(
+        outputArea,
         filterFreqLabel,
         filterFreqEditor
     );
-}
 
+    addRow(
+        outputArea,
+        playModeLabel,
+        playModeCombo
+    );
+}
 void VelocityZoneEditor::setResidentSamples(
     const std::map<int, juce::String>& samples)
 {

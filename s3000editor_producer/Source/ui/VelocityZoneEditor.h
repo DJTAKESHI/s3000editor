@@ -25,11 +25,19 @@ public:
     std::function<void(int)>
         onZoneSelected;
 
+    std::function<void(
+        int zoneIndex,
+        int low,
+        int high
+        )> onZoneRangeChanged;
+
 
 
     void resized() override;
 
     void setSelectedZone(int index);
+
+    void paint(juce::Graphics& g) override;
 
 private:
     
@@ -73,6 +81,16 @@ private:
 
     juce::Label filterFreqLabel;
     juce::TextEditor filterFreqEditor;
+
+    juce::Label sampleSectionLabel;
+    juce::Label velocitySectionLabel;
+    juce::Label pitchSectionLabel;
+    juce::Label outputSectionLabel;
+
+    juce::Rectangle<int> sampleCardBounds;
+    juce::Rectangle<int> velocityCardBounds;
+    juce::Rectangle<int> pitchCardBounds;
+    juce::Rectangle<int> outputCardBounds;
 
     //juce::Label lowVelXFadeLabel;
     //juce::TextEditor lowVelXFadeEditor;

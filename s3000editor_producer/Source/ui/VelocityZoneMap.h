@@ -24,7 +24,32 @@ public:
 
     void setSelectedZone(int index);
 
+    void mouseDrag(
+        const juce::MouseEvent& event
+    ) override;
+
+    void mouseUp(
+        const juce::MouseEvent& event
+    ) override;
+
+    std::function<void(
+        int zoneIndex,
+        int low,
+        int high
+        )> onZoneRangeChanged;
+
+
 private:
+
+    int draggingZone = -1;
+    bool draggingLow = false;
+    bool draggingHigh = false;
     int selectedZone = 0;
+
+    int xToVelocity(
+        float x,
+        const juce::Rectangle<float>& barArea
+    ) const;
+
     std::array<VelocityZone, 4> zones;
 };

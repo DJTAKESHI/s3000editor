@@ -326,6 +326,50 @@ MainComponent::MainComponent()
             editorTabs.setCurrentTabIndex(1);
         };
 
+    velocityZoneEditor.onZoneRangeChanged =
+        [this](
+            int zoneIndex,
+            int low,
+            int high
+            )
+        {
+            auto& kg =
+                loadedProgram.keygroups[
+                    currentKeygroup
+                ];
+
+            auto& zone =
+                kg.zones[zoneIndex];
+
+            zone.lowVel =
+                static_cast<uint8_t>(low);
+
+            zone.highVel =
+                static_cast<uint8_t>(high);
+
+            currentZone =
+                zoneIndex;
+
+            velocityZoneEditor.setZone(
+                zone
+            );
+
+            auto encoded =
+                KeygroupEncoder::encode(
+                    kg
+                );
+
+            if (!encoded.empty())
+            {
+                sysExSender.sendKeygroupData(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    encoded
+                );
+            }
+        };
+
+
     programTree.onBasicZoneSelected =
         [this](
             int keygroupIndex,

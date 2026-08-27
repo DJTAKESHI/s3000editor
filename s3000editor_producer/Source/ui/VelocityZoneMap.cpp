@@ -18,9 +18,13 @@ void VelocityZoneMap::paint(
         .toFloat()
         .reduced(8.0f);
 
-    constexpr float rowHeight = 30.0f;
+    constexpr float rowHeight = 22.0f;
     constexpr float labelWidth = 55.0f;
-    constexpr float textWidth = 120.0f;
+    constexpr float rangeTextWidth = 65.0f;
+    constexpr float sampleTextWidth = 130.0f;
+
+    const float textWidth =
+        rangeTextWidth + sampleTextWidth;
 
     for (int i = 0; i < 4; ++i)
     {
@@ -189,33 +193,62 @@ void VelocityZoneMap::paint(
         );
 
         // =========================
-        // Range + Sample
-        // =========================
+// Range + Sample
+// =========================
 
-        const juce::String text =
-            juce::String(zone.lowVel)
-            + "-"
-            + juce::String(zone.highVel)
-            + "  "
-            + zone.sampleName.trim();
+        const float textX =
+            barArea.getRight() + 8.0f;
 
         g.setColour(
             juce::Colours::white
         );
 
+        // Velocity Range
         g.drawText(
-            text,
+            juce::String(zone.lowVel)
+            + "-"
+            + juce::String(zone.highVel),
+            static_cast<int>(textX),
+            static_cast<int>(y),
+            static_cast<int>(rangeTextWidth),
+            static_cast<int>(rowHeight),
+            juce::Justification::centredLeft
+        );
+
+        // Sample Name
+        g.drawText(
+            zone.sampleName.trim(),
             static_cast<int>(
-                barArea.getRight() + 8.0f
+                textX + rangeTextWidth
                 ),
             static_cast<int>(y),
-            static_cast<int>(
-                textWidth - 8.0f
-                ),
+            static_cast<int>(sampleTextWidth),
             static_cast<int>(rowHeight),
             juce::Justification::centredLeft
         );
     }
+}
+
+int VelocityZoneMap::xToVelocity(
+    float x,
+    const juce::Rectangle<float>& barArea
+) const
+{
+    const float normalized =
+        juce::jlimit(
+            0.0f,
+            1.0f,
+            (x - barArea.getX())
+            / barArea.getWidth()
+        );
+
+    return juce::jlimit(
+        0,
+        127,
+        juce::roundToInt(
+            normalized * 127.0f
+        )
+    );
 }
 
 void VelocityZoneMap::setSelectedZone(int index)
@@ -229,14 +262,23 @@ void VelocityZoneMap::setSelectedZone(int index)
 void VelocityZoneMap::mouseDown(
     const juce::MouseEvent& event)
 {
-    constexpr float rowHeight = 30.0f;
+    constexpr float rowHeight = 22.0f;
+    constexpr float labelWidth = 55.0f;
+    constexpr float rangeTextWidth = 65.0f;
+    constexpr float sampleTextWidth = 160.0f;
 
-    // paint() ÇÃ reduced(8.0f) Ç∆çáÇÌÇπÇÈ
-    const float top = 8.0f;
+    const float textWidth =
+        rangeTextWidth
+        + sampleTextWidth;
+
+    auto area =
+        getLocalBounds()
+        .toFloat()
+        .reduced(8.0f);
 
     const int zoneIndex =
         static_cast<int>(
-            (event.position.y - top)
+            (event.position.y - area.getY())
             / rowHeight
             );
 
@@ -246,15 +288,147 @@ void VelocityZoneMap::mouseDown(
         return;
     }
 
-    DBG(
-        "VELOCITY ZONE MAP SELECTED ZONE="
-        + juce::String(zoneIndex)
-    );
-
     if (onZoneSelected)
+        onZoneSelected(zoneIndex);
+
+    const auto& zone =
+        zones[zoneIndex];
+
+    auto barArea =
+        juce::Rectangle<float>(
+            area.getX() + labelWidth,
+            area.getY()
+            + zoneIndex * rowHeight
+            + 5.0f,
+            area.getWidth()
+            - labelWidth
+            - textWidth,
+            rowHeight - 10.0f
+        );
+
+    const float lowX =
+        barArea.getX()
+        + static_cast<float>(zone.lowVel)
+        / 128.0f
+        * barArea.getWidth();
+
+    const float highX =
+        barArea.getX()
+        + static_cast<float>(
+            zone.highVel + 1
+            )
+        / 128.0f
+        * barArea.getWidth();
+
+    draggingZone =
+        zoneIndex;
+
+    if (std::abs(
+        event.position.x - lowX
+    )
+        <
+        std::abs(
+            event.position.x - highX
+        ))
     {
-        onZoneSelected(
-            zoneIndex
+        draggingLow = true;
+        draggingHigh = false;
+    }
+    else
+    {
+        draggingLow = false;
+        draggingHigh = true;
+    }
+}
+
+void VelocityZoneMap::mouseDrag(
+    const juce::MouseEvent& event)
+{
+    if (draggingZone < 0 ||
+        draggingZone >= 4)
+    {
+        return;
+    }
+
+    constexpr float rowHeight = 22.0f;
+    constexpr float labelWidth = 55.0f;
+    constexpr float rangeTextWidth = 65.0f;
+    constexpr float sampleTextWidth = 160.0f;
+
+    const float textWidth =
+        rangeTextWidth
+        + sampleTextWidth;
+
+    auto area =
+        getLocalBounds()
+        .toFloat()
+        .reduced(8.0f);
+
+    auto barArea =
+        juce::Rectangle<float>(
+            area.getX() + labelWidth,
+            area.getY()
+            + draggingZone * rowHeight
+            + 5.0f,
+            area.getWidth()
+            - labelWidth
+            - textWidth,
+            rowHeight - 10.0f
+        );
+
+    auto& zone =
+        zones[draggingZone];
+
+    const int velocity =
+        xToVelocity(
+            event.position.x,
+            barArea
+        );
+
+    if (draggingLow)
+    {
+        zone.lowVel =
+            static_cast<uint8_t>(
+                juce::jlimit(
+                    0,
+                    static_cast<int>(
+                        zone.highVel
+                        ),
+                    velocity
+                )
+                );
+    }
+
+    if (draggingHigh)
+    {
+        zone.highVel =
+            static_cast<uint8_t>(
+                juce::jlimit(
+                    static_cast<int>(
+                        zone.lowVel
+                        ),
+                    127,
+                    velocity
+                )
+                );
+    }
+
+    repaint();
+
+    if (onZoneRangeChanged)
+    {
+        onZoneRangeChanged(
+            draggingZone,
+            zone.lowVel,
+            zone.highVel
         );
     }
+}
+
+void VelocityZoneMap::mouseUp(
+    const juce::MouseEvent&)
+{
+    draggingZone = -1;
+    draggingLow = false;
+    draggingHigh = false;
 }
