@@ -488,3 +488,30 @@ void SysExSender::sendRSLIST()
 
     DBG("RSLIST REQUEST SENT");
 }
+
+void SysExSender::sendHeartbeat()
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    uint8_t data[]
+    {
+        0x47,   // Akai Manufacturer
+        0x00,   // Exclusive channel
+        0x10,   // RMDATA
+        0x48    // Model identity
+    };
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG("HEARTBEAT RMDATA SENT");
+}

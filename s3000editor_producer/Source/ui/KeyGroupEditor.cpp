@@ -1307,7 +1307,7 @@ void KeyGroupEditor::setKeygroup(
 
     titleLabel.setText(
         "Keygroup "
-        + juce::String(keygroupIndex),
+        + juce::String(keygroupIndex + 1),
         juce::dontSendNotification
     );
 

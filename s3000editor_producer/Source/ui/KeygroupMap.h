@@ -47,16 +47,16 @@ public:
 
     void resized() override;
 
-    juce::TextButton addKeygroupButton{
-    "+ Add KG"
-    };
+    //juce::TextButton addKeygroupButton{
+    //"+ Add KG"
+    //};
 
-    juce::TextButton deleteKeygroupButton{
-        "Delete KG"
-    };
+    //juce::TextButton deleteKeygroupButton{
+    //    "Delete KG"
+    //};
 
-    std::function<void()> onAddKeygroup;
-    std::function<void(int)> onDeleteKeygroup;
+    //std::function<void()> onAddKeygroup;
+    //std::function<void(int)> onDeleteKeygroup;
 
 private:
     static constexpr int rowHeight = 32;
@@ -96,6 +96,10 @@ private:
 
     float noteToX(
         int note) const;
+
+    //juce::Label titleLabel;
+
+    juce::Rectangle<float> getMapArea() const;
 
     int keygroupAtPosition(
         juce::Point<float> position) const;

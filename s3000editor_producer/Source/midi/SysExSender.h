@@ -11,6 +11,7 @@ public:
 
     void sendRPLIST();
     void sendRSLIST();
+    void sendHeartbeat();
     
     void sendProgramHeader(int programIndex);
     void sendKGHeader(

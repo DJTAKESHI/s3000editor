@@ -80,7 +80,7 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(editorTabs);
 
-    addAndMakeVisible(keygroupMap);
+    //addAndMakeVisible(keygroupMap);
 
     keygroupMap.onKeygroupSelected =
         [this](int index)
@@ -326,6 +326,27 @@ MainComponent::MainComponent()
             editorTabs.setCurrentTabIndex(1);
         };
 
+    addAndMakeVisible(programCombo);
+
+    deviceStatusLabel.setText(
+        "S3000XL: Waiting for device...",
+        juce::dontSendNotification
+    );
+
+    deviceStatusLabel.setColour(
+        juce::Label::textColourId,
+        juce::Colours::white
+    );
+
+    // デバッグ用：表示領域を確認
+    //deviceStatusLabel.setColour(
+    //    juce::Label::backgroundColourId,
+    //    juce::Colours::darkgrey
+    //);
+
+    addAndMakeVisible(deviceStatusLabel);
+
+
     velocityZoneEditor.onZoneRangeChanged =
         [this](
             int zoneIndex,
@@ -367,6 +388,66 @@ MainComponent::MainComponent()
                     encoded
                 );
             }
+        };
+
+    keygroupTitleLabel.setText(
+        "KEYGROUPS",
+        juce::dontSendNotification
+    );
+
+    keygroupTitleLabel.setColour(
+        juce::Label::textColourId,
+        juce::Colours::lightgrey
+    );
+
+    keygroupTitleLabel.setFont(
+        juce::Font(13.0f).boldened()
+    );
+
+    addAndMakeVisible(
+        keygroupTitleLabel
+    );
+
+    addAndMakeVisible(
+        addKeygroupButton
+    );
+
+    addAndMakeVisible(
+        deleteKeygroupButton
+    );
+
+    addKeygroupButton.onClick =
+        [this]()
+        {
+            addKeygroup();
+        };
+
+
+    deleteKeygroupButton.onClick =
+        [this]()
+        {
+            if (loadedProgram.groups <= 1)
+                return;
+
+            if (currentKeygroup < 0 ||
+                currentKeygroup >=
+                static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            pendingDeleteKeygroup =
+                currentKeygroup;
+
+            waitingForDeleteReply =
+                true;
+
+            sysExSender.sendDeleteKeygroup(
+                loadedProgram.programNumber,
+                currentKeygroup
+            );
         };
 
 
@@ -855,29 +936,29 @@ MainComponent::MainComponent()
         };
 
 
-    keygroupMap.onDeleteKeygroup =
-        [this](int keygroupIndex)
-        {
-            if (loadedProgram.groups <= 1)
-                return;
-            pendingDeleteKeygroup =
-                keygroupIndex;
+    //keygroupMap.onDeleteKeygroup =
+    //    [this](int keygroupIndex)
+    //    {
+    //        if (loadedProgram.groups <= 1)
+    //            return;
+    //        pendingDeleteKeygroup =
+    //            keygroupIndex;
 
-            waitingForDeleteReply = true;
+    //        waitingForDeleteReply = true;
 
-            sysExSender.sendDeleteKeygroup(
-                loadedProgram.programNumber,
-                keygroupIndex
-            );
-        };
+    //        sysExSender.sendDeleteKeygroup(
+    //            loadedProgram.programNumber,
+    //            keygroupIndex
+    //        );
+    //    };
 
-    keygroupMap.onAddKeygroup =
-        [this]()
-        {
-            DBG("ADD KG UI CLICK");
+    //keygroupMap.onAddKeygroup =
+    //    [this]()
+    //    {
+    //        DBG("ADD KG UI CLICK");
 
-            addKeygroup();
-        };
+    //        addKeygroup();
+    //    };
 
 
 
@@ -1142,6 +1223,8 @@ MainComponent::MainComponent()
             DBG("SAMPLE HEADER SYSEX SENT");
         };
 
+    deviceStatusLabel.toFront(false);
+    startTimer(1000);
 
 }
 
@@ -1166,44 +1249,60 @@ void MainComponent::resized()
 {
     auto area = getLocalBounds();
 
-    programCombo.setBounds(
+    programCombo.setBounds(20, 20, 250, 30);
+
+    deviceStatusLabel.setBounds(
+        getWidth() - 250,
         20,
-        20,
-        250,
+        230,
         30
     );
 
-    #if JUCE_DEBUG  
+
+#if JUCE_DEBUG
     captureAButton.setBounds(area.removeFromTop(50));
     captureBButton.setBounds(area.removeFromTop(50));
     compareButton.setBounds(area.removeFromTop(50));
-    #endif  
-
+#endif
 
     requestButton.setBounds(area.removeFromTop(50));
     requestRPDATAButton.setBounds(area.removeFromTop(50));
-    //programLabel.setBounds(area.removeFromTop(30));
 
-    // 左側
-// 左側
     auto left = area.removeFromLeft(350);
 
-    keygroupMapViewport.setBounds(
+    auto keygroupSection =
         left.removeFromTop(220)
-        .reduced(10)
+        .reduced(10);
+
+    // 固定ヘッダ
+    auto keygroupHeader =
+        keygroupSection.removeFromTop(34);
+
+    keygroupTitleLabel.setBounds(
+        keygroupHeader.removeFromLeft(100)
     );
 
-    // MapとTreeの間
+    deleteKeygroupButton.setBounds(
+        keygroupHeader.removeFromRight(90)
+    );
+
+    keygroupHeader.removeFromRight(6);
+
+    addKeygroupButton.setBounds(
+        keygroupHeader.removeFromRight(90)
+    );
+
+    // バー部分だけスクロール
+    keygroupMapViewport.setBounds(
+        keygroupSection
+    );
+
     left.removeFromTop(6);
 
-    // 残りをProgram Treeに使う
     programTree.setBounds(
         left.reduced(10)
     );
 
-    //programTree.setBounds(left);
-
-    // 右側全部をタブ領域にする
     editorTabs.setBounds(area);
 
     // Keygroup Editor はViewport内でスクロール
@@ -1223,6 +1322,9 @@ void MainComponent::resized()
         ),
         750
     );
+
+
+
 }
 
 void MainComponent::compareLatest()
@@ -1243,6 +1345,42 @@ void MainComponent::compareLatest()
     }
 }
 
+void MainComponent::timerCallback()
+{
+    const double now =
+        juce::Time::getMillisecondCounterHiRes();
+
+    ++heartbeatCounter;
+
+    if (heartbeatCounter >= 3)
+    {
+        heartbeatCounter = 0;
+        sysExSender.sendHeartbeat();
+    }
+
+    if (!deviceConnected)
+        return;
+
+    const double elapsed =
+        now - lastDeviceResponseTime;
+
+    if (elapsed > 5000.0)
+    {
+        deviceConnected = false;
+
+        deviceStatusLabel.setText(
+            "S3000XL: Disconnected",
+            juce::dontSendNotification
+        );
+
+        deviceStatusLabel.setColour(
+            juce::Label::textColourId,
+            juce::Colours::grey
+        );
+    }
+}
+
+
 void MainComponent::handleIncomingMidiMessage(
     juce::MidiInput*,
     const juce::MidiMessage& message)
@@ -1250,7 +1388,27 @@ void MainComponent::handleIncomingMidiMessage(
     if (!message.isSysEx())
         return;
 
+    lastDeviceResponseTime =
+        juce::Time::getMillisecondCounterHiRes();
+
     processIncomingSysEx(message);
+
+    juce::MessageManager::callAsync(
+        [this]()
+        {
+            deviceConnected = true;
+
+            deviceStatusLabel.setText(
+                "S3000XL: Connected",
+                juce::dontSendNotification
+            );
+
+            deviceStatusLabel.setColour(
+                juce::Label::textColourId,
+                juce::Colours::lightgreen
+            );
+        }
+    );
 }
 
 void MainComponent::processIncomingSysEx(
@@ -1267,6 +1425,13 @@ void MainComponent::processIncomingSysEx(
 
     uint8_t opcode = data[2];
 
+    // MDATA response = heartbeat response
+    if (opcode == 0x11)
+    {
+        DBG("HEARTBEAT MDATA RECEIVED");
+        return;
+    }
+
     DBG("=== INCOMING SYSEX ===");
     DBG("opcode = 0x" + juce::String::toHexString(opcode));
     DBG("getSysExDataSize = " + juce::String((int)size));
@@ -1277,12 +1442,12 @@ void MainComponent::processIncomingSysEx(
 
     static int captureIndex = 0;
 
-    juce::String name =
-        (captureIndex == 0)
-        ? "rpdata_A"
-        : "rpdata_B";
+    //juce::String name =
+    //    (captureIndex == 0)
+    //    ? "rpdata_A"
+    //    : "rpdata_B";
 
-    saveRawRPDATA(name, programBuffer);
+    //saveRawRPDATA(name, programBuffer);
 
 //    std::vector<uint8_t> decoded;
 

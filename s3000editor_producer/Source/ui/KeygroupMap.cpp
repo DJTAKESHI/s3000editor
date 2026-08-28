@@ -42,68 +42,36 @@ void KeygroupMap::setProgram(
 
 void KeygroupMap::resized()
 {
-    auto area =
-        getLocalBounds();
-
-    auto buttonArea =
-        area.removeFromBottom(
-            buttonAreaHeight
-        );
-
-    buttonArea.reduce(
-        8,
-        5
-    );
-
-    auto addArea =
-        buttonArea.removeFromLeft(100);
-
-    buttonArea.removeFromLeft(8);
-
-    auto deleteArea =
-        buttonArea.removeFromLeft(100);
-
-    addKeygroupButton.setBounds(
-        addArea
-    );
-
-    deleteKeygroupButton.setBounds(
-        deleteArea
-    );
+    repaint();
 }
 
 
 float KeygroupMap::noteToX(
     int note) const
 {
-    const auto area =
-        getLocalBounds()
-        .toFloat()
-        .reduced(10.0f);
+    auto mapArea = getMapArea();
+
+    constexpr float labelWidth = 55.0f;
+    constexpr float rangeWidth = 80.0f;
+
+    mapArea.removeFromLeft(labelWidth);
+    mapArea.removeFromRight(rangeWidth);
 
     const float normalized =
         juce::jlimit(
             0.0f,
             1.0f,
-            static_cast<float>(note) / 127.0f
+            static_cast<float>(note) / 128.0f
         );
 
-    return area.getX()
-        + normalized * area.getWidth();
+    return mapArea.getX()
+        + normalized * mapArea.getWidth();
 }
 
 void KeygroupMap::paint(
     juce::Graphics& g)
 {
-    auto bounds =
-        getLocalBounds();
-
-    bounds.removeFromBottom(buttonAreaHeight);
-
-    auto area =
-        bounds
-        .toFloat()
-        .reduced(10.0f);
+    auto area = getMapArea();
 
     g.setColour(
         juce::Colours::darkgrey
@@ -140,6 +108,24 @@ void KeygroupMap::paint(
         const float y =
             area.getY()
             + i * rowHeight; 
+
+        if (i == selectedKeygroup)
+        {
+            g.setColour(
+                juce::Colours::white
+                .withAlpha(0.10f)
+            );
+
+            g.fillRoundedRectangle(
+                juce::Rectangle<float>(
+                    area.getX(),
+                    y,
+                    area.getWidth(),
+                    rowHeight
+                ),
+                4.0f
+            );
+        }
 
         const auto bar =
             getBarBounds(i);
@@ -295,15 +281,7 @@ void KeygroupMap::paint(
 int KeygroupMap::keygroupAtPosition(
     juce::Point<float> position) const
 {
-    auto bounds =
-        getLocalBounds();
-
-    bounds.removeFromBottom(34);
-
-    auto area =
-        bounds
-        .toFloat()
-        .reduced(10.0f);
+    auto area = getMapArea();
 
     if (!area.contains(position))
         return -1;
@@ -316,12 +294,10 @@ int KeygroupMap::keygroupAtPosition(
     if (count == 0)
         return -1;
 
-    const float rowHeight = 32.0f;
-
     const int index =
         static_cast<int>(
             (position.y - area.getY())
-            / rowHeight
+            / static_cast<float>(rowHeight)
             );
 
     if (index < 0 || index >= count)
@@ -414,34 +390,7 @@ void KeygroupMap::mouseDown(
 
 KeygroupMap::KeygroupMap()
 {
-    addAndMakeVisible(
-        addKeygroupButton
-    );
 
-    addAndMakeVisible(
-        deleteKeygroupButton
-    );
-
-    addKeygroupButton.onClick =
-        [this]()
-        {
-            if (onAddKeygroup)
-            {
-                onAddKeygroup();
-            }
-        };
-
-    deleteKeygroupButton.onClick =
-        [this]()
-        {
-            if (onDeleteKeygroup &&
-                selectedKeygroup >= 0)
-            {
-                onDeleteKeygroup(
-                    selectedKeygroup
-                );
-            }
-        };
 }
 
 
@@ -553,15 +502,7 @@ KeygroupMap::getBarBounds(
         return {};
     }
 
-    auto bounds =
-        getLocalBounds();
-
-    bounds.removeFromBottom(buttonAreaHeight);
-
-    auto area =
-        bounds
-        .toFloat()
-        .reduced(10.0f);
+    auto area = getMapArea();
 
     constexpr float labelWidth = 55.0f;
     constexpr float rangeWidth = 80.0f;
@@ -596,18 +537,21 @@ KeygroupMap::getBarBounds(
     };
 }
 
+juce::Rectangle<float> KeygroupMap::getMapArea() const
+{
+    return getLocalBounds()
+        .toFloat()
+        .reduced(10.0f);
+}
+
+
 int KeygroupMap::noteFromX(
     float x) const
 {
-    auto area =
-        getLocalBounds()
-        .toFloat()
-        .reduced(10.0f);
+    auto mapArea = getMapArea();
 
     constexpr float labelWidth = 55.0f;
     constexpr float rangeWidth = 80.0f;
-
-    auto mapArea = area;
 
     mapArea.removeFromLeft(labelWidth);
     mapArea.removeFromRight(rangeWidth);

@@ -69,7 +69,7 @@ std::optional<int> findPanOffset(const std::vector<uint8_t>& a,
     your controls and content.
 */
 class MainComponent  : public juce::Component,
-    public juce::MidiInputCallback, public juce::ListBoxModel
+    public juce::MidiInputCallback, public juce::ListBoxModel, private juce::Timer
 {
 public:
     //==============================================================================
@@ -90,6 +90,12 @@ private:
     juce::TextButton captureAButton{ "capture A" };
     juce::TextButton captureBButton{ "capture B" };
     juce::TextButton compareButton{ "compare" };
+
+    void timerCallback() override;
+
+    double lastDeviceResponseTime = 0.0;
+    bool deviceConnected = false;
+    int heartbeatCounter = 0;
 
     //bool waitingForDeleteReply = false;
 
@@ -327,6 +333,19 @@ private:
 
     juce::Viewport keygroupMapViewport;
     KeygroupMap keygroupMap;
+
+    juce::Label keygroupTitleLabel;
+
+    juce::TextButton addKeygroupButton{
+        "+ Add KG"
+    };
+
+    juce::TextButton deleteKeygroupButton{
+        "Delete KG"
+    };
+    juce::Label deviceStatusLabel;
+
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
