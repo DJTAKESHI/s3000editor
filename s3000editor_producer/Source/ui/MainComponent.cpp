@@ -1366,8 +1366,45 @@ void MainComponent::timerCallback()
 
     if (elapsed > 5000.0)
     {
-        deviceConnected = false;
+        setDeviceConnected(false);
+    }
+}
 
+void MainComponent::setDeviceConnected(bool connected)
+{
+    if (deviceConnected == connected)
+        return;
+
+    const bool wasConnected = deviceConnected;
+
+    deviceConnected = connected;
+
+    if (connected)
+    {
+        deviceStatusLabel.setText(
+            "S3000XL: Connected",
+            juce::dontSendNotification
+        );
+
+        deviceStatusLabel.setColour(
+            juce::Label::textColourId,
+            juce::Colours::lightgreen
+        );
+
+        // Disconnected -> Connected ÇÃèuä‘ÇæÇØ
+        if (!wasConnected)
+        {
+            DBG("DEVICE CONNECTED - REQUESTING PROGRAM LIST");
+
+            sysExSender.sendRPLIST();
+
+            DBG("DEVICE CONNECTED - REQUESTING SAMPLE LIST");
+
+            sysExSender.sendRSLIST();
+        }
+    }
+    else
+    {
         deviceStatusLabel.setText(
             "S3000XL: Disconnected",
             juce::dontSendNotification
@@ -1388,27 +1425,27 @@ void MainComponent::handleIncomingMidiMessage(
     if (!message.isSysEx())
         return;
 
-    lastDeviceResponseTime =
-        juce::Time::getMillisecondCounterHiRes();
+    /*lastDeviceResponseTime =
+        juce::Time::getMillisecondCounterHiRes();*/
 
     processIncomingSysEx(message);
 
-    juce::MessageManager::callAsync(
-        [this]()
-        {
-            deviceConnected = true;
+    //juce::MessageManager::callAsync(
+    //    [this]()
+    //    {
+    //        deviceConnected = true;
 
-            deviceStatusLabel.setText(
-                "S3000XL: Connected",
-                juce::dontSendNotification
-            );
+    //        deviceStatusLabel.setText(
+    //            "S3000XL: Connected",
+    //            juce::dontSendNotification
+    //        );
 
-            deviceStatusLabel.setColour(
-                juce::Label::textColourId,
-                juce::Colours::lightgreen
-            );
-        }
-    );
+    //        deviceStatusLabel.setColour(
+    //            juce::Label::textColourId,
+    //            juce::Colours::lightgreen
+    //        );
+    //    }
+    //);
 }
 
 void MainComponent::processIncomingSysEx(
@@ -1428,6 +1465,16 @@ void MainComponent::processIncomingSysEx(
     // MDATA response = heartbeat response
     if (opcode == 0x11)
     {
+        lastDeviceResponseTime =
+            juce::Time::getMillisecondCounterHiRes();
+
+        juce::MessageManager::callAsync(
+            [this]()
+            {
+                setDeviceConnected(true);
+            }
+        );
+
         DBG("HEARTBEAT MDATA RECEIVED");
         return;
     }
@@ -3441,26 +3488,60 @@ std::vector<uint8_t> MainComponent::decodeProgramHeader(
 void MainComponent::parseSLIST(
     const juce::MemoryBlock& data)
 {
-    auto* p =
-        static_cast<const uint8_t*>(data.getData());
+    const auto dataSize =
+        static_cast<int>(data.getSize());
 
-    int count =
+    DBG("=== parseSLIST ===");
+    DBG("SLIST DATA SIZE = "
+        + juce::String(dataSize));
+
+    // countÇì«ÇﬁÇ…ÇÕç≈í·6 bytesïKóv
+    if (dataSize < 6)
+    {
+        DBG("SLIST ERROR: data too short");
+        return;
+    }
+
+    auto* p =
+        static_cast<const uint8_t*>(
+            data.getData()
+            );
+
+    const int count =
         p[4] | (p[5] << 7);
 
     DBG("SAMPLE COUNT = "
         + juce::String(count));
 
+    // 6-byte header + 12 bytes/sample
+    const int requiredSize =
+        6 + count * 12;
+
+    DBG("SLIST REQUIRED SIZE = "
+        + juce::String(requiredSize));
+
+    if (requiredSize > dataSize)
+    {
+        DBG(
+            "SLIST ERROR: incomplete data. "
+            "required="
+            + juce::String(requiredSize)
+            + " actual="
+            + juce::String(dataSize)
+        );
+
+        return;
+    }
 
     residentSamples.clear();
 
-
     int offset = 6;
 
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < count; ++i)
     {
         juce::String name;
 
-        for (int j = 0; j < 12; j++)
+        for (int j = 0; j < 12; ++j)
         {
             name += decodePlistChar(
                 p[offset + j]
@@ -3469,10 +3550,7 @@ void MainComponent::parseSLIST(
 
         name = name.trim();
 
-
-        // Åö ï€ë∂
         residentSamples[i] = name;
-
 
         DBG(
             juce::String(i)
@@ -3480,19 +3558,15 @@ void MainComponent::parseSLIST(
             + name
         );
 
-
         offset += 12;
     }
 
-    //velocityZoneEditor.setResidentSamples(
-    //    residentSamples
-    //);
-
-
-    DBG("RESIDENT SAMPLE SIZE = "
+    DBG(
+        "RESIDENT SAMPLE SIZE = "
         + juce::String(
             residentSamples.size()
-        ));
+        )
+    );
 
     const auto samplesCopy =
         residentSamples;
@@ -3501,7 +3575,8 @@ void MainComponent::parseSLIST(
         [this, samplesCopy]()
         {
             DBG(
-                "SETTING RESIDENT SAMPLES TO VELOCITY ZONE EDITOR"
+                "SETTING RESIDENT SAMPLES TO "
+                "VELOCITY ZONE EDITOR"
             );
 
             velocityZoneEditor.setResidentSamples(
@@ -3509,11 +3584,11 @@ void MainComponent::parseSLIST(
             );
 
             DBG(
-                "RESIDENT SAMPLES SET TO VELOCITY ZONE EDITOR"
+                "RESIDENT SAMPLES SET TO "
+                "VELOCITY ZONE EDITOR"
             );
         }
     );
-
 }
 
 

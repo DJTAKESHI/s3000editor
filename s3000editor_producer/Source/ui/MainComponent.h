@@ -345,6 +345,8 @@ private:
     };
     juce::Label deviceStatusLabel;
 
+    void setDeviceConnected(bool connected);
+
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

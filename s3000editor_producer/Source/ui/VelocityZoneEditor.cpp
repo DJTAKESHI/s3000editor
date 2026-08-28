@@ -1082,31 +1082,22 @@ void VelocityZoneEditor::setResidentSamples(
         juce::dontSendNotification
     );
 
-    // Sample‰ðœ—p
+
+
     sampleCombo.addItem(
         "--- None ---",
         noneSampleComboId
     );
 
-
     for (const auto& [id, name] : residentSamples)
     {
+        const int comboId = id + 1;
+
+
+
         sampleCombo.addItem(
             name,
-            id + 1
+            comboId
         );
     }
-
-    if (currentZone.sampleId >= 0)
-    {
-        sampleCombo.setSelectedId(
-            currentZone.sampleId + 1,
-            juce::dontSendNotification
-        );
-    }
-
-    DBG(
-        "SAMPLE COMBO COUNT = "
-        + juce::String(sampleCombo.getNumItems())
-    );
 }
