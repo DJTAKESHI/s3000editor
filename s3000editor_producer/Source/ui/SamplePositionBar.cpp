@@ -240,23 +240,25 @@ uint32_t SamplePositionBar::xToPosition(
 void SamplePositionBar::paint(
     juce::Graphics& g)
 {
-    auto area =
-        getLocalBounds()
-        .toFloat()
-        .reduced(10.0f, 20.0f);
-
-    // full sample
-    g.setColour(
-        juce::Colours::darkgrey
-    );
-
-    g.fillRoundedRectangle(
-        area,
-        4.0f
-    );
+    auto bounds =
+        getLocalBounds().toFloat();
 
     if (sampleLength == 0)
+    {
+        g.setColour(
+            juce::Colours::grey
+            .withAlpha(0.6f)
+        );
+
+        g.drawFittedText(
+            "No sample",
+            getLocalBounds(),
+            juce::Justification::centred,
+            1
+        );
+
         return;
+    }
 
     const float startX =
         positionToX(startPosition);
@@ -270,22 +272,172 @@ void SamplePositionBar::paint(
     const float loopEndX =
         positionToX(loopEndPosition);
 
-    // active sample range
+    // ========================================
+    // VALUE LABELS
+    // ========================================
+
+    g.setFont(11.0f);
+
     g.setColour(
-        juce::Colours::cornflowerblue
+        juce::Colours::lightgrey
     );
 
-    g.fillRect(
+    g.drawText(
+        "0",
+        10,
+        0,
+        80,
+        16,
+        juce::Justification::left
+    );
+
+    g.drawText(
+        "LENGTH "
+        + juce::String(
+            (juce::int64)sampleLength
+        ),
+        getWidth() - 150,
+        0,
+        140,
+        16,
+        juce::Justification::right
+    );
+
+    // ========================================
+    // TIMELINE
+    // ========================================
+
+    auto timeline =
+        bounds.reduced(
+            10.0f,
+            0.0f
+        );
+
+    timeline.setY(31.0f);
+    timeline.setHeight(20.0f);
+
+    // Entire sample
+    g.setColour(
+        juce::Colours::white
+        .withAlpha(0.08f)
+    );
+
+    g.fillRoundedRectangle(
+        timeline,
+        4.0f
+    );
+
+    // ========================================
+    // PLAYBACK RANGE
+    // ========================================
+
+    juce::Rectangle<float> playbackRange(
         startX,
-        area.getY(),
+        timeline.getY(),
         juce::jmax(
             0.0f,
             endX - startX
         ),
-        area.getHeight()
+        timeline.getHeight()
     );
 
-    // loop range
+    g.setColour(
+        juce::Colours::cornflowerblue
+        .withAlpha(0.65f)
+    );
+
+    g.fillRect(playbackRange);
+
+    // ========================================
+    // LOOP RANGE
+    // ========================================
+
+    if (loopEndPosition > loopStartPosition)
+    {
+        // Narrower strip inside playback range
+        juce::Rectangle<float> loopRange(
+            loopStartX,
+            timeline.getY() + 5.0f,
+            juce::jmax(
+                0.0f,
+                loopEndX - loopStartX
+            ),
+            timeline.getHeight() - 10.0f
+        );
+
+        g.setColour(
+            juce::Colours::orange
+            .withAlpha(0.90f)
+        );
+
+        g.fillRoundedRectangle(
+            loopRange,
+            2.0f
+        );
+    }
+
+    // ========================================
+    // START / END MARKERS
+    // ========================================
+
+    g.setColour(
+        juce::Colours::white
+    );
+
+    g.fillRect(
+        startX - 1.0f,
+        timeline.getY() - 5.0f,
+        2.0f,
+        timeline.getHeight() + 10.0f
+    );
+
+    g.fillRect(
+        endX - 1.0f,
+        timeline.getY() - 5.0f,
+        2.0f,
+        timeline.getHeight() + 10.0f
+    );
+
+    // START triangle
+    {
+        juce::Path marker;
+
+        marker.addTriangle(
+            startX - 5.0f,
+            timeline.getY() - 8.0f,
+
+            startX + 5.0f,
+            timeline.getY() - 8.0f,
+
+            startX,
+            timeline.getY() - 2.0f
+        );
+
+        g.fillPath(marker);
+    }
+
+    // END triangle
+    {
+        juce::Path marker;
+
+        marker.addTriangle(
+            endX - 5.0f,
+            timeline.getY() - 8.0f,
+
+            endX + 5.0f,
+            timeline.getY() - 8.0f,
+
+            endX,
+            timeline.getY() - 2.0f
+        );
+
+        g.fillPath(marker);
+    }
+
+    // ========================================
+    // LOOP MARKERS
+    // ========================================
+
     if (loopEndPosition > loopStartPosition)
     {
         g.setColour(
@@ -293,68 +445,68 @@ void SamplePositionBar::paint(
         );
 
         g.fillRect(
-            loopStartX,
-            area.getY(),
-            juce::jmax(
-                0.0f,
-                loopEndX - loopStartX
-            ),
-            area.getHeight()
+            loopStartX - 1.0f,
+            timeline.getY() + 2.0f,
+            2.0f,
+            timeline.getHeight() - 4.0f
         );
 
-        // Loop Start handle
         g.fillRect(
-            loopStartX - 2.0f,
-            area.getY() - 6.0f,
-            4.0f,
-            area.getHeight() + 12.0f
-        );
-
-        // Loop End handle
-        g.fillRect(
-            loopEndX - 2.0f,
-            area.getY() - 6.0f,
-            4.0f,
-            area.getHeight() + 12.0f
+            loopEndX - 1.0f,
+            timeline.getY() + 2.0f,
+            2.0f,
+            timeline.getHeight() - 4.0f
         );
     }
 
-    // START marker
+    // ========================================
+    // BOTTOM LABELS
+    // ========================================
+
+    g.setFont(10.0f);
+
     g.setColour(
         juce::Colours::white
+        .withAlpha(0.9f)
     );
 
-    g.fillRect(
-        startX - 1.0f,
-        area.getY() - 6.0f,
-        2.0f,
-        area.getHeight() + 12.0f
-    );
-
-    // END marker
-    g.fillRect(
-        endX - 1.0f,
-        area.getY() - 6.0f,
-        2.0f,
-        area.getHeight() + 12.0f
-    );
-
-    // labels
     g.drawText(
-        "START " + juce::String(startPosition),
-        0,
-        0,
-        getWidth() / 2,
-        20,
+        "START "
+        + juce::String(startPosition),
+        10,
+        57,
+        getWidth() / 2 - 10,
+        16,
         juce::Justification::left
     );
 
     g.drawText(
-        "END " + juce::String(endPosition),
+        "END "
+        + juce::String(endPosition),
         getWidth() / 2,
-        0,
-        getWidth() / 2,
-        20,
+        57,
+        getWidth() / 2 - 10,
+        16,
         juce::Justification::right
     );
+
+    // Loop information in the centre
+    if (loopEndPosition > loopStartPosition)
+    {
+        g.setColour(
+            juce::Colours::orange
+        );
+
+        g.drawText(
+            "LOOP "
+            + juce::String(loopStartPosition)
+            + " - "
+            + juce::String(loopEndPosition),
+            80,
+            57,
+            getWidth() - 160,
+            16,
+            juce::Justification::centred
+        );
+    }
 }
