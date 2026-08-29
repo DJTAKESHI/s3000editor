@@ -37,6 +37,19 @@ void KeygroupMap::setProgram(
         selectedKeygroup = 0;
     }
 
+    const int contentHeight =
+        juce::jmax(
+            100,
+            static_cast<int>(
+                currentProgram.keygroups.size()
+                ) * rowHeight + 20
+        );
+
+    setSize(
+        getWidth(),
+        contentHeight
+    );
+
     repaint();
 }
 

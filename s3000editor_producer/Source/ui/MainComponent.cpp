@@ -1249,13 +1249,19 @@ void MainComponent::resized()
 {
     auto area = getLocalBounds();
 
-    programCombo.setBounds(20, 20, 250, 30);
+    // =========================
+    // Top bar
+    // =========================
+    auto topBar = area.removeFromTop(60);
+
+    programCombo.setBounds(
+        topBar.removeFromLeft(290)
+        .reduced(20, 15)
+    );
 
     deviceStatusLabel.setBounds(
-        getWidth() - 250,
-        20,
-        230,
-        30
+        topBar.removeFromRight(250)
+        .reduced(10, 15)
     );
 
 
@@ -1391,16 +1397,39 @@ void MainComponent::setDeviceConnected(bool connected)
             juce::Colours::lightgreen
         );
 
-        // Disconnected -> Connected の瞬間だけ
         if (!wasConnected)
         {
-            DBG("DEVICE CONNECTED - REQUESTING PROGRAM LIST");
+            if (hasConnectedOnce)
+            {
+                DBG(
+                    "DEVICE RECONNECTED - "
+                    "WAITING BEFORE PROGRAM LIST"
+                );
 
-            sysExSender.sendRPLIST();
+                juce::Timer::callAfterDelay(
+                    5000,
+                    [this]()
+                    {
+                        DBG(
+                            "DEVICE RECONNECTED - "
+                            "REQUESTING PROGRAM LIST"
+                        );
 
-            DBG("DEVICE CONNECTED - REQUESTING SAMPLE LIST");
+                        sysExSender.sendRPLIST();
+                    }
+                );
+            }
+            else
+            {
+                // アプリ起動後の最初の接続確認
+                // 起動時の AUTO RPLIST がすでに走っている
+                DBG(
+                    "DEVICE CONNECTED - "
+                    "FIRST CONNECTION"
+                );
 
-            sysExSender.sendRSLIST();
+                hasConnectedOnce = true;
+            }
         }
     }
     else
@@ -1416,7 +1445,6 @@ void MainComponent::setDeviceConnected(bool connected)
         );
     }
 }
-
 
 void MainComponent::handleIncomingMidiMessage(
     juce::MidiInput*,
@@ -4116,9 +4144,8 @@ void MainComponent::loadProgram(
         "========== LOAD PROGRAM CALLED INDEX="
         + juce::String(programIndex)
         + " =========="
-
-
     );
+
     if (programIndex < 0)
         return;
 
@@ -4134,7 +4161,6 @@ void MainComponent::loadProgram(
 
     loadedProgram.keygroups.clear();
 
-    // Resident Sample Listを1回取得
     sysExSender.sendRSLIST();
 
     DBG(
@@ -4142,31 +4168,10 @@ void MainComponent::loadProgram(
         + juce::String(programIndex)
     );
 
+    // Programロード開始
     sysExSender.sendProgramHeader(
         programIndex
     );
-
-    //juce::Timer::callAfterDelay(
-    //    100,
-    //    [this, programIndex]
-    //    {
-    //        sysExSender.sendKGHeader(
-    //            programIndex,
-    //            0
-    //        );
-    //    }
-    //);
-
-    //juce::Timer::callAfterDelay(
-    //    200,
-    //    [this, programIndex]
-    //    {
-    //        sysExSender.sendKData(
-    //            programIndex,
-    //            0
-    //        );
-    //    }
-    //);
 }
 
 

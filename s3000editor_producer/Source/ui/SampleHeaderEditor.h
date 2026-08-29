@@ -12,6 +12,8 @@ public:
 
     void setSampleHeader(const SampleHeader& header);
 
+    void paint(juce::Graphics& g) override;
+
     void resized() override;
 
     SampleHeader currentHeader;
@@ -42,6 +44,16 @@ private:
     juce::Label pitchNoteLabel;
 
     SamplePositionBar samplePositionBar;
+
+    juce::Label sampleSectionLabel;
+    juce::Label pitchSectionLabel;
+    juce::Label rangeSectionLabel;
+    juce::Label loopSectionLabel;
+
+    juce::Rectangle<int> sampleCardBounds;
+    juce::Rectangle<int> pitchCardBounds;
+    juce::Rectangle<int> rangeCardBounds;
+    juce::Rectangle<int> loopCardBounds;
 
     //juce::Label loop1PositionLabel;
     ////juce::TextEditor loop1PositionEditor;

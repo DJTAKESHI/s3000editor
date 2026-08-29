@@ -1069,6 +1069,49 @@ SampleHeaderEditor::SampleHeaderEditor()
     //sampleRateEditor.setReadOnly(true);
     //holdLoopTuneEditor.setReadOnly(true);
 
+    auto setupSectionLabel =
+        [this](
+            juce::Label& label,
+            const juce::String& text)
+        {
+            label.setText(
+                text,
+                juce::dontSendNotification
+            );
+
+            label.setColour(
+                juce::Label::textColourId,
+                juce::Colours::lightgrey
+            );
+
+            label.setFont(
+                juce::Font(13.0f).boldened()
+            );
+
+            addAndMakeVisible(label);
+        };
+
+    setupSectionLabel(
+        sampleSectionLabel,
+        "SAMPLE"
+    );
+
+    setupSectionLabel(
+        pitchSectionLabel,
+        "PITCH"
+    );
+
+    setupSectionLabel(
+        rangeSectionLabel,
+        "RANGE"
+    );
+
+    setupSectionLabel(
+        loopSectionLabel,
+        "LOOP"
+    );
+
+
 }
 
 void SampleHeaderEditor::updateLoopDwellStatus()
@@ -1339,164 +1382,405 @@ void SampleHeaderEditor::setSampleHeader(
 
 }
 
+void SampleHeaderEditor::paint(
+    juce::Graphics& g)
+{
+    auto drawCard =
+        [&g](const juce::Rectangle<int>& bounds)
+        {
+            if (bounds.isEmpty())
+                return;
+
+            auto r =
+                bounds.toFloat();
+
+            g.setColour(
+                juce::Colours::white
+                .withAlpha(0.045f)
+            );
+
+            g.fillRoundedRectangle(
+                r,
+                6.0f
+            );
+
+            g.setColour(
+                juce::Colours::white
+                .withAlpha(0.10f)
+            );
+
+            g.drawRoundedRectangle(
+                r,
+                6.0f,
+                1.0f
+            );
+        };
+
+    drawCard(sampleCardBounds);
+    drawCard(pitchCardBounds);
+    drawCard(rangeCardBounds);
+    drawCard(loopCardBounds);
+}
+
 void SampleHeaderEditor::resized()
 {
-    auto area = getLocalBounds().reduced(10);
+    auto area =
+        getLocalBounds().reduced(10);
+
+    const int rowHeight = 26;
+    const int sectionHeight = 22;
+    const int labelWidth = 110;
+
+    constexpr int cardPadding = 10;
+    constexpr int columnGap = 14;
+    constexpr int cardGap = 10;
+
+    // ========================================
+    // TITLE
+    // ========================================
 
     titleLabel.setBounds(
         area.removeFromTop(30)
     );
 
-    const int rowHeight = 26;
-    const int labelWidth = 140;
+    area.removeFromTop(6);
+
+    // ========================================
+    // SAMPLE + PITCH
+    // ========================================
+
+    const int sampleCardHeight =
+        sectionHeight
+        + rowHeight * 5
+        + cardPadding * 2;
+
+    const int pitchCardHeight =
+        sectionHeight
+        + rowHeight * 4
+        + cardPadding * 2;
+
+    auto topRow =
+        area.removeFromTop(
+            juce::jmax(
+                sampleCardHeight,
+                pitchCardHeight
+            )
+        );
+
+    const int leftWidth =
+        static_cast<int>(
+            topRow.getWidth() * 0.50f
+            )
+        - columnGap / 2;
+
+    auto topLeft =
+        topRow.removeFromLeft(leftWidth);
+
+    topRow.removeFromLeft(columnGap);
+
+    auto topRight = topRow;
+
+    sampleCardBounds =
+        topLeft.removeFromTop(
+            sampleCardHeight
+        );
+
+    pitchCardBounds =
+        topRight.removeFromTop(
+            pitchCardHeight
+        );
+
+    area.removeFromTop(cardGap);
+
+    // ========================================
+    // RANGE CARD
+    // ========================================
+
+    const int rangeCardHeight =
+        sectionHeight
+        + rowHeight
+        + 80
+        + cardPadding * 2;
+
+    rangeCardBounds =
+        area.removeFromTop(
+            rangeCardHeight
+        );
+
+    area.removeFromTop(cardGap);
+
+    // ========================================
+    // LOOP CARD
+    // ========================================
+
+    const int loopCardHeight =
+        sectionHeight
+        + rowHeight * 5
+        + cardPadding * 2;
+
+    loopCardBounds =
+        area.removeFromTop(
+            loopCardHeight
+        );
+
+    // ========================================
+    // ROW HELPER
+    // ========================================
 
     auto addRow =
-        [&area, rowHeight, labelWidth]
+        [rowHeight, labelWidth]
         (
+            juce::Rectangle<int>& column,
             juce::Label& label,
-            juce::TextEditor& editor
+            auto& editor
             )
         {
-            auto row = area.removeFromTop(rowHeight);
+            auto row =
+                column.removeFromTop(
+                    rowHeight
+                );
 
             label.setBounds(
-                row.removeFromLeft(labelWidth)
+                row.removeFromLeft(
+                    labelWidth
+                )
             );
 
             editor.setBounds(row);
         };
 
-    addRow(idLabel, idEditor);
-    addRow(nameLabel, nameEditor);
+    // ========================================
+    // SAMPLE CARD
+    // ========================================
+
+    auto sampleArea =
+        sampleCardBounds.reduced(
+            cardPadding
+        );
+
+    sampleSectionLabel.setBounds(
+        sampleArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
+    addRow(
+        sampleArea,
+        nameLabel,
+        nameEditor
+    );
+
+    addRow(
+        sampleArea,
+        idLabel,
+        idEditor
+    );
+
+    addRow(
+        sampleArea,
+        lengthLabel,
+        lengthEditor
+    );
+
+    addRow(
+        sampleArea,
+        sampleRateLabel,
+        sampleRateEditor
+    );
+
     {
-        auto row = area.removeFromTop(rowHeight);
+        auto row =
+            sampleArea.removeFromTop(
+                rowHeight
+            );
 
         bandwidthLabel.setBounds(
-            row.removeFromLeft(labelWidth)
+            row.removeFromLeft(
+                labelWidth
+            )
         );
 
         bandwidthCombo.setBounds(row);
     }
 
+    // ========================================
+    // PITCH CARD
+    // ========================================
 
+    auto pitchArea =
+        pitchCardBounds.reduced(
+            cardPadding
+        );
 
-
-    
-    addRow(pitchLabel, pitchEditor);
-    pitchNoteLabel.setBounds(
-        area.removeFromTop(rowHeight)
+    pitchSectionLabel.setBounds(
+        pitchArea.removeFromTop(
+            sectionHeight
+        )
     );
 
-    //addRow(sampleRateValidLabel, sampleRateValidEditor);
-    {
-        auto row = area.removeFromTop(rowHeight);
+    addRow(
+        pitchArea,
+        pitchLabel,
+        pitchEditor
+    );
 
-        sampleRateValidLabel.setBounds(
-            row.removeFromLeft(labelWidth)
+    pitchNoteLabel.setBounds(
+        pitchArea.removeFromTop(
+            rowHeight
+        )
+    );
+
+    addRow(
+        pitchArea,
+        tuneLabel,
+        tuneEditor
+    );
+
+    addRow(
+        pitchArea,
+        holdLoopTuneLabel,
+        holdLoopTuneEditor
+    );
+
+    // ========================================
+    // RANGE CARD
+    // ========================================
+
+    auto rangeArea =
+        rangeCardBounds.reduced(
+            cardPadding
         );
 
-        sampleRateValidCombo.setBounds(row);
+    rangeSectionLabel.setBounds(
+        rangeArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
+    {
+        auto row =
+            rangeArea.removeFromTop(
+                rowHeight
+            );
+
+        auto left =
+            row.removeFromLeft(
+                row.getWidth() / 2
+            );
+
+        startLabel.setBounds(
+            left.removeFromLeft(
+                labelWidth
+            )
+        );
+
+        startEditor.setBounds(left);
+
+        endLabel.setBounds(
+            row.removeFromLeft(
+                labelWidth
+            )
+        );
+
+        endEditor.setBounds(row);
     }
 
-    // ’Ç‰Á
-    addRow(sampleRateLabel, sampleRateEditor);
+    samplePositionBar.setBounds(
+        rangeArea.removeFromTop(80)
+        .reduced(5)
+    );
 
-    //addRow(numLoopsLabel, numLoopsEditor);
+    // ========================================
+    // LOOP CARD
+    // ========================================
+
+    auto loopArea =
+        loopCardBounds.reduced(
+            cardPadding
+        );
+
+    loopSectionLabel.setBounds(
+        loopArea.removeFromTop(
+            sectionHeight
+        )
+    );
+
     {
-        auto row = area.removeFromTop(rowHeight);
+        auto row =
+            loopArea.removeFromTop(
+                rowHeight
+            );
+
+        auto left =
+            row.removeFromLeft(
+                row.getWidth() / 2
+            );
 
         numLoopsLabel.setBounds(
-            row.removeFromLeft(labelWidth)
+            left.removeFromLeft(
+                labelWidth
+            )
         );
 
-        numLoopsCombo.setBounds(row);
-    }
-
-    //addRow(activeLoopLabel, activeLoopEditor);
-
-    //{
-    //    auto row = area.removeFromTop(rowHeight);
-
-    //    activeLoopLabel.setBounds(
-    //        row.removeFromLeft(labelWidth)
-    //    );
-
-    //    activeLoopCombo.setBounds(row);
-    //}
-
-
-    //addRow(highestLoopLabel, highestLoopEditor);
-    //{
-    //    auto row = area.removeFromTop(rowHeight);
-
-    //    playTypeLabel.setBounds(
-    //        row.removeFromLeft(labelWidth)
-    //    );
-
-    //    playTypeCombo.setBounds(row);
-    //}
-    addRow(tuneLabel, tuneEditor);
-
-    // ’Ç‰Á
-    addRow(holdLoopTuneLabel, holdLoopTuneEditor);
-
-    //addRow(locationLabel, locationEditor);
-    addRow(lengthLabel, lengthEditor);
-    addRow(startLabel, startEditor);
-    addRow(endLabel, endEditor);
-
-    {
-        auto row = area.removeFromTop(rowHeight);
+        numLoopsCombo.setBounds(left);
 
         loopSelectLabel.setBounds(
-            row.removeFromLeft(labelWidth)
+            row.removeFromLeft(
+                labelWidth
+            )
         );
 
         loopSelectCombo.setBounds(row);
     }
 
-    samplePositionBar.setBounds(
-        area.removeFromTop(80)
-        .reduced(5)
-    );
-
-
     addRow(
+        loopArea,
         loopPositionLabel,
         loopPositionEditor
     );
 
     addRow(
+        loopArea,
         loopLengthLabel,
         loopLengthEditor
     );
 
-    addRow(
-        loopDwellLabel,
-        loopDwellEditor
-    );
+    {
+        auto row =
+            loopArea.removeFromTop(
+                rowHeight
+            );
 
-    loopDwellStatusLabel.setBounds(
-        area.removeFromTop(rowHeight)
-    );
+        loopDwellLabel.setBounds(
+            row.removeFromLeft(
+                labelWidth
+            )
+        );
 
+        auto statusArea =
+            row.removeFromRight(80);
 
-    //loopsLabel.setBounds(
-    //    area.removeFromTop(rowHeight)
-    //);
+        loopDwellEditor.setBounds(row);
+
+        loopDwellStatusLabel.setBounds(
+            statusArea
+        );
+    }
 
     {
-        auto row = area.removeFromTop(rowHeight);
+        auto row =
+            loopArea.removeFromTop(
+                rowHeight
+            );
 
         playTypeLabel.setBounds(
-            row.removeFromLeft(labelWidth)
+            row.removeFromLeft(
+                labelWidth
+            )
         );
 
         playTypeCombo.setBounds(row);
     }
-
-
-    /*loopsEditor.setBounds(area);*/
 }
 
 juce::String SampleHeaderEditor::midiNoteName(int note)

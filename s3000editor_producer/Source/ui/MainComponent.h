@@ -345,9 +345,14 @@ private:
     };
     juce::Label deviceStatusLabel;
 
+    //bool deviceConnected = false;
+    bool hasConnectedOnce = false;
+
+
     void setDeviceConnected(bool connected);
 
 
+    int programToRestoreAfterReconnect = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
