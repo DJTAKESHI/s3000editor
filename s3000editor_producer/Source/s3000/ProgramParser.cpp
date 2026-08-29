@@ -177,6 +177,15 @@ void ProgramParser::parseHeader(
 // Pitch
 // ==============================
 
+    DBG(
+        juce::String::formatted(
+            "BEND UP RAW = %02X",
+            (unsigned)d[
+                P::Pitch::BendUp
+            ]
+        )
+    );
+
     p.bendUp =
         d[P::Pitch::BendUp];
 
@@ -185,6 +194,20 @@ void ProgramParser::parseHeader(
             d,
             P::Pitch::PressurePitch
         );
+
+    DBG(
+        "PRESSURE -> PITCH = "
+        + juce::String(p.pressurePitch)
+    );
+
+    DBG(
+        juce::String::formatted(
+            "PRESSURE PITCH RAW = %02X",
+            (unsigned)d[
+                P::Pitch::PressurePitch
+            ]
+        )
+    );
 
     // ==============================
 // Temperament
@@ -242,17 +265,75 @@ void ProgramParser::parseHeader(
     p.legato =
         d[P::Voice::Legato] != 0;
 
+    DBG(
+        "LEGATO = "
+        + juce::String(
+            p.legato ? "ON" : "OFF"
+        )
+    );
+
+    DBG(
+        juce::String::formatted(
+            "LEGATO RAW = %02X",
+            (unsigned)d[
+                P::Voice::Legato
+            ]
+        )
+    );
+
     p.bendDown =
         d[P::Pitch::BendDown];
 
+    DBG(
+        "BEND DOWN = "
+        + juce::String(p.bendDown)
+    );
+
+    DBG(
+        juce::String::formatted(
+            "BEND DOWN RAW = %02X",
+            (unsigned)d[
+                P::Pitch::BendDown
+            ]
+        )
+    );
+
     p.bendMode =
         d[P::Pitch::BendMode];
+
+    DBG(
+        "BEND MODE = "
+        + juce::String(p.bendMode)
+    );
+
+    DBG(
+        juce::String::formatted(
+            "BEND MODE RAW = %02X",
+            (unsigned)d[
+                P::Pitch::BendMode
+            ]
+        )
+    );
 
     p.transpose =
         readS8(
             d,
             P::Pitch::Transpose
         );
+
+    DBG(
+        "TRANSPOSE = "
+        + juce::String(p.transpose)
+    );
+
+    DBG(
+        juce::String::formatted(
+            "TRANSPOSE RAW = %02X",
+            (unsigned)d[
+                P::Pitch::Transpose
+            ]
+        )
+    );
 
     p.modSPan1 = d[P::Mod::ModSPan1];
     p.modSPan2 = d[P::Mod::ModSPan2];

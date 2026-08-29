@@ -60,6 +60,10 @@
         <FILE id="lJ6Pjt" name="ProgramEditor.cpp" compile="1" resource="0"
               file="Source/ui/ProgramEditor.cpp"/>
         <FILE id="f4AB6n" name="ProgramEditor.h" compile="0" resource="0" file="Source/ui/ProgramEditor.h"/>
+        <FILE id="rCylei" name="ProgramRangeBar.cpp" compile="1" resource="0"
+              file="Source/ui/ProgramRangeBar.cpp"/>
+        <FILE id="aTOHPV" name="ProgramRangeBar.h" compile="0" resource="0"
+              file="Source/ui/ProgramRangeBar.h"/>
         <FILE id="HwcFjU" name="ProgramTree.cpp" compile="1" resource="0" file="Source/ui/ProgramTree.cpp"/>
         <FILE id="yiIXdz" name="ProgramTree.h" compile="0" resource="0" file="Source/ui/ProgramTree.h"/>
         <FILE id="s5GABH" name="ProgramTreeItem.cpp" compile="1" resource="0"

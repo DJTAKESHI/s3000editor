@@ -186,6 +186,12 @@ MainComponent::MainComponent()
         false    // horizontal
     );
 
+    editorTabs.addTab(
+        "Program",
+        juce::Colours::darkgrey,
+        &programEditor,
+        false
+    );
 
     editorTabs.addTab(
         "Keygroup",
@@ -207,6 +213,74 @@ MainComponent::MainComponent()
         &sampleHeaderViewport,
         false
     );
+
+    programEditor.onProgramChanged =
+        [this](
+            const Program& program)
+        {
+            auto encodedProgram =
+                ProgramEncoder::encode(
+                    program
+                );
+
+            if (encodedProgram.empty())
+            {
+                DBG(
+                    "PROGRAM EDITOR ENCODE FAILED"
+                );
+
+                return;
+            }
+
+            DBG(
+                "OUTPUT RAW = "
+                + juce::String(
+                    program.output
+                )
+            );
+
+
+            DBG(
+                "=== PROGRAM EDITOR WRITE ==="
+            );
+
+            DBG(
+                "PLAY LOW = "
+                + juce::String(
+                    program.playLow
+                )
+            );
+
+            DBG(
+                "PLAY HIGH = "
+                + juce::String(
+                    program.playHigh
+                )
+            );
+            DBG(
+                "PAN = "
+                + juce::String(program.pan)
+            );
+
+            DBG(
+                "OUT LEVEL = "
+                + juce::String(
+                    program.individualOutputLevel
+                )
+            );
+
+
+            sysExSender.sendProgramData(
+                program.programNumber,
+                encodedProgram
+            );
+
+            loadedProgram.playLow =
+                program.playLow;
+
+            loadedProgram.playHigh =
+                program.playHigh;
+        };
 
     //addAndMakeVisible(programTree);
 
@@ -408,6 +482,8 @@ MainComponent::MainComponent()
         keygroupTitleLabel
     );
 
+
+
     addAndMakeVisible(
         addKeygroupButton
     );
@@ -524,9 +600,43 @@ MainComponent::MainComponent()
     captureAButton.onClick =
         [this]()
         {
-            addKeygroup();
-        };
+            DBG("=== CAPTURE A CLICKED ===");
+            auto testProgram =
+                loadedProgram;
 
+            testProgram.pan = -20;
+            testProgram.loudness = 80;
+
+            auto encodedProgram =
+                ProgramEncoder::encode(
+                    testProgram
+                );
+
+            if (encodedProgram.empty())
+            {
+                DBG("PROGRAM TEST ENCODE FAILED");
+                return;
+            }
+
+            DBG("=== PROGRAM WRITE TEST ===");
+
+            DBG(
+                "PAN = "
+                + juce::String(testProgram.pan)
+            );
+
+            DBG(
+                "LOUDNESS = "
+                + juce::String(
+                    testProgram.loudness
+                )
+            );
+
+            sysExSender.sendProgramData(
+                loadedProgram.programNumber,
+                encodedProgram
+            );
+        };
     
 
 #endif
@@ -643,7 +753,34 @@ MainComponent::MainComponent()
     captureAButton.onClick =
         [this]()
         {
-            addKeygroup();
+            auto testProgram =
+                loadedProgram;
+
+            testProgram.midiChannel = 5;
+
+            auto encodedProgram =
+                ProgramEncoder::encode(
+                    testProgram
+                );
+
+            if (encodedProgram.empty())
+            {
+                DBG("PROGRAM TEST ENCODE FAILED");
+                return;
+            }
+
+            DBG("=== PROGRAM MIDI CHANNEL WRITE TEST ===");
+
+            DBG(
+                "MIDI CHANNEL RAW = "
+                + juce::String(testProgram.midiChannel)
+            );
+            
+
+            sysExSender.sendProgramData(
+                loadedProgram.programNumber,
+                encodedProgram
+            );
         };
 
 
@@ -1266,13 +1403,50 @@ void MainComponent::resized()
 
 
 #if JUCE_DEBUG
-    captureAButton.setBounds(area.removeFromTop(50));
-    captureBButton.setBounds(area.removeFromTop(50));
-    compareButton.setBounds(area.removeFromTop(50));
-#endif
+    // =========================
+    // Debug toolbar
+    // =========================
+    auto debugRow = area.removeFromTop(32);
+    debugRow = debugRow.reduced(4, 2);
 
-    requestButton.setBounds(area.removeFromTop(50));
-    requestRPDATAButton.setBounds(area.removeFromTop(50));
+    const int gap = 4;
+
+    captureAButton.setBounds(
+        debugRow.removeFromLeft(90)
+    );
+
+    debugRow.removeFromLeft(gap);
+
+    captureBButton.setBounds(
+        debugRow.removeFromLeft(90)
+    );
+
+    debugRow.removeFromLeft(gap);
+
+    compareButton.setBounds(
+        debugRow.removeFromLeft(90)
+    );
+
+    debugRow.removeFromLeft(gap);
+
+    requestButton.setBounds(
+        debugRow.removeFromLeft(110)
+    );
+
+    debugRow.removeFromLeft(gap);
+
+    requestRPDATAButton.setBounds(
+        debugRow.removeFromLeft(120)
+    );
+#else
+    requestButton.setBounds(
+        area.removeFromTop(32)
+    );
+
+    requestRPDATAButton.setBounds(
+        area.removeFromTop(32)
+    );
+#endif
 
     auto left = area.removeFromLeft(350);
 
