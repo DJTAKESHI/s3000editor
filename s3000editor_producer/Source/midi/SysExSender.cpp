@@ -64,25 +64,7 @@ void SysExSender::sendProgramData(
             )
     );
 
-    DBG(
-        "PDATA RAW STEREO OFFSET 23 = "
-        + juce::String(
-            (int)data[
-                ProgramOffset::Output::Stereo
-            ]
-        )
-    );
 
-    DBG(
-        "PDATA STEREO NIBBLES LOW="
-        + juce::String(
-            (int)(data[23] & 0x0F)
-        )
-        + " HIGH="
-        + juce::String(
-            (int)((data[23] >> 4) & 0x0F)
-        )
-    );
 
 
     // Program Common Data
@@ -125,12 +107,7 @@ void SysExSender::sendProgramData(
 
 void SysExSender::sendProgramHeader(int programIndex)
 {
-    DBG("========== sendProgramHeader CALLED ==========");
 
-    DBG(
-        "PROGRAM INDEX = "
-        + juce::String(programIndex)
-    );
 
     if (!midiOutput)
     {
@@ -138,7 +115,6 @@ void SysExSender::sendProgramHeader(int programIndex)
         return;
     }
 
-    DBG("MIDI OUTPUT OK");
 
     uint8_t data[]
     {
@@ -164,7 +140,6 @@ void SysExSender::sendProgramHeader(int programIndex)
         0x01  // length = 192
     };
 
-    DBG("REQUEST DATA BUILT");
 
     auto msg =
         juce::MidiMessage::createSysExMessage(
@@ -172,11 +147,11 @@ void SysExSender::sendProgramHeader(int programIndex)
             sizeof(data)
         );
 
-    DBG("SYSEX MESSAGE CREATED");
+
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("PROGRAM HEADER REQUEST SENT");
+
 }
 
 void SysExSender::sendDeleteKeygroup(
@@ -325,13 +300,7 @@ void SysExSender::sendSampleHeader(int sampleId)
 {
     constexpr int headerLength = SampleHeaderFormat::Size;
 
-    DBG("sendSampleHeader called");
-    DBG("sampleId = "
-        + juce::String(sampleId));
-    DBG("LOW BYTE = "
-        + juce::String(sampleId & 0x7F));
-    DBG("HIGH BYTE = "
-        + juce::String((sampleId >> 7) & 0x7F));
+
 
     if (!midiOutput)
     {
@@ -366,7 +335,6 @@ void SysExSender::sendSampleHeader(int sampleId)
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("SAMPLE HEADER REQUEST SENT");
 }
 
 void SysExSender::sendKeygroupData(
@@ -420,10 +388,6 @@ void SysExSender::sendKeygroupData(
         );
     }
 
-    DBG(
-        "KEYGROUP SYSEX SIZE = "
-        + juce::String((int)sysex.size())
-    );
 
     auto message =
         juce::MidiMessage::createSysExMessage(
@@ -433,7 +397,7 @@ void SysExSender::sendKeygroupData(
 
     midiOutput->sendMessageNow(message);
 
-    DBG("KEYGROUP DATA SENT");
+
 }
 
 void SysExSender::sendSysEx(
@@ -459,7 +423,7 @@ void SysExSender::sendSysEx(
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("SYSEX SENT");
+ 
 }
 
 void SysExSender::sendRSLIST()
@@ -486,7 +450,7 @@ void SysExSender::sendRSLIST()
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("RSLIST REQUEST SENT");
+ 
 }
 
 void SysExSender::sendHeartbeat()
@@ -513,5 +477,5 @@ void SysExSender::sendHeartbeat()
 
     midiOutput->sendMessageNow(msg);
 
-    DBG("HEARTBEAT RMDATA SENT");
+
 }

@@ -333,6 +333,23 @@ Keygroup KeygroupParser::parse(
     //                        residentSamples);
     //    }
     //}
+    for (int i = 0; i < 4; i++)
+    {
+        if (KGF::Zone::SNAME[i] + 12 >= d.size())
+        {
+            DBG("No more zones");
+            break;
+        }
+
+        DBG("ABOUT TO CALL parseZone");
+
+        k.zones[i] =
+            parseZone(
+                d,
+                i,
+                residentSamples
+            );
+    }
 
     for (int i = 0; i < 4; i++)
     {
