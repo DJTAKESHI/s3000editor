@@ -348,9 +348,13 @@ private:
 
     //bool deviceConnected = false;
     bool hasConnectedOnce = false;
+    bool programRefreshOnly = false;
 
 
     void setDeviceConnected(bool connected);
+    double lastShortProgramChangeTime = 0.0;
+    bool programRefreshPending = false;
+
 
 
     int programToRestoreAfterReconnect = -1;

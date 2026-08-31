@@ -1595,6 +1595,27 @@ void MainComponent::timerCallback()
     {
         setDeviceConnected(false);
     }
+
+    if (programRefreshPending)
+    {
+        const auto now =
+            juce::Time::getMillisecondCounterHiRes();
+
+        if (now - lastShortProgramChangeTime > 150.0)
+        {
+            programRefreshPending = false;
+            programRefreshOnly = true;
+
+            DBG("PROGRAM REFRESH ONLY REQUEST");
+
+            sysExSender.sendProgramHeader(
+                loadedProgram.programNumber
+            );
+        }
+    }
+
+
+
 }
 
 void MainComponent::setDeviceConnected(bool connected)
@@ -1764,22 +1785,17 @@ void MainComponent::processIncomingSysEx(
 
         case 0x28:
         {
+            // 実機のパラメータ変更通知
             if (size < 395)
             {
-                DBG(
-                    "SHORT 0x28 RECEIVED size="
-                    + juce::String((int)size)
-                );
+                lastShortProgramChangeTime =
+                    juce::Time::getMillisecondCounterHiRes();
 
-                DBG("REQUESTING FULL PROGRAM HEADER");
-
-                sysExSender.sendProgramHeader(
-                    loadedProgram.programNumber
-                );
-
+                programRefreshPending = true;
                 break;
             }
 
+            // Full Program Header
             handleProgramHeaderResponse();
             break;
         }
@@ -3307,12 +3323,8 @@ void MainComponent::handleProgramHeaderResponse()
         + juce::String((int)programBuffer.getSize())
     );
 
-    DBG("ABOUT TO decodeProgramHeader");
-
     auto decoded =
         decodeProgramHeader(programBuffer);
-
-
 
     DBG(
         "PROGRAM SIZE = "
@@ -3340,18 +3352,56 @@ void MainComponent::handleProgramHeaderResponse()
 
     loadedProgram.rawData = decoded;
 
+    programBuffer.reset();
 
 
+    // ========================================
+    // Program Editor は常に更新
+    // ========================================
+
+    const Program programForUI =
+        loadedProgram;
+
+    juce::MessageManager::callAsync(
+        [this, programForUI]()
+        {
+            programEditor.setProgram(
+                programForUI
+            );
+
+            DBG(
+                "PROGRAM EDITOR SET FROM PROGRAM HEADER"
+            );
+        }
+    );
+
+
+    // ========================================
+    // 実機パラメータ変更による再取得なら
+    // 左側は一切更新しない
+    // ========================================
+
+    if (programRefreshOnly)
+    {
+        programRefreshOnly = false;
+
+        DBG(
+            "PROGRAM REFRESH ONLY - "
+            "SKIP KEYGROUP RELOAD"
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ここから通常の Program Load
+    // ========================================
 
     totalKeygroups =
         loadedProgram.groups;
 
-    // SysExロード専用index
     loadingKeygroup = 0;
-
-    // ========================================
-// Mapの領域を先に確保
-// ========================================
 
     const int mapKeygroupCount =
         totalKeygroups;
@@ -3387,31 +3437,15 @@ void MainComponent::handleProgramHeaderResponse()
         }
     );
 
-
     DBG(
         "TOTAL KEYGROUPS = "
         + juce::String(totalKeygroups)
     );
 
-    const Program programForUI =
-        loadedProgram;
 
-    juce::MessageManager::callAsync(
-        [this, programForUI]()
-        {
-            programEditor.setProgram(
-                programForUI
-            );
-
-            DBG(
-                "PROGRAM EDITOR SET FROM PROGRAM HEADER"
-            );
-        }
-    );
-
-    // ==============================
+    // ========================================
     // Request first Keygroup
-    // ==============================
+    // ========================================
 
     if (totalKeygroups > 0)
     {

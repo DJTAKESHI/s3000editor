@@ -1952,6 +1952,205 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
+    velocityLoudnessLabel.setText(
+        "Vel -> Loud",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(velocityLoudnessLabel);
+
+    velocityLoudnessSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+
+    velocityLoudnessSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+
+    velocityLoudnessSlider.setRange(
+        -50.0,
+        50.0,
+        1.0
+    );
+
+    addAndMakeVisible(velocityLoudnessSlider);
+
+    velocityLoudnessValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+
+    addAndMakeVisible(
+        velocityLoudnessValueLabel
+    );
+
+    velocityLoudnessSlider.onValueChange =
+        [this]()
+        {
+            velocityLoudnessValueLabel.setText(
+                juce::String(
+                    (int)velocityLoudnessSlider.getValue()
+                ),
+                juce::dontSendNotification
+            );
+        };
+
+    velocityLoudnessSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.velocityLoudness =
+                (int)velocityLoudnessSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    keygroupCrossfadeLabel.setText(
+        "KG Crossfade",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(keygroupCrossfadeLabel);
+
+    keygroupCrossfadeCombo.addItem("OFF", 1);
+    keygroupCrossfadeCombo.addItem("ON", 2);
+    addAndMakeVisible(keygroupCrossfadeCombo);
+
+    keygroupCrossfadeCombo.onChange = [this]()
+        {
+            currentProgram.keygroupCrossfade =
+                keygroupCrossfadeCombo.getSelectedId() == 2;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modWheelDepthLabel.setText(
+        "ModWheel -> Depth",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(modWheelDepthLabel);
+
+    modWheelDepthSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    modWheelDepthSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+    addAndMakeVisible(modWheelDepthSlider);
+
+    modWheelDepthValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+    addAndMakeVisible(modWheelDepthValueLabel);
+
+    modWheelDepthSlider.onValueChange = [this]()
+        {
+            modWheelDepthValueLabel.setText(
+                juce::String((int)modWheelDepthSlider.getValue()),
+                juce::dontSendNotification
+            );
+        };
+
+    modWheelDepthSlider.onDragEnd = [this]()
+        {
+            currentProgram.modWheelDepth =
+                (int)modWheelDepthSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    pressureDepthLabel.setText(
+        "Pressure -> Depth",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(pressureDepthLabel);
+
+    pressureDepthSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    pressureDepthSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+    addAndMakeVisible(pressureDepthSlider);
+
+    pressureDepthValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+    addAndMakeVisible(pressureDepthValueLabel);
+
+    pressureDepthSlider.onValueChange = [this]()
+        {
+            pressureDepthValueLabel.setText(
+                juce::String((int)pressureDepthSlider.getValue()),
+                juce::dontSendNotification
+            );
+        };
+
+    pressureDepthSlider.onDragEnd = [this]()
+        {
+            currentProgram.pressureDepth =
+                (int)pressureDepthSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    velocityDepthLabel.setText(
+        "Velocity -> Depth",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(velocityDepthLabel);
+
+    velocityDepthSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    velocityDepthSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+    addAndMakeVisible(velocityDepthSlider);
+
+    modWheelDepthSlider.setRange(0.0, 99.0, 1.0);
+
+    pressureDepthSlider.setRange(0.0, 99.0, 1.0);
+
+    velocityDepthSlider.setRange(0.0, 99.0, 1.0);
+
+    velocityDepthValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+    addAndMakeVisible(velocityDepthValueLabel);
+
+    velocityDepthSlider.onValueChange = [this]()
+        {
+            velocityDepthValueLabel.setText(
+                juce::String((int)velocityDepthSlider.getValue()),
+                juce::dontSendNotification
+            );
+        };
+
+    velocityDepthSlider.onDragEnd = [this]()
+        {
+            currentProgram.velocityDepth =
+                (int)velocityDepthSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+
 
 
 }
@@ -2363,6 +2562,18 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
     );
 
+    velocityLoudnessSlider.setValue(
+        program.velocityLoudness,
+        juce::dontSendNotification
+    );
+
+    velocityLoudnessValueLabel.setText(
+        juce::String(program.velocityLoudness),
+        juce::dontSendNotification
+    );
+
+
+
     softLoudnessSlider.setValue(
         program.softLoudness,
         juce::dontSendNotification
@@ -2567,9 +2778,59 @@ void ProgramEditor::setProgram(
 
     //repaint();
 
+    /*keygroupCrossfadeLabel.setText(
+        "KG Crossfade",
+        juce::dontSendNotification
+    );
+    addAndMakeVisible(keygroupCrossfadeLabel);
 
+    keygroupCrossfadeCombo.addItem("OFF", 1);
+    keygroupCrossfadeCombo.addItem("ON", 2);
+    addAndMakeVisible(keygroupCrossfadeCombo);
 
-    DBG("PROGRAM EDITOR UPDATED");
+    keygroupCrossfadeCombo.onChange = [this]()
+        {
+            currentProgram.keygroupCrossfade =
+                keygroupCrossfadeCombo.getSelectedId() == 2;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+*/
+    keygroupCrossfadeCombo.setSelectedId(
+        program.keygroupCrossfade ? 2 : 1,
+        juce::dontSendNotification
+    );
+
+    modWheelDepthSlider.setValue(
+        program.modWheelDepth,
+        juce::dontSendNotification
+    );
+
+    modWheelDepthValueLabel.setText(
+        juce::String(program.modWheelDepth),
+        juce::dontSendNotification
+    );
+
+    pressureDepthSlider.setValue(
+        program.pressureDepth,
+        juce::dontSendNotification
+    );
+
+    pressureDepthValueLabel.setText(
+        juce::String(program.pressureDepth),
+        juce::dontSendNotification
+    );
+
+    velocityDepthSlider.setValue(
+        program.velocityDepth,
+        juce::dontSendNotification
+    );
+
+    velocityDepthValueLabel.setText(
+        juce::String(program.velocityDepth),
+        juce::dontSendNotification
+    );
 }
 
 void ProgramEditor::resized()
@@ -2599,7 +2860,7 @@ void ProgramEditor::resized()
     // =========================
 
     generalCardBounds =
-        left.removeFromTop(260);
+        left.removeFromTop(326);
 
     auto general =
         generalCardBounds.reduced(10);
@@ -2687,6 +2948,38 @@ void ProgramEditor::resized()
     );
 
     left.removeFromTop(10);
+
+    {
+        auto row =
+            general.removeFromTop(rowHeight);
+
+        velocityLoudnessLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        velocityLoudnessValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        velocityLoudnessSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row =
+            general.removeFromTop(rowHeight);
+
+        keygroupCrossfadeLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        keygroupCrossfadeCombo.setBounds(
+            row.reduced(2)
+        );
+    }
+
+
 
     // =========================
     // OUTPUT
@@ -3113,7 +3406,7 @@ void ProgramEditor::resized()
     // =========================
 
     lfo1CardBounds =
-        right.removeFromTop(158);
+        right.removeFromTop(272);
 
     auto lfo1 =
         lfo1CardBounds.reduced(10);
@@ -3186,6 +3479,55 @@ void ProgramEditor::resized()
             row.reduced(2)
         );
     }
+    {
+        auto row = lfo1.removeFromTop(rowHeight);
+
+        modWheelDepthLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        modWheelDepthValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        modWheelDepthSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row = lfo1.removeFromTop(rowHeight);
+
+        pressureDepthLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        pressureDepthValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        pressureDepthSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row = lfo1.removeFromTop(rowHeight);
+
+        velocityDepthLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        velocityDepthValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        velocityDepthSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+
 
     right.removeFromTop(10);
 

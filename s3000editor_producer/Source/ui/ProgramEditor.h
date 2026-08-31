@@ -237,6 +237,25 @@ private:
     juce::Label modPitchLabel;
     juce::ComboBox modPitchSourceCombo;
 
+    juce::Label velocityLoudnessLabel;
+    juce::Slider velocityLoudnessSlider;
+    juce::Label velocityLoudnessValueLabel;
+
+    juce::Label keygroupCrossfadeLabel;
+    juce::ComboBox keygroupCrossfadeCombo;
+
+    juce::Label modWheelDepthLabel;
+    juce::Slider modWheelDepthSlider;
+    juce::Label modWheelDepthValueLabel;
+
+    juce::Label pressureDepthLabel;
+    juce::Slider pressureDepthSlider;
+    juce::Label pressureDepthValueLabel;
+
+    juce::Label velocityDepthLabel;
+    juce::Slider velocityDepthSlider;
+    juce::Label velocityDepthValueLabel;
+
 
 
 

@@ -119,6 +119,16 @@ ProgramEncoder::encode(
                                                         program.bendUp
                                                         );
 
+                                                    data[ProgramOffset::Output::VelocityLoudness] =
+                                                        static_cast<uint8_t>(
+                                                            static_cast<int8_t>(
+                                                                program.velocityLoudness
+                                                                )
+                                                            );
+
+                                                    data[ProgramOffset::Keygroups::KeygroupCrossfade] =
+                                                        program.keygroupCrossfade ? 1 : 0;
+
 
                                                 // =========================
                                                 // Program Tune
@@ -201,6 +211,21 @@ ProgramEncoder::encode(
                                                                         static_cast<uint8_t>(
                                                                             program.lfo2Wave
                                                                             );
+
+                                                                        data[ProgramOffset::LFO::ModWheelDepth] =
+                                                                            static_cast<uint8_t>(
+                                                                                program.modWheelDepth
+                                                                                );
+
+                                                                        data[ProgramOffset::LFO::PressureDepth] =
+                                                                            static_cast<uint8_t>(
+                                                                                program.pressureDepth
+                                                                                );
+
+                                                                        data[ProgramOffset::LFO::VelocityDepth] =
+                                                                            static_cast<uint8_t>(
+                                                                                program.velocityDepth
+                                                                                );
 
                                                         data[
                                                             ProgramOffset::LFO::LFO1Wave
