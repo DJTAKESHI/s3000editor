@@ -186,8 +186,15 @@ MainComponent::MainComponent()
         false    // horizontal
     );
 
+    addAndMakeVisible(programViewport);
+
     programViewport.setViewedComponent(
         &programEditor,
+        false
+    );
+
+    programViewport.setScrollBarsShown(
+        true,
         false
     );
 
@@ -1552,6 +1559,16 @@ void MainComponent::resized()
         1250
     );
 
+    DBG("MainComponent programEditor="
+        + juce::String::toHexString(
+            reinterpret_cast<juce::pointer_sized_int>(&programEditor)));
+
+    DBG("Viewport viewedComponent="
+        + juce::String::toHexString(
+            reinterpret_cast<juce::pointer_sized_int>(
+                programViewport.getViewedComponent())));
+
+
 }
 
 void MainComponent::compareLatest()
@@ -1579,7 +1596,7 @@ void MainComponent::timerCallback()
 
     ++heartbeatCounter;
 
-    if (heartbeatCounter >= 3)
+    if (heartbeatCounter >= 1)
     {
         heartbeatCounter = 0;
         sysExSender.sendHeartbeat();
@@ -1688,34 +1705,53 @@ void MainComponent::setDeviceConnected(bool connected)
     }
 }
 
+//void MainComponent::handleIncomingMidiMessage(
+//    juce::MidiInput*,
+//    const juce::MidiMessage& message)
+//{
+//    if (!message.isSysEx())
+//        return;
+//
+//    /*lastDeviceResponseTime =
+//        juce::Time::getMillisecondCounterHiRes();*/
+//
+//    processIncomingSysEx(message);
+//
+//    //juce::MessageManager::callAsync(
+//    //    [this]()
+//    //    {
+//    //        deviceConnected = true;
+//
+//    //        deviceStatusLabel.setText(
+//    //            "S3000XL: Connected",
+//    //            juce::dontSendNotification
+//    //        );
+//
+//    //        deviceStatusLabel.setColour(
+//    //            juce::Label::textColourId,
+//    //            juce::Colours::lightgreen
+//    //        );
+//    //    }
+//    //);
+//}
+
 void MainComponent::handleIncomingMidiMessage(
     juce::MidiInput*,
     const juce::MidiMessage& message)
 {
+    if (message.isProgramChange())
+    {
+        DBG("MIDI PROGRAM CHANGE = "
+            + juce::String(
+                message.getProgramChangeNumber()));
+
+        return;
+    }
+
     if (!message.isSysEx())
         return;
 
-    /*lastDeviceResponseTime =
-        juce::Time::getMillisecondCounterHiRes();*/
-
     processIncomingSysEx(message);
-
-    //juce::MessageManager::callAsync(
-    //    [this]()
-    //    {
-    //        deviceConnected = true;
-
-    //        deviceStatusLabel.setText(
-    //            "S3000XL: Connected",
-    //            juce::dontSendNotification
-    //        );
-
-    //        deviceStatusLabel.setColour(
-    //            juce::Label::textColourId,
-    //            juce::Colours::lightgreen
-    //        );
-    //    }
-    //);
 }
 
 void MainComponent::processIncomingSysEx(
@@ -1738,14 +1774,32 @@ void MainComponent::processIncomingSysEx(
         lastDeviceResponseTime =
             juce::Time::getMillisecondCounterHiRes();
 
-        juce::MessageManager::callAsync(
-            [this]()
-            {
-                setDeviceConnected(true);
-            }
-        );
+        if (size >= 12)
+        {
+            const int selectedProgram =
+                (data[10] & 0x0F)
+                | ((data[11] & 0x0F) << 4);
 
-        DBG("HEARTBEAT MDATA RECEIVED");
+            juce::MessageManager::callAsync(
+                [this, selectedProgram]()
+                {
+                    setDeviceConnected(true);
+
+                    if (selectedProgram != currentProgram)
+                        loadProgram(selectedProgram);
+                }
+            );
+        }
+        else
+        {
+            juce::MessageManager::callAsync(
+                [this]()
+                {
+                    setDeviceConnected(true);
+                }
+            );
+        }
+
         return;
     }
 
@@ -1785,9 +1839,18 @@ void MainComponent::processIncomingSysEx(
 
         case 0x28:
         {
-            // 実機のパラメータ変更通知
+            // 実機のパラメータ変更 / Program変更通知
             if (size < 395)
             {
+                DBG("SHORT PROGRAM CHANGE");
+                DBG("SHORT 0x28 SIZE = " + juce::String((int)size));
+
+                for (size_t i = 0; i < size; ++i)
+                {
+                    DBG("SHORT[" + juce::String((int)i) + "] = 0x"
+                        + juce::String::toHexString((int)data[i]));
+                }
+
                 lastShortProgramChangeTime =
                     juce::Time::getMillisecondCounterHiRes();
 
@@ -1795,7 +1858,6 @@ void MainComponent::processIncomingSysEx(
                 break;
             }
 
-            // Full Program Header
             handleProgramHeaderResponse();
             break;
         }
@@ -1844,6 +1906,7 @@ void MainComponent::processIncomingSysEx(
             break;
         }
         
+
        
 
       
@@ -3318,10 +3381,11 @@ void MainComponent::handleProgramHeaderResponse()
 {
     DBG("========== CASE 0x28 ENTERED ==========");
 
-    DBG(
-        "programBuffer SIZE BEFORE DECODE = "
-        + juce::String((int)programBuffer.getSize())
-    );
+
+
+    DBG("=== PROGRAM HEADER RESPONSE ===");
+    DBG("loadedProgram.programNumber = "
+        + juce::String(loadedProgram.programNumber));
 
     auto decoded =
         decodeProgramHeader(programBuffer);
@@ -3347,6 +3411,13 @@ void MainComponent::handleProgramHeaderResponse()
     loadedProgram =
         ProgramParser::parse(decoded);
 
+    DBG("PARSED PROGRAM = "
+        + juce::String(loadedProgram.programNumber)
+        + " LFO1 RATE="
+        + juce::String(loadedProgram.lfo1Rate)
+        + " PAN="
+        + juce::String(loadedProgram.pan));
+
     loadedProgram.keygroups =
         std::move(existingKeygroups);
 
@@ -3365,6 +3436,15 @@ void MainComponent::handleProgramHeaderResponse()
     juce::MessageManager::callAsync(
         [this, programForUI]()
         {
+            DBG("CALLING programEditor.setProgram()");
+
+            DBG("PROGRAM UI MESSAGE THREAD = "
+                + juce::String(
+                    juce::MessageManager::getInstance()
+                    ->isThisTheMessageThread()
+                    ? "YES"
+                    : "NO"));
+
             programEditor.setProgram(
                 programForUI
             );
@@ -4436,6 +4516,12 @@ void MainComponent::loadProgram(
 
     currentProgram = programIndex;
 
+    programCombo.setSelectedItemIndex(
+        programIndex,
+        juce::dontSendNotification
+    );
+
+
     currentKeygroup = 0;
     currentZone = 0;
 
@@ -4457,6 +4543,9 @@ void MainComponent::loadProgram(
     sysExSender.sendProgramHeader(
         programIndex
     );
+
+
+
 }
 
 

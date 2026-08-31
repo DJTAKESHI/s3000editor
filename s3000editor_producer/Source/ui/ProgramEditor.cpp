@@ -34,6 +34,11 @@ static juce::String programNoteName(
 
 ProgramEditor::ProgramEditor()
 {
+
+    DBG("ProgramEditor CONSTRUCTOR this="
+        + juce::String::toHexString(
+            reinterpret_cast<juce::pointer_sized_int>(this)));
+
     titleLabel.setText(
         "Program Header",
         juce::dontSendNotification
@@ -108,6 +113,9 @@ ProgramEditor::ProgramEditor()
     );
 
     addAndMakeVisible(lfo1RateSlider);
+
+    DBG("UI LFO1 RATE="
+        + juce::String(lfo1RateSlider.getValue()));
 
     lfo1RateValueLabel.setJustificationType(
         juce::Justification::centred
@@ -774,6 +782,9 @@ ProgramEditor::ProgramEditor()
     );
 
     addAndMakeVisible(panSlider);
+
+    DBG("UI PAN="
+        + juce::String(panSlider.getValue()));
 
     panValueLabel.setJustificationType(
         juce::Justification::centred
@@ -2234,6 +2245,15 @@ void ProgramEditor::paint(
 void ProgramEditor::setProgram(
     const Program& program)
 {
+    DBG("ProgramEditor SETPROGRAM this="
+        + juce::String::toHexString(
+            reinterpret_cast<juce::pointer_sized_int>(this)));
+
+    DBG("=== ProgramEditor::setProgram ENTER ===");
+    DBG("PROGRAM=" + juce::String(program.programNumber)
+        + " LFO1 RATE=" + juce::String(program.lfo1Rate)
+        + " PAN=" + juce::String(program.pan));
+
     currentProgram = program;
 
     // raw 0 = MIDI CH 1
@@ -2406,6 +2426,9 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
     );
 
+    DBG("AFTER SET PAN = "
+        + juce::String(panSlider.getValue()));
+
     panValueLabel.setText(
         panText,
         juce::dontSendNotification
@@ -2490,6 +2513,9 @@ void ProgramEditor::setProgram(
         program.lfo1Rate,
         juce::dontSendNotification
     );
+
+    DBG("AFTER SET LFO1 RATE = "
+        + juce::String(lfo1RateSlider.getValue()));
 
     lfo1RateValueLabel.setText(
         juce::String(program.lfo1Rate),
