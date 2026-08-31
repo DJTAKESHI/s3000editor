@@ -561,7 +561,7 @@ ProgramEditor::ProgramEditor()
         };
 
     outputLabel.setText(
-        "Out",
+        "Output Routing",
         juce::dontSendNotification
     );
 
@@ -575,7 +575,7 @@ ProgramEditor::ProgramEditor()
     for (int i = 1; i <= 8; ++i)
     {
         outputCombo.addItem(
-            juce::String(i),
+            "OUT " + juce::String(i),
             i + 1
         );
     }
@@ -1613,7 +1613,7 @@ ProgramEditor::ProgramEditor()
             combo.addItem("!Modwheel", 12);
             combo.addItem("!Bend", 13);
             combo.addItem("!External", 14);
-            combo.addItem("Env3", 15);
+            //combo.addItem("Env3", 15);
 
             addAndMakeVisible(combo);
         };

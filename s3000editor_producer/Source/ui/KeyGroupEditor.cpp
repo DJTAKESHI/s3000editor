@@ -1294,6 +1294,45 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(env2KeyTrackingLabel);
     addAndMakeVisible(env2KeyTrackingEditor);
 
+    addAndMakeVisible(env1Editor);
+
+    env1Editor.onEnvelopeChanged =
+        [this](
+            int attack,
+            int decay,
+            int sustain,
+            int release)
+        {
+            currentKeygroup.env1.attack = attack;
+            currentKeygroup.env1.decay = decay;
+            currentKeygroup.env1.sustain = sustain;
+            currentKeygroup.env1.release = release;
+
+            env1AttackEditor.setText(
+                juce::String(attack), false);
+
+            env1DecayEditor.setText(
+                juce::String(decay), false);
+
+            env1SustainEditor.setText(
+                juce::String(sustain), false);
+
+            env1ReleaseEditor.setText(
+                juce::String(release), false);
+        };
+
+    env1Editor.onEditFinished =
+        [this]()
+        {
+            if (onKeygroupChanged)
+            {
+                onKeygroupChanged(
+                    currentKeygroupIndex,
+                    currentKeygroup
+                );
+            }
+        };
+
 }
 
 
@@ -1374,6 +1413,13 @@ void KeyGroupEditor::setKeygroup(
     env1ReleaseEditor.setText(
         juce::String(keygroup.env1.release),
         false
+    );
+
+    env1Editor.setEnvelope(
+        keygroup.env1.attack,
+        keygroup.env1.decay,
+        keygroup.env1.sustain,
+        keygroup.env1.release
     );
 
     //env2AttackEditor.setText(
@@ -1679,7 +1725,7 @@ env1SectionLabel.setBounds(
 // =========================
 {
     auto section =
-        area.removeFromTop(36);
+        area.removeFromTop(220);
 
     auto row =
         section.removeFromTop(30);
@@ -1733,6 +1779,12 @@ env1SectionLabel.setBounds(
 
     env1ReleaseEditor.setBounds(
         releaseArea.removeFromLeft(envEditorWidth)
+    );
+
+    section.removeFromTop(10);
+
+    env1Editor.setBounds(
+        section.removeFromTop(180)
     );
 }
 

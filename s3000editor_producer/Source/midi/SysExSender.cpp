@@ -480,3 +480,100 @@ void SysExSender::sendHeartbeat()
 
 }
 
+//void SysExSender::sendNoteOn(
+//    int noteNumber,
+//    int velocity,
+//    int midiChannel)
+//{
+//    if (midiOutput == nullptr)
+//        return;
+//
+//    noteNumber = juce::jlimit(0, 127, noteNumber);
+//    velocity = juce::jlimit(1, 127, velocity);
+//    midiChannel = juce::jlimit(1, 16, midiChannel);
+//
+//    auto message =
+//        juce::MidiMessage::noteOn(
+//            midiChannel,
+//            noteNumber,
+//            (juce::uint8)velocity
+//        );
+//
+//    midiOutput->sendMessageNow(message);
+//}
+
+void SysExSender::sendNoteOn(
+    int noteNumber,
+    int velocity,
+    int midiChannel)
+{
+    DBG("sendNoteOn CALLED");
+    DBG("channel = " + juce::String(midiChannel));
+    DBG("note = " + juce::String(noteNumber));
+    DBG("velocity = " + juce::String(velocity));
+
+    if (midiOutput == nullptr)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    noteNumber = juce::jlimit(0, 127, noteNumber);
+    velocity = juce::jlimit(1, 127, velocity);
+    midiChannel = juce::jlimit(1, 16, midiChannel);
+
+    auto message =
+        juce::MidiMessage::noteOn(
+            midiChannel,
+            noteNumber,
+            (juce::uint8)velocity
+        );
+
+    DBG("RAW STATUS = 0x"
+        + juce::String::toHexString((int)message.getRawData()[0]));
+
+    midiOutput->sendMessageNow(message);
+
+    DBG("NOTE ON SENT");
+}
+
+void SysExSender::sendNoteOff(
+    int noteNumber,
+    int midiChannel)
+{
+    if (midiOutput == nullptr)
+        return;
+
+    noteNumber = juce::jlimit(0, 127, noteNumber);
+    midiChannel = juce::jlimit(1, 16, midiChannel);
+
+    auto message =
+        juce::MidiMessage::noteOff(
+            midiChannel,
+            noteNumber
+        );
+
+    midiOutput->sendMessageNow(message);
+}
+
+void SysExSender::sendProgramChange(
+    int programNumber,
+    int midiChannel)
+{
+    if (midiOutput == nullptr)
+        return;
+
+    programNumber =
+        juce::jlimit(0, 127, programNumber);
+
+    midiChannel =
+        juce::jlimit(1, 16, midiChannel);
+
+    auto message =
+        juce::MidiMessage::programChange(
+            midiChannel,
+            programNumber
+        );
+
+    midiOutput->sendMessageNow(message);
+}

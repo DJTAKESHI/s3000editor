@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "../s3000/S3000Types.h"
+#include "EnvelopeEditor.h"
 
 class KeyGroupEditor : public juce::Component
 {
@@ -139,6 +140,8 @@ private:
 
     juce::Label keyRangeSectionLabel;
     juce::Label filterSectionLabel;
+
+    EnvelopeEditor env1Editor;
 
 
 };

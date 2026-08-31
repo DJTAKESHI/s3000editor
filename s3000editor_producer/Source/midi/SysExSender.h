@@ -12,6 +12,16 @@ public:
     void sendRPLIST();
     void sendRSLIST();
     void sendHeartbeat();
+
+    void sendNoteOn(
+        int noteNumber,
+        int velocity,
+        int midiChannel = 1);
+
+    void sendNoteOff(
+        int noteNumber,
+        int midiChannel = 1);
+
     
     void sendProgramHeader(int programIndex);
     void sendKGHeader(
@@ -38,6 +48,10 @@ public:
     void sendDeleteKeygroup(
         int programIndex,
         int keygroupIndex);
+
+    void sendProgramChange(
+        int programNumber,
+        int midiChannel = 16);
 
 
     

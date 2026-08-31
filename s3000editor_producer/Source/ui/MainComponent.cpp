@@ -80,6 +80,31 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(editorTabs);
 
+    addAndMakeVisible(auditionButton);
+    auditionButton.setAlwaysOnTop(true);
+
+    auditionButton.onClick = [this]()
+        {
+            DBG("AUDITION CLICKED");
+
+            sysExSender.sendNoteOn(
+                60,
+                100,
+                16
+            );
+
+            juce::Timer::callAfterDelay(
+                500,
+                [this]()
+                {
+                    sysExSender.sendNoteOff(
+                        60,
+                        16
+                    );
+                }
+            );
+        };
+
     //addAndMakeVisible(keygroupMap);
 
     keygroupMap.onKeygroupSelected =
@@ -917,15 +942,9 @@ MainComponent::MainComponent()
             const int programIndex =
                 selectedId - 1;
 
-            DBG(
-                "PROGRAM SELECTED INDEX="
-                + juce::String(programIndex)
-            );
-
-            DBG(
-                "PROGRAM SELECTED NAME=["
-                + programCombo.getText()
-                + "]"
+            sysExSender.sendProgramChange(
+                programIndex,
+                basicMidiChannel + 1
             );
 
             loadProgram(
@@ -1407,6 +1426,85 @@ MainComponent::MainComponent()
             DBG("SAMPLE HEADER SYSEX SENT");
         };
 
+    keyboardState.addListener(this);
+    addAndMakeVisible(keyboardComponent);
+
+    addAndMakeVisible(keyboardToggle);
+
+    keyboardToggle.setToggleState(
+        true,
+        juce::dontSendNotification
+    );
+
+    keyboardToggle.onClick = [this]()
+        {
+            const bool showKeyboard =
+                keyboardToggle.getToggleState();
+
+            keyboardComponent.setVisible(showKeyboard);
+
+            keyboardVelocityLabel.setVisible(showKeyboard);
+            keyboardVelocitySlider.setVisible(showKeyboard);
+
+            keyboardOctaveLabel.setVisible(showKeyboard);
+            keyboardOctaveCombo.setVisible(showKeyboard);
+
+            resized();
+            repaint();
+        };
+
+    addAndMakeVisible(keyboardVelocityLabel);
+    keyboardVelocityLabel.setText(
+        "Velocity",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(keyboardVelocitySlider);
+    keyboardVelocitySlider.setRange(1, 127, 1);
+    keyboardVelocitySlider.setValue(100);
+    keyboardVelocitySlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    keyboardVelocitySlider.setTextBoxStyle(
+        juce::Slider::TextBoxRight,
+        false,
+        45,
+        20
+    );
+
+    addAndMakeVisible(keyboardOctaveLabel);
+    keyboardOctaveLabel.setText(
+        "Octave",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(keyboardOctaveCombo);
+
+    keyboardOctaveCombo.addItem("C1", 1);
+    keyboardOctaveCombo.addItem("C2", 2);
+    keyboardOctaveCombo.addItem("C3", 3);
+    keyboardOctaveCombo.addItem("C4", 4);
+    keyboardOctaveCombo.addItem("C5", 5);
+
+    keyboardOctaveCombo.setSelectedId(
+        3,
+        juce::dontSendNotification
+    );
+
+    keyboardOctaveCombo.onChange = [this]()
+        {
+            const int octave =
+                keyboardOctaveCombo.getSelectedId();
+
+            const int noteNumber =
+                octave * 12;
+
+            keyboardComponent.setLowestVisibleKey(
+                noteNumber
+            );
+        };
+
+
     deviceStatusLabel.toFront(false);
     startTimer(1000);
 
@@ -1447,6 +1545,67 @@ void MainComponent::resized()
         topBar.removeFromRight(250)
         .reduced(10, 15)
     );
+
+    // =========================
+// Audition keyboard
+// =========================
+
+    if (keyboardToggle.getToggleState())
+    {
+        // Controls + keyboard
+        auto keyboardSection =
+            area.removeFromBottom(120);
+
+        auto keyboardControls =
+            keyboardSection.removeFromTop(30);
+
+        keyboardControls.removeFromLeft(20);
+
+        keyboardToggle.setBounds(
+            keyboardControls.removeFromLeft(120)
+        );
+
+        keyboardVelocityLabel.setBounds(
+            keyboardControls.removeFromLeft(65)
+        );
+
+        keyboardVelocitySlider.setBounds(
+            keyboardControls.removeFromLeft(150)
+        );
+
+        keyboardControls.removeFromLeft(20);
+
+        keyboardOctaveLabel.setBounds(
+            keyboardControls.removeFromLeft(55)
+        );
+
+        keyboardOctaveCombo.setBounds(
+            keyboardControls.removeFromLeft(80)
+        );
+
+        keyboardComponent.setBounds(
+            keyboardSection.reduced(20, 5)
+        );
+    }
+    else
+    {
+        // Collapsed: only the Keyboard toggle remains
+        auto keyboardControls =
+            area.removeFromBottom(30);
+
+        keyboardControls.removeFromLeft(20);
+
+        keyboardToggle.setBounds(
+            keyboardControls.removeFromLeft(120)
+        );
+
+        // Clear old bounds as well
+        keyboardComponent.setBounds({});
+        keyboardVelocityLabel.setBounds({});
+        keyboardVelocitySlider.setBounds({});
+        keyboardOctaveLabel.setBounds({});
+        keyboardOctaveCombo.setBounds({});
+    }
 
 
 #if JUCE_DEBUG
@@ -1776,14 +1935,22 @@ void MainComponent::processIncomingSysEx(
 
         if (size >= 12)
         {
+
+            const int bmchan =
+                (data[4] & 0x0F)
+                | ((data[5] & 0x0F) << 4);
+
             const int selectedProgram =
                 (data[10] & 0x0F)
                 | ((data[11] & 0x0F) << 4);
 
             juce::MessageManager::callAsync(
-                [this, selectedProgram]()
+                [this, selectedProgram, bmchan]()
                 {
                     setDeviceConnected(true);
+
+                    basicMidiChannel = bmchan;
+
 
                     if (selectedProgram != currentProgram)
                         loadProgram(selectedProgram);
@@ -4861,5 +5028,37 @@ void MainComponent::listBoxItemClicked(
     
     sysExSender.sendProgramHeader(currentProgramIndex);
 }
+
+void MainComponent::handleNoteOn(
+    juce::MidiKeyboardState*,
+    int,
+    int midiNoteNumber,
+    float)
+{
+    if (!keyboardToggle.getToggleState())
+        return;
+
+    const int velocity =
+        (int)keyboardVelocitySlider.getValue();
+
+    sysExSender.sendNoteOn(
+        midiNoteNumber,
+        velocity,
+        16
+    );
+}
+
+void MainComponent::handleNoteOff(
+    juce::MidiKeyboardState*,
+    int,
+    int midiNoteNumber,
+    float)
+{
+    sysExSender.sendNoteOff(
+        midiNoteNumber,
+        16
+    );
+}
+
 
 // write-test

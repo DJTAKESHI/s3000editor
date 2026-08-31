@@ -68,8 +68,11 @@ std::optional<int> findPanOffset(const std::vector<uint8_t>& a,
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::Component,
-    public juce::MidiInputCallback, public juce::ListBoxModel, private juce::Timer
+class MainComponent : public juce::Component,
+    public juce::MidiInputCallback,
+    public juce::ListBoxModel,
+    public juce::MidiKeyboardStateListener,
+    private juce::Timer
 {
 public:
     //==============================================================================
@@ -250,6 +253,19 @@ private:
     //int currentKeygroup = -1;
     int currentZone = -1;
 
+    void handleNoteOn(
+        juce::MidiKeyboardState* source,
+        int midiChannel,
+        int midiNoteNumber,
+        float velocity) override;
+
+    void handleNoteOff(
+        juce::MidiKeyboardState* source,
+        int midiChannel,
+        int midiNoteNumber,
+        float velocity) override;
+
+
 
 
 //    std::unique_ptr<juce::MidiInput> midiInput;
@@ -354,6 +370,27 @@ private:
     void setDeviceConnected(bool connected);
     double lastShortProgramChangeTime = 0.0;
     bool programRefreshPending = false;
+
+    juce::TextButton auditionButton{ "AUDITION" };
+
+    juce::MidiKeyboardState keyboardState;
+
+    juce::MidiKeyboardComponent keyboardComponent
+    {
+        keyboardState,
+        juce::MidiKeyboardComponent::horizontalKeyboard
+    };
+
+    juce::ToggleButton keyboardToggle{ "Keyboard" };
+
+    juce::Slider keyboardVelocitySlider;
+
+    juce::ComboBox keyboardOctaveCombo;
+    juce::Label keyboardVelocityLabel;
+    juce::Label keyboardOctaveLabel;
+
+    int basicMidiChannel = 15;  // Akai raw: 0-15
+
 
 
 
