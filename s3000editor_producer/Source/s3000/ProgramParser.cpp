@@ -353,16 +353,60 @@ void ProgramParser::parseHeader(
     p.modSPitch = d[P::Mod::ModSPitch];
     p.modSAmp3 = d[P::Mod::ModSAmp3];
 
-    p.modVPan1 = d[P::Mod::ModVPan1];
-    p.modVPan2 = d[P::Mod::ModVPan2];
-    p.modVPan3 = d[P::Mod::ModVPan3];
+    // ==============================
+// Modulation Amounts
+// signed -50 .. +50
+// ==============================
 
-    p.modVAmp1 = d[P::Mod::ModVAmp1];
-    p.modVAmp2 = d[P::Mod::ModVAmp2];
+    p.modVPan1 =
+        readS8(
+            d,
+            P::Mod::ModVPan1
+        );
 
-    p.modVLfo1Rate = d[P::Mod::ModVLFO1Rate];
-    p.modVLfo1Depth = d[P::Mod::ModVLFO1Depth];
-    p.modVLfo1Delay = d[P::Mod::ModVLFO1Delay];
+    p.modVPan2 =
+        readS8(
+            d,
+            P::Mod::ModVPan2
+        );
+
+    p.modVPan3 =
+        readS8(
+            d,
+            P::Mod::ModVPan3
+        );
+
+
+    p.modVAmp1 =
+        readS8(
+            d,
+            P::Mod::ModVAmp1
+        );
+
+    p.modVAmp2 =
+        readS8(
+            d,
+            P::Mod::ModVAmp2
+        );
+
+
+    p.modVLfo1Rate =
+        readS8(
+            d,
+            P::Mod::ModVLFO1Rate
+        );
+
+    p.modVLfo1Depth =
+        readS8(
+            d,
+            P::Mod::ModVLFO1Depth
+        );
+
+    p.modVLfo1Delay =
+        readS8(
+            d,
+            P::Mod::ModVLFO1Delay
+        );
 
     p.lfo1Wave = d[P::LFO::LFO1Wave];
     p.lfo2Wave = d[P::LFO::LFO2Wave];

@@ -159,6 +159,13 @@ ProgramEncoder::encode(
                                                         );
 
                                                     data[
+                                                        ProgramOffset::LFO::LFO1Delay
+                                                    ] =
+                                                        static_cast<uint8_t>(
+                                                            program.lfo1Delay
+                                                            );
+
+                                                    data[
                                                         ProgramOffset::Pitch::ProgramTune + 1
                                                     ] =
                                                         static_cast<uint8_t>(
@@ -166,6 +173,63 @@ ProgramEncoder::encode(
                                                                 semitone
                                                                 )
                                                             );
+
+                                                        data[
+                                                            ProgramOffset::LFO::LFO2Rate
+                                                        ] =
+                                                            static_cast<uint8_t>(
+                                                                program.lfo2Rate
+                                                                );
+
+                                                            data[
+                                                                ProgramOffset::LFO::LFO2Depth
+                                                            ] =
+                                                                static_cast<uint8_t>(
+                                                                    program.lfo2Depth
+                                                                    );
+
+                                                                data[
+                                                                    ProgramOffset::LFO::LFO2Delay
+                                                                ] =
+                                                                    static_cast<uint8_t>(
+                                                                        program.lfo2Delay
+                                                                        );
+
+                                                                    data[
+                                                                        ProgramOffset::LFO::LFO2Wave
+                                                                    ] =
+                                                                        static_cast<uint8_t>(
+                                                                            program.lfo2Wave
+                                                                            );
+
+                                                        data[
+                                                            ProgramOffset::LFO::LFO1Wave
+                                                        ] =
+                                                            static_cast<uint8_t>(
+                                                                program.lfo1Wave
+                                                                );
+
+
+                                                            data[
+                                                                ProgramOffset::SoftPedal::SoftLoudness
+                                                            ] =
+                                                                static_cast<uint8_t>(
+                                                                    program.softLoudness
+                                                                    );
+
+                                                                data[
+                                                                    ProgramOffset::SoftPedal::SoftAttack
+                                                                ] =
+                                                                    static_cast<uint8_t>(
+                                                                        program.softAttack
+                                                                        );
+
+                                                                    data[
+                                                                        ProgramOffset::SoftPedal::SoftFilter
+                                                                    ] =
+                                                                        static_cast<uint8_t>(
+                                                                            program.softFilter
+                                                                            );
 
                                                         data[
                                                             ProgramOffset::Pitch::PressurePitch
@@ -218,6 +282,13 @@ ProgramEncoder::encode(
                                                                                         program.lfo1Desync ? 1 : 0
                                                                                         );
 
+                                                                                    data[
+                                                                                        ProgramOffset::LFO::LFO1Depth
+                                                                                    ] =
+                                                                                        static_cast<uint8_t>(
+                                                                                            program.lfo1Depth
+                                                                                            );
+
                                                         DBG(
                                                             "ENCODE PROGRAM TUNE = "
                                                             + juce::String(tune, 2)
@@ -234,6 +305,101 @@ ProgramEncoder::encode(
                                                                 ]
                                                             )
                                                         );
+
+                                                        // =========================
+// MODULATION SOURCES
+// =========================
+
+                                                        data[ProgramOffset::Mod::ModSPan1] =
+                                                            static_cast<uint8_t>(program.modSPan1);
+
+                                                        data[ProgramOffset::Mod::ModSPan2] =
+                                                            static_cast<uint8_t>(program.modSPan2);
+
+                                                        data[ProgramOffset::Mod::ModSPan3] =
+                                                            static_cast<uint8_t>(program.modSPan3);
+
+
+                                                        data[ProgramOffset::Mod::ModSAmp1] =
+                                                            static_cast<uint8_t>(program.modSAmp1);
+
+                                                        data[ProgramOffset::Mod::ModSAmp2] =
+                                                            static_cast<uint8_t>(program.modSAmp2);
+
+
+                                                        data[ProgramOffset::Mod::ModSLFO1Rate] =
+                                                            static_cast<uint8_t>(program.modSLfo1Rate);
+
+                                                        data[ProgramOffset::Mod::ModSLFO1Depth] =
+                                                            static_cast<uint8_t>(program.modSLfo1Depth);
+
+                                                        data[ProgramOffset::Mod::ModSLFO1Delay] =
+                                                            static_cast<uint8_t>(program.modSLfo1Delay);
+
+
+                                                        data[ProgramOffset::Mod::ModSFilter1] =
+                                                            static_cast<uint8_t>(program.modSFilter1);
+
+                                                        data[ProgramOffset::Mod::ModSFilter2] =
+                                                            static_cast<uint8_t>(program.modSFilter2);
+
+                                                        data[ProgramOffset::Mod::ModSFilter3] =
+                                                            static_cast<uint8_t>(program.modSFilter3);
+
+
+                                                        data[ProgramOffset::Mod::ModSPitch] =
+                                                            static_cast<uint8_t>(program.modSPitch);
+
+                                                        data[ProgramOffset::Mod::ModSAmp3] =
+                                                            static_cast<uint8_t>(program.modSAmp3);
+
+
+                                                        // =========================
+                                                        // MODULATION AMOUNTS
+                                                        // signed -50 .. +50
+                                                        // =========================
+
+                                                        data[ProgramOffset::Mod::ModVPan1] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVPan1)
+                                                                );
+
+                                                        data[ProgramOffset::Mod::ModVPan2] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVPan2)
+                                                                );
+
+                                                        data[ProgramOffset::Mod::ModVPan3] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVPan3)
+                                                                );
+
+
+                                                        data[ProgramOffset::Mod::ModVAmp1] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVAmp1)
+                                                                );
+
+                                                        data[ProgramOffset::Mod::ModVAmp2] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVAmp2)
+                                                                );
+
+
+                                                        data[ProgramOffset::Mod::ModVLFO1Rate] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVLfo1Rate)
+                                                                );
+
+                                                        data[ProgramOffset::Mod::ModVLFO1Depth] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVLfo1Depth)
+                                                                );
+
+                                                        data[ProgramOffset::Mod::ModVLFO1Delay] =
+                                                            static_cast<uint8_t>(
+                                                                static_cast<int8_t>(program.modVLfo1Delay)
+                                                                );
 
                                                         // =========================
                                                         // Done

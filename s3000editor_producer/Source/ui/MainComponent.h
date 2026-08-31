@@ -299,6 +299,7 @@ private:
 
     ProgramEditor programEditor;
     juce::Viewport programEditorViewport;
+    juce::Viewport programViewport;
     
     MidiManager midiManager;
     void processIncomingSysEx(

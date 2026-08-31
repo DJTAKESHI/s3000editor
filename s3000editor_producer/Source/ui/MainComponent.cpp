@@ -186,10 +186,20 @@ MainComponent::MainComponent()
         false    // horizontal
     );
 
+    programViewport.setViewedComponent(
+        &programEditor,
+        false
+    );
+
+    programViewport.setScrollBarsShown(
+        true,
+        false
+    );
+
     editorTabs.addTab(
         "Program",
         juce::Colours::darkgrey,
-        &programEditor,
+        &programViewport,
         false
     );
 
@@ -280,6 +290,36 @@ MainComponent::MainComponent()
 
             loadedProgram.playHigh =
                 program.playHigh;
+
+            // Modulation
+            loadedProgram.modSPan1 = program.modSPan1;
+            loadedProgram.modSPan2 = program.modSPan2;
+            loadedProgram.modSPan3 = program.modSPan3;
+
+            loadedProgram.modSAmp1 = program.modSAmp1;
+            loadedProgram.modSAmp2 = program.modSAmp2;
+            loadedProgram.modSAmp3 = program.modSAmp3;
+
+            loadedProgram.modSLfo1Rate = program.modSLfo1Rate;
+            loadedProgram.modSLfo1Depth = program.modSLfo1Depth;
+            loadedProgram.modSLfo1Delay = program.modSLfo1Delay;
+
+            loadedProgram.modSFilter1 = program.modSFilter1;
+            loadedProgram.modSFilter2 = program.modSFilter2;
+            loadedProgram.modSFilter3 = program.modSFilter3;
+
+            loadedProgram.modSPitch = program.modSPitch;
+
+            loadedProgram.modVPan1 = program.modVPan1;
+            loadedProgram.modVPan2 = program.modVPan2;
+            loadedProgram.modVPan3 = program.modVPan3;
+
+            loadedProgram.modVAmp1 = program.modVAmp1;
+            loadedProgram.modVAmp2 = program.modVAmp2;
+
+            loadedProgram.modVLfo1Rate = program.modVLfo1Rate;
+            loadedProgram.modVLfo1Depth = program.modVLfo1Depth;
+            loadedProgram.modVLfo1Delay = program.modVLfo1Delay;
         };
 
     //addAndMakeVisible(programTree);
@@ -1503,7 +1543,14 @@ void MainComponent::resized()
         750
     );
 
-
+    // Program EditorÇ‡Viewportì‡Ç≈ÉXÉNÉçÅ[Éã
+    programEditor.setSize(
+        juce::jmax(
+            300,
+            programViewport.getWidth() - 15
+        ),
+        1250
+    );
 
 }
 
@@ -1716,8 +1763,26 @@ void MainComponent::processIncomingSysEx(
 
 
         case 0x28:
+        {
+            if (size < 395)
+            {
+                DBG(
+                    "SHORT 0x28 RECEIVED size="
+                    + juce::String((int)size)
+                );
+
+                DBG("REQUESTING FULL PROGRAM HEADER");
+
+                sysExSender.sendProgramHeader(
+                    loadedProgram.programNumber
+                );
+
+                break;
+            }
+
             handleProgramHeaderResponse();
             break;
+        }
             
         case 0x2A:
         {
@@ -3247,10 +3312,22 @@ void MainComponent::handleProgramHeaderResponse()
     auto decoded =
         decodeProgramHeader(programBuffer);
 
+
+
     DBG(
         "PROGRAM SIZE = "
         + juce::String((int)decoded.size())
     );
+
+    if (decoded.size() < 192)
+    {
+        DBG(
+            "INVALID PROGRAM HEADER SIZE - IGNORING RESPONSE"
+        );
+
+        programBuffer.reset();
+        return;
+    }
 
     auto existingKeygroups =
         std::move(loadedProgram.keygroups);

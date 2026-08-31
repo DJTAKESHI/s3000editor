@@ -1134,6 +1134,824 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
+    lfo1DepthLabel.setText(
+        "Depth",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1DepthLabel);
+
+    lfo1DepthSlider.setRange(
+        0,
+        99,
+        1
+    );
+
+    lfo1DepthSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+
+    lfo1DepthSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+
+    addAndMakeVisible(lfo1DepthSlider);
+
+    lfo1DepthValueLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    addAndMakeVisible(lfo1DepthValueLabel);
+
+    lfo1DepthSlider.onValueChange =
+        [this]()
+        {
+            lfo1DepthValueLabel.setText(
+                juce::String(
+                    (int)lfo1DepthSlider.getValue()
+                ),
+                juce::dontSendNotification
+            );
+        };
+
+    lfo1DepthSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.lfo1Depth =
+                (int)lfo1DepthSlider.getValue();
+
+            DBG(
+                "PROGRAM LFO1 DEPTH EDIT FINISHED="
+                + juce::String(currentProgram.lfo1Depth)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    lfo1DelayLabel.setText(
+        "Delay",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1DelayLabel);
+
+    lfo1DelaySlider.setRange(
+        0,
+        99,
+        1
+    );
+
+    lfo1DelaySlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+
+    lfo1DelaySlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+
+    addAndMakeVisible(lfo1DelaySlider);
+
+    lfo1DelayValueLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    addAndMakeVisible(lfo1DelayValueLabel);
+
+    lfo1DelaySlider.onValueChange =
+        [this]()
+        {
+            lfo1DelayValueLabel.setText(
+                juce::String(
+                    (int)lfo1DelaySlider.getValue()
+                ),
+                juce::dontSendNotification
+            );
+        };
+
+    lfo1DelaySlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.lfo1Delay =
+                (int)lfo1DelaySlider.getValue();
+
+            DBG(
+                "PROGRAM LFO1 DELAY EDIT FINISHED="
+                + juce::String(currentProgram.lfo1Delay)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    setupSectionLabel(
+        lfo2SectionLabel,
+        "LFO2"
+    );
+
+    auto setupLfo2Slider =
+        [this](
+            juce::Label& label,
+            juce::Slider& slider,
+            juce::Label& valueLabel,
+            const juce::String& name)
+        {
+            label.setText(
+                name,
+                juce::dontSendNotification
+            );
+
+            addAndMakeVisible(label);
+
+            slider.setRange(0, 99, 1);
+
+            slider.setSliderStyle(
+                juce::Slider::LinearHorizontal
+            );
+
+            slider.setTextBoxStyle(
+                juce::Slider::NoTextBox,
+                false,
+                0,
+                0
+            );
+
+            addAndMakeVisible(slider);
+
+            valueLabel.setJustificationType(
+                juce::Justification::centred
+            );
+
+            addAndMakeVisible(valueLabel);
+
+            slider.onValueChange =
+                [&slider, &valueLabel]()
+                {
+                    valueLabel.setText(
+                        juce::String(
+                            (int)slider.getValue()
+                        ),
+                        juce::dontSendNotification
+                    );
+                };
+        };
+
+    setupLfo2Slider(
+        lfo2RateLabel,
+        lfo2RateSlider,
+        lfo2RateValueLabel,
+        "Rate"
+    );
+
+    setupLfo2Slider(
+        lfo2DepthLabel,
+        lfo2DepthSlider,
+        lfo2DepthValueLabel,
+        "Depth"
+    );
+
+    setupLfo2Slider(
+        lfo2DelayLabel,
+        lfo2DelaySlider,
+        lfo2DelayValueLabel,
+        "Delay"
+    );
+
+    lfo2RateSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.lfo2Rate =
+                (int)lfo2RateSlider.getValue();
+
+            DBG(
+                "PROGRAM LFO2 RATE EDIT FINISHED="
+                + juce::String(currentProgram.lfo2Rate)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    lfo2DepthSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.lfo2Depth =
+                (int)lfo2DepthSlider.getValue();
+
+            DBG(
+                "PROGRAM LFO2 DEPTH EDIT FINISHED="
+                + juce::String(currentProgram.lfo2Depth)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    lfo2DelaySlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.lfo2Delay =
+                (int)lfo2DelaySlider.getValue();
+
+            DBG(
+                "PROGRAM LFO2 DELAY EDIT FINISHED="
+                + juce::String(currentProgram.lfo2Delay)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    lfo2WaveLabel.setText(
+        "Wave",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo2WaveLabel);
+
+    lfo2WaveCombo.addItem("Triangle", 1);
+    lfo2WaveCombo.addItem("Sawtooth", 2);
+    lfo2WaveCombo.addItem("Square", 3);
+
+    addAndMakeVisible(lfo2WaveCombo);
+
+    lfo2WaveCombo.onChange =
+        [this]()
+        {
+            const int selectedId =
+                lfo2WaveCombo.getSelectedId();
+
+            if (selectedId <= 0)
+                return;
+
+            currentProgram.lfo2Wave =
+                selectedId - 1;
+
+            DBG(
+                "PROGRAM LFO2 WAVE CHANGED RAW="
+                + juce::String(currentProgram.lfo2Wave)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    setupSectionLabel(
+        softPedalSectionLabel,
+        "SOFT PEDAL"
+    );
+
+    auto setupSoftPedalSlider =
+        [this](
+            juce::Label& label,
+            juce::Slider& slider,
+            juce::Label& valueLabel,
+            const juce::String& name)
+        {
+            label.setText(
+                name,
+                juce::dontSendNotification
+            );
+
+            addAndMakeVisible(label);
+
+            slider.setRange(0, 99, 1);
+
+            slider.setSliderStyle(
+                juce::Slider::LinearHorizontal
+            );
+
+            slider.setTextBoxStyle(
+                juce::Slider::NoTextBox,
+                false,
+                0,
+                0
+            );
+
+            addAndMakeVisible(slider);
+
+            valueLabel.setJustificationType(
+                juce::Justification::centred
+            );
+
+            addAndMakeVisible(valueLabel);
+
+            slider.onValueChange =
+                [&slider, &valueLabel]()
+                {
+                    valueLabel.setText(
+                        juce::String(
+                            (int)slider.getValue()
+                        ),
+                        juce::dontSendNotification
+                    );
+                };
+        };
+
+    setupSoftPedalSlider(
+        softLoudnessLabel,
+        softLoudnessSlider,
+        softLoudnessValueLabel,
+        "Loudness"
+    );
+
+    setupSoftPedalSlider(
+        softAttackLabel,
+        softAttackSlider,
+        softAttackValueLabel,
+        "Attack"
+    );
+
+    setupSoftPedalSlider(
+        softFilterLabel,
+        softFilterSlider,
+        softFilterValueLabel,
+        "Filter"
+    );
+
+    softLoudnessSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.softLoudness =
+                (int)softLoudnessSlider.getValue();
+
+            DBG(
+                "PROGRAM SOFT LOUDNESS EDIT FINISHED="
+                + juce::String(currentProgram.softLoudness)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    softAttackSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.softAttack =
+                (int)softAttackSlider.getValue();
+
+            DBG(
+                "PROGRAM SOFT ATTACK EDIT FINISHED="
+                + juce::String(currentProgram.softAttack)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    softFilterSlider.onDragEnd =
+        [this]()
+        {
+            currentProgram.softFilter =
+                (int)softFilterSlider.getValue();
+
+            DBG(
+                "PROGRAM SOFT FILTER EDIT FINISHED="
+                + juce::String(currentProgram.softFilter)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    setupSectionLabel(
+        modPanSectionLabel,
+        "MODULATION - PAN"
+    );
+
+    setupSectionLabel(
+        modAmpSectionLabel,
+        "MODULATION - LOUDNESS"
+    );
+
+    setupSectionLabel(
+        modLfo1SectionLabel,
+        "MODULATION - LFO1"
+    );
+
+    setupSectionLabel(
+        modFilterPitchSectionLabel,
+        "MODULATION - FILTER / PITCH"
+    );
+
+    auto setupModSourceCombo =
+        [this](
+            juce::Label& label,
+            juce::ComboBox& combo,
+            const juce::String& name)
+        {
+            label.setText(
+                name,
+                juce::dontSendNotification
+            );
+
+            addAndMakeVisible(label);
+
+            combo.addItem("No Source", 1);
+            combo.addItem("Modwheel", 2);
+            combo.addItem("Bend", 3);
+            combo.addItem("Pressure", 4);
+            combo.addItem("External", 5);
+            combo.addItem("Note-on velocity", 6);
+            combo.addItem("Key", 7);
+            combo.addItem("LFO1", 8);
+            combo.addItem("LFO2", 9);
+            combo.addItem("Env1", 10);
+            combo.addItem("Env2", 11);
+            combo.addItem("!Modwheel", 12);
+            combo.addItem("!Bend", 13);
+            combo.addItem("!External", 14);
+            combo.addItem("Env3", 15);
+
+            addAndMakeVisible(combo);
+        };
+
+    setupModSourceCombo(
+        modPan1Label,
+        modPan1SourceCombo,
+        "Source 1"
+    );
+
+    setupModSourceCombo(
+        modPan2Label,
+        modPan2SourceCombo,
+        "Source 2"
+    );
+
+    setupModSourceCombo(
+        modPan3Label,
+        modPan3SourceCombo,
+        "Source 3"
+    );
+
+    setupModSourceCombo(
+        modAmp1Label,
+        modAmp1SourceCombo,
+        "Source 1"
+    );
+
+    setupModSourceCombo(
+        modAmp2Label,
+        modAmp2SourceCombo,
+        "Source 2"
+    );
+
+    setupModSourceCombo(
+        modAmp3Label,
+        modAmp3SourceCombo,
+        "Source 3"
+    );
+
+    setupModSourceCombo(
+        modLfo1RateLabel,
+        modLfo1RateSourceCombo,
+        "Rate"
+    );
+
+    setupModSourceCombo(
+        modLfo1DepthLabel,
+        modLfo1DepthSourceCombo,
+        "Depth"
+    );
+
+    setupModSourceCombo(
+        modLfo1DelayLabel,
+        modLfo1DelaySourceCombo,
+        "Delay"
+    );
+
+    setupModSourceCombo(
+        modFilter1Label,
+        modFilter1SourceCombo,
+        "Filter 1"
+    );
+
+    setupModSourceCombo(
+        modFilter2Label,
+        modFilter2SourceCombo,
+        "Filter 2"
+    );
+
+    setupModSourceCombo(
+        modFilter3Label,
+        modFilter3SourceCombo,
+        "Filter 3"
+    );
+
+    setupModSourceCombo(
+        modPitchLabel,
+        modPitchSourceCombo,
+        "Pitch"
+    );
+
+    auto setupModAmountSlider =
+        [this](
+            juce::Slider& slider,
+            juce::Label& valueLabel)
+        {
+            slider.setRange(
+                -50,
+                50,
+                1
+            );
+
+            slider.setSliderStyle(
+                juce::Slider::LinearHorizontal
+            );
+
+            slider.setTextBoxStyle(
+                juce::Slider::NoTextBox,
+                false,
+                0,
+                0
+            );
+
+            addAndMakeVisible(slider);
+
+            valueLabel.setJustificationType(
+                juce::Justification::centred
+            );
+
+            addAndMakeVisible(valueLabel);
+
+            slider.onValueChange =
+                [&slider, &valueLabel]()
+                {
+                    const int value =
+                        (int)slider.getValue();
+
+                    valueLabel.setText(
+                        value > 0
+                        ? "+" + juce::String(value)
+                        : juce::String(value),
+                        juce::dontSendNotification
+                    );
+                };
+        };
+
+    setupModAmountSlider(
+        modPan1AmountSlider,
+        modPan1AmountLabel
+    );
+
+    setupModAmountSlider(
+        modPan2AmountSlider,
+        modPan2AmountLabel
+    );
+
+    setupModAmountSlider(
+        modPan3AmountSlider,
+        modPan3AmountLabel
+    );
+
+    setupModAmountSlider(
+        modAmp1AmountSlider,
+        modAmp1AmountLabel
+    );
+
+    setupModAmountSlider(
+        modAmp2AmountSlider,
+        modAmp2AmountLabel
+    );
+
+    setupModAmountSlider(
+        modLfo1RateAmountSlider,
+        modLfo1RateAmountLabel
+    );
+
+    setupModAmountSlider(
+        modLfo1DepthAmountSlider,
+        modLfo1DepthAmountLabel
+    );
+
+    setupModAmountSlider(
+        modLfo1DelayAmountSlider,
+        modLfo1DelayAmountLabel
+    );
+
+    modPan1SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSPan1 =
+                modPan1SourceCombo.getSelectedId() - 1;
+
+            DBG("=== BEFORE MOD PAN1 SEND ===");
+
+            DBG("PAN=" + juce::String(currentProgram.pan));
+            DBG("LOUDNESS=" + juce::String(currentProgram.loudness));
+            DBG("STEREO=" + juce::String(currentProgram.stereoLevel));
+
+            DBG("LFO1 RATE=" + juce::String(currentProgram.lfo1Rate));
+            DBG("LFO1 DEPTH=" + juce::String(currentProgram.lfo1Depth));
+            DBG("LFO1 DELAY=" + juce::String(currentProgram.lfo1Delay));
+
+            DBG("LFO2 RATE=" + juce::String(currentProgram.lfo2Rate));
+            DBG("LFO2 DEPTH=" + juce::String(currentProgram.lfo2Depth));
+            DBG("LFO2 DELAY=" + juce::String(currentProgram.lfo2Delay));
+
+            DBG("MOD S PAN1=" + juce::String(currentProgram.modSPan1));
+            DBG("MOD S PAN2=" + juce::String(currentProgram.modSPan2));
+            DBG("MOD S PAN3=" + juce::String(currentProgram.modSPan3));
+
+            DBG("RAW SIZE=" + juce::String(
+                (int)currentProgram.rawData.size()
+            ));
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPan2SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSPan2 =
+                modPan2SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPan3SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSPan3 =
+                modPan3SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    modAmp1SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSAmp1 =
+                modAmp1SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modAmp2SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSAmp2 =
+                modAmp2SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modAmp3SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSAmp3 =
+                modAmp3SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    modLfo1RateSourceCombo.onChange = [this]()
+        {
+            currentProgram.modSLfo1Rate =
+                modLfo1RateSourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modLfo1DepthSourceCombo.onChange = [this]()
+        {
+            currentProgram.modSLfo1Depth =
+                modLfo1DepthSourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modLfo1DelaySourceCombo.onChange = [this]()
+        {
+            currentProgram.modSLfo1Delay =
+                modLfo1DelaySourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    modFilter1SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSFilter1 =
+                modFilter1SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modFilter2SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSFilter2 =
+                modFilter2SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modFilter3SourceCombo.onChange = [this]()
+        {
+            currentProgram.modSFilter3 =
+                modFilter3SourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPitchSourceCombo.onChange = [this]()
+        {
+            currentProgram.modSPitch =
+                modPitchSourceCombo.getSelectedId() - 1;
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPan1AmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVPan1 =
+                (int)modPan1AmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPan2AmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVPan2 =
+                (int)modPan2AmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modPan3AmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVPan3 =
+                (int)modPan3AmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    modAmp1AmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVAmp1 =
+                (int)modAmp1AmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modAmp2AmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVAmp2 =
+                (int)modAmp2AmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
+    modLfo1RateAmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVLfo1Rate =
+                (int)modLfo1RateAmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modLfo1DepthAmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVLfo1Depth =
+                (int)modLfo1DepthAmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    modLfo1DelayAmountSlider.onDragEnd = [this]()
+        {
+            currentProgram.modVLfo1Delay =
+                (int)modLfo1DelayAmountSlider.getValue();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
 
 
 }
@@ -1171,6 +1989,12 @@ void ProgramEditor::paint(
     drawCard(outputCardBounds);
     drawCard(pitchVoiceCardBounds);
     drawCard(lfo1CardBounds);
+    drawCard(lfo2CardBounds);
+    drawCard(softPedalCardBounds);
+    drawCard(modPanCardBounds);
+    drawCard(modAmpCardBounds);
+    drawCard(modLfo1CardBounds);
+    drawCard(modFilterPitchCardBounds);
 }
 
 
@@ -1439,6 +2263,311 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
 
     );
+
+    lfo1DepthSlider.setValue(
+        program.lfo1Depth,
+        juce::dontSendNotification
+    );
+
+    lfo1DepthValueLabel.setText(
+        juce::String(program.lfo1Depth),
+        juce::dontSendNotification
+    );
+
+    lfo1DelaySlider.setValue(
+        program.lfo1Delay,
+        juce::dontSendNotification
+    );
+
+    lfo1DelayValueLabel.setText(
+        juce::String(program.lfo1Delay),
+        juce::dontSendNotification
+    );
+
+    lfo1WaveLabel.setText(
+        "Wave",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1WaveLabel);
+
+    //lfo1WaveCombo.addItem("Triangle", 1);
+    //lfo1WaveCombo.addItem("Sawtooth", 2);
+    //lfo1WaveCombo.addItem("Square", 3);
+
+    lfo1WaveCombo.setSelectedId(
+        program.lfo1Wave + 1,
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1WaveCombo);
+
+    lfo1WaveCombo.onChange =
+        [this]()
+        {
+            const int selectedId =
+                lfo1WaveCombo.getSelectedId();
+
+            if (selectedId <= 0)
+                return;
+
+            currentProgram.lfo1Wave =
+                selectedId - 1;
+
+            DBG(
+                "PROGRAM LFO1 WAVE CHANGED RAW="
+                + juce::String(currentProgram.lfo1Wave)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+    lfo1WaveCombo.setSelectedId(
+        program.lfo1Wave + 1,
+        juce::dontSendNotification
+    );
+
+    lfo2RateSlider.setValue(
+        program.lfo2Rate,
+        juce::dontSendNotification
+    );
+
+    lfo2RateValueLabel.setText(
+        juce::String(program.lfo2Rate),
+        juce::dontSendNotification
+    );
+
+    lfo2DepthSlider.setValue(
+        program.lfo2Depth,
+        juce::dontSendNotification
+    );
+
+    lfo2DepthValueLabel.setText(
+        juce::String(program.lfo2Depth),
+        juce::dontSendNotification
+    );
+
+    lfo2DelaySlider.setValue(
+        program.lfo2Delay,
+        juce::dontSendNotification
+    );
+
+    lfo2DelayValueLabel.setText(
+        juce::String(program.lfo2Delay),
+        juce::dontSendNotification
+    );
+
+    lfo2WaveCombo.setSelectedId(
+        program.lfo2Wave + 1,
+        juce::dontSendNotification
+    );
+
+    softLoudnessSlider.setValue(
+        program.softLoudness,
+        juce::dontSendNotification
+    );
+
+    softLoudnessValueLabel.setText(
+        juce::String(program.softLoudness),
+        juce::dontSendNotification
+    );
+
+    softAttackSlider.setValue(
+        program.softAttack,
+        juce::dontSendNotification
+    );
+
+    softAttackValueLabel.setText(
+        juce::String(program.softAttack),
+        juce::dontSendNotification
+    );
+
+    softFilterSlider.setValue(
+        program.softFilter,
+        juce::dontSendNotification
+    );
+
+    softFilterValueLabel.setText(
+        juce::String(program.softFilter),
+        juce::dontSendNotification
+    );
+
+    // =========================
+// MODULATION - SOURCES
+// =========================
+
+    modPan1SourceCombo.setSelectedId(
+        program.modSPan1 + 1,
+        juce::dontSendNotification
+    );
+
+
+
+    modPan2SourceCombo.setSelectedId(
+        program.modSPan2 + 1,
+        juce::dontSendNotification
+    );
+
+    modPan3SourceCombo.setSelectedId(
+        program.modSPan3 + 1,
+        juce::dontSendNotification
+    );
+
+
+    modAmp1SourceCombo.setSelectedId(
+        program.modSAmp1 + 1,
+        juce::dontSendNotification
+    );
+
+    modAmp2SourceCombo.setSelectedId(
+        program.modSAmp2 + 1,
+        juce::dontSendNotification
+    );
+
+    modAmp3SourceCombo.setSelectedId(
+        program.modSAmp3 + 1,
+        juce::dontSendNotification
+    );
+
+
+    modLfo1RateSourceCombo.setSelectedId(
+        program.modSLfo1Rate + 1,
+        juce::dontSendNotification
+    );
+
+    modLfo1DepthSourceCombo.setSelectedId(
+        program.modSLfo1Depth + 1,
+        juce::dontSendNotification
+    );
+
+    modLfo1DelaySourceCombo.setSelectedId(
+        program.modSLfo1Delay + 1,
+        juce::dontSendNotification
+    );
+
+
+    modFilter1SourceCombo.setSelectedId(
+        program.modSFilter1 + 1,
+        juce::dontSendNotification
+    );
+
+    modFilter2SourceCombo.setSelectedId(
+        program.modSFilter2 + 1,
+        juce::dontSendNotification
+    );
+
+    modFilter3SourceCombo.setSelectedId(
+        program.modSFilter3 + 1,
+        juce::dontSendNotification
+    );
+
+    modPitchSourceCombo.setSelectedId(
+        program.modSPitch + 1,
+        juce::dontSendNotification
+    );
+
+
+    // =========================
+    // MODULATION - AMOUNTS
+    // =========================
+
+    modPan1AmountSlider.setValue(
+        program.modVPan1,
+        juce::dontSendNotification
+    );
+
+    modPan2AmountSlider.setValue(
+        program.modVPan2,
+        juce::dontSendNotification
+    );
+
+    modPan3AmountSlider.setValue(
+        program.modVPan3,
+        juce::dontSendNotification
+    );
+
+
+    modAmp1AmountSlider.setValue(
+        program.modVAmp1,
+        juce::dontSendNotification
+    );
+
+    modAmp2AmountSlider.setValue(
+        program.modVAmp2,
+        juce::dontSendNotification
+    );
+
+
+    modLfo1RateAmountSlider.setValue(
+        program.modVLfo1Rate,
+        juce::dontSendNotification
+    );
+
+    modLfo1DepthAmountSlider.setValue(
+        program.modVLfo1Depth,
+        juce::dontSendNotification
+    );
+
+    modLfo1DelayAmountSlider.setValue(
+        program.modVLfo1Delay,
+        juce::dontSendNotification
+    );
+
+    auto setAmountLabel =
+        [](juce::Label& label, int value)
+        {
+            label.setText(
+                value > 0
+                ? "+" + juce::String(value)
+                : juce::String(value),
+                juce::dontSendNotification
+            );
+        };
+
+    setAmountLabel(
+        modPan1AmountLabel,
+        program.modVPan1
+    );
+
+    setAmountLabel(
+        modPan2AmountLabel,
+        program.modVPan2
+    );
+
+    setAmountLabel(
+        modPan3AmountLabel,
+        program.modVPan3
+    );
+
+    setAmountLabel(
+        modAmp1AmountLabel,
+        program.modVAmp1
+    );
+
+    setAmountLabel(
+        modAmp2AmountLabel,
+        program.modVAmp2
+    );
+
+    setAmountLabel(
+        modLfo1RateAmountLabel,
+        program.modVLfo1Rate
+    );
+
+    setAmountLabel(
+        modLfo1DepthAmountLabel,
+        program.modVLfo1Depth
+    );
+
+    setAmountLabel(
+        modLfo1DelayAmountLabel,
+        program.modVLfo1Delay
+    );
+
+    //repaint();
+
+
 
     DBG("PROGRAM EDITOR UPDATED");
 }
@@ -1797,11 +2926,194 @@ void ProgramEditor::resized()
     }
 
     // =========================
+// SOFT PEDAL
+// =========================
+
+    left.removeFromTop(10);
+
+    softPedalCardBounds =
+        left.removeFromTop(130);
+
+    auto softPedal =
+        softPedalCardBounds.reduced(10);
+
+    softPedalSectionLabel.setBounds(
+        softPedal.removeFromTop(24)
+    );
+
+    {
+        auto row =
+            softPedal.removeFromTop(rowHeight);
+
+        softLoudnessLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        softLoudnessValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        softLoudnessSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row =
+            softPedal.removeFromTop(rowHeight);
+
+        softAttackLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        softAttackValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        softAttackSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row =
+            softPedal.removeFromTop(rowHeight);
+
+        softFilterLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        softFilterValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        softFilterSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    left.removeFromTop(10);
+
+    // =========================
+    // MODULATION - PAN
+    // =========================
+
+    modPanCardBounds = left.removeFromTop(160);
+
+    auto modPan = modPanCardBounds.reduced(10);
+
+    modPanSectionLabel.setBounds(
+        modPan.removeFromTop(24)
+    );
+
+    const int modRowHeight = 38;
+    const int modNameWidth = 70;
+    const int modSourceWidth = 135;
+    const int modValueWidth = 45;
+
+    auto layoutModAmountRow =
+        [&](juce::Rectangle<int>& section,
+            juce::Label& nameLabel,
+            juce::ComboBox& sourceCombo,
+            juce::Slider& amountSlider,
+            juce::Label& amountLabel)
+        {
+            auto row =
+                section.removeFromTop(modRowHeight);
+
+            nameLabel.setBounds(
+                row.removeFromLeft(modNameWidth)
+            );
+
+            sourceCombo.setBounds(
+                row.removeFromLeft(modSourceWidth)
+                .reduced(2, 4)
+            );
+
+            amountLabel.setBounds(
+                row.removeFromRight(modValueWidth)
+            );
+
+            amountSlider.setBounds(
+                row.reduced(4, 7)
+            );
+        };
+
+    layoutModAmountRow(
+        modPan,
+        modPan1Label,
+        modPan1SourceCombo,
+        modPan1AmountSlider,
+        modPan1AmountLabel
+    );
+
+    layoutModAmountRow(
+        modPan,
+        modPan2Label,
+        modPan2SourceCombo,
+        modPan2AmountSlider,
+        modPan2AmountLabel
+    );
+
+    layoutModAmountRow(
+        modPan,
+        modPan3Label,
+        modPan3SourceCombo,
+        modPan3AmountSlider,
+        modPan3AmountLabel
+    );
+
+    left.removeFromTop(10);
+
+    // =========================
+    // MODULATION - LOUDNESS
+    // =========================
+
+    modAmpCardBounds = left.removeFromTop(160);
+
+    auto modAmp = modAmpCardBounds.reduced(10);
+
+    modAmpSectionLabel.setBounds(
+        modAmp.removeFromTop(24)
+    );
+
+    layoutModAmountRow(
+        modAmp,
+        modAmp1Label,
+        modAmp1SourceCombo,
+        modAmp1AmountSlider,
+        modAmp1AmountLabel
+    );
+
+    layoutModAmountRow(
+        modAmp,
+        modAmp2Label,
+        modAmp2SourceCombo,
+        modAmp2AmountSlider,
+        modAmp2AmountLabel
+    );
+
+    // Source 3 ‚Í Amount ‚ª‚È‚¢
+    {
+        auto row =
+            modAmp.removeFromTop(modRowHeight);
+
+        modAmp3Label.setBounds(
+            row.removeFromLeft(modNameWidth)
+        );
+
+        modAmp3SourceCombo.setBounds(
+            row.removeFromLeft(modSourceWidth)
+            .reduced(2, 4)
+        );
+    }
+
+    // =========================
     // LFO1
     // =========================
 
     lfo1CardBounds =
-        right.removeFromTop(100);
+        right.removeFromTop(158);
 
     auto lfo1 =
         lfo1CardBounds.reduced(10);
@@ -1827,6 +3139,220 @@ void ProgramEditor::resized()
         );
     }
 
+    {
+        auto row =
+            lfo1.removeFromTop(rowHeight);
+
+        lfo1DepthLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo1DepthValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        lfo1DepthSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row =
+            lfo1.removeFromTop(rowHeight);
+
+        lfo1DelayLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo1DelayValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        lfo1DelaySlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+
+    {
+        auto row =
+            lfo1.removeFromTop(rowHeight);
+
+        lfo1WaveLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo1WaveCombo.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    right.removeFromTop(10);
+
+    lfo2CardBounds =
+        right.removeFromTop(158);
+
+    auto lfo2 =
+        lfo2CardBounds.reduced(10);
+
+    lfo2SectionLabel.setBounds(
+        lfo2.removeFromTop(24)
+    );
+
+    {
+        auto row = lfo2.removeFromTop(rowHeight);
+
+        lfo2RateLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo2RateValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        lfo2RateSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row = lfo2.removeFromTop(rowHeight);
+
+        lfo2DepthLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo2DepthValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        lfo2DepthSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row = lfo2.removeFromTop(rowHeight);
+
+        lfo2DelayLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo2DelayValueLabel.setBounds(
+            row.removeFromRight(55)
+        );
+
+        lfo2DelaySlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    {
+        auto row = lfo2.removeFromTop(rowHeight);
+
+        lfo2WaveLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        lfo2WaveCombo.setBounds(
+            row.reduced(2)
+        );
+    }
+
+    right.removeFromTop(10);
+
+    // =========================
+    // MODULATION - LFO1
+    // =========================
+
+    modLfo1CardBounds = right.removeFromTop(160);
+
+    auto modLfo1 = modLfo1CardBounds.reduced(10);
+
+    modLfo1SectionLabel.setBounds(
+        modLfo1.removeFromTop(24)
+    );
+
+    layoutModAmountRow(
+        modLfo1,
+        modLfo1RateLabel,
+        modLfo1RateSourceCombo,
+        modLfo1RateAmountSlider,
+        modLfo1RateAmountLabel
+    );
+
+    layoutModAmountRow(
+        modLfo1,
+        modLfo1DepthLabel,
+        modLfo1DepthSourceCombo,
+        modLfo1DepthAmountSlider,
+        modLfo1DepthAmountLabel
+    );
+
+    layoutModAmountRow(
+        modLfo1,
+        modLfo1DelayLabel,
+        modLfo1DelaySourceCombo,
+        modLfo1DelayAmountSlider,
+        modLfo1DelayAmountLabel
+    );
+
+    right.removeFromTop(10);
+
+    // =========================
+    // MODULATION - FILTER / PITCH
+    // =========================
+
+    modFilterPitchCardBounds =
+        right.removeFromTop(190);
+
+    auto modFilterPitch =
+        modFilterPitchCardBounds.reduced(10);
+
+    modFilterPitchSectionLabel.setBounds(
+        modFilterPitch.removeFromTop(24)
+    );
+
+    auto layoutModSourceRow =
+        [&](juce::Rectangle<int>& section,
+            juce::Label& nameLabel,
+            juce::ComboBox& sourceCombo)
+        {
+            auto row =
+                section.removeFromTop(modRowHeight);
+
+            nameLabel.setBounds(
+                row.removeFromLeft(modNameWidth)
+            );
+
+            sourceCombo.setBounds(
+                row.reduced(2, 4)
+            );
+        };
+
+    layoutModSourceRow(
+        modFilterPitch,
+        modFilter1Label,
+        modFilter1SourceCombo
+    );
+
+    layoutModSourceRow(
+        modFilterPitch,
+        modFilter2Label,
+        modFilter2SourceCombo
+    );
+
+    layoutModSourceRow(
+        modFilterPitch,
+        modFilter3Label,
+        modFilter3SourceCombo
+    );
+
+    layoutModSourceRow(
+        modFilterPitch,
+        modPitchLabel,
+        modPitchSourceCombo
+    );
 
 
 

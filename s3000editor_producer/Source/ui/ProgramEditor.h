@@ -107,6 +107,136 @@ private:
     juce::Slider lfo1RateSlider;
     juce::Label lfo1RateValueLabel;
 
+    juce::Label lfo1DepthLabel;
+    juce::Slider lfo1DepthSlider;
+    juce::Label lfo1DepthValueLabel;
+
+    juce::Label lfo1DelayLabel;
+    juce::Slider lfo1DelaySlider;
+    juce::Label lfo1DelayValueLabel;
+
+    juce::Label lfo1WaveLabel;
+    juce::ComboBox lfo1WaveCombo;
+
+    juce::Label lfo2SectionLabel;
+    juce::Rectangle<int> lfo2CardBounds;
+
+    juce::Label lfo2RateLabel;
+    juce::Slider lfo2RateSlider;
+    juce::Label lfo2RateValueLabel;
+
+    juce::Label lfo2DepthLabel;
+    juce::Slider lfo2DepthSlider;
+    juce::Label lfo2DepthValueLabel;
+
+    juce::Label lfo2DelayLabel;
+    juce::Slider lfo2DelaySlider;
+    juce::Label lfo2DelayValueLabel;
+
+    juce::Label lfo2WaveLabel;
+    juce::ComboBox lfo2WaveCombo;
+
+    juce::Label softPedalSectionLabel;
+    juce::Rectangle<int> softPedalCardBounds;
+
+    juce::Label softLoudnessLabel;
+    juce::Slider softLoudnessSlider;
+    juce::Label softLoudnessValueLabel;
+
+    juce::Label softAttackLabel;
+    juce::Slider softAttackSlider;
+    juce::Label softAttackValueLabel;
+
+    juce::Label softFilterLabel;
+    juce::Slider softFilterSlider;
+    juce::Label softFilterValueLabel;
+
+    // =========================
+// MODULATION - PAN
+// =========================
+
+    juce::Label modPanSectionLabel;
+    juce::Rectangle<int> modPanCardBounds;
+
+    juce::Label modPan1Label;
+    juce::ComboBox modPan1SourceCombo;
+    juce::Slider modPan1AmountSlider;
+    juce::Label modPan1AmountLabel;
+
+    juce::Label modPan2Label;
+    juce::ComboBox modPan2SourceCombo;
+    juce::Slider modPan2AmountSlider;
+    juce::Label modPan2AmountLabel;
+
+    juce::Label modPan3Label;
+    juce::ComboBox modPan3SourceCombo;
+    juce::Slider modPan3AmountSlider;
+    juce::Label modPan3AmountLabel;
+
+
+    // =========================
+    // MODULATION - LOUDNESS
+    // =========================
+
+    juce::Label modAmpSectionLabel;
+    juce::Rectangle<int> modAmpCardBounds;
+
+    juce::Label modAmp1Label;
+    juce::ComboBox modAmp1SourceCombo;
+    juce::Slider modAmp1AmountSlider;
+    juce::Label modAmp1AmountLabel;
+
+    juce::Label modAmp2Label;
+    juce::ComboBox modAmp2SourceCombo;
+    juce::Slider modAmp2AmountSlider;
+    juce::Label modAmp2AmountLabel;
+
+    juce::Label modAmp3Label;
+    juce::ComboBox modAmp3SourceCombo;
+
+
+    // =========================
+    // MODULATION - LFO1
+    // =========================
+
+    juce::Label modLfo1SectionLabel;
+    juce::Rectangle<int> modLfo1CardBounds;
+
+    juce::Label modLfo1RateLabel;
+    juce::ComboBox modLfo1RateSourceCombo;
+    juce::Slider modLfo1RateAmountSlider;
+    juce::Label modLfo1RateAmountLabel;
+
+    juce::Label modLfo1DepthLabel;
+    juce::ComboBox modLfo1DepthSourceCombo;
+    juce::Slider modLfo1DepthAmountSlider;
+    juce::Label modLfo1DepthAmountLabel;
+
+    juce::Label modLfo1DelayLabel;
+    juce::ComboBox modLfo1DelaySourceCombo;
+    juce::Slider modLfo1DelayAmountSlider;
+    juce::Label modLfo1DelayAmountLabel;
+
+
+    // =========================
+    // MODULATION - FILTER / PITCH
+    // =========================
+
+    juce::Label modFilterPitchSectionLabel;
+    juce::Rectangle<int> modFilterPitchCardBounds;
+
+    juce::Label modFilter1Label;
+    juce::ComboBox modFilter1SourceCombo;
+
+    juce::Label modFilter2Label;
+    juce::ComboBox modFilter2SourceCombo;
+
+    juce::Label modFilter3Label;
+    juce::ComboBox modFilter3SourceCombo;
+
+    juce::Label modPitchLabel;
+    juce::ComboBox modPitchSourceCombo;
+
 
 
 
