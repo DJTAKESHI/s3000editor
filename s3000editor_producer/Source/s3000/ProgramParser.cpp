@@ -411,6 +411,11 @@ void ProgramParser::parseHeader(
     p.lfo1Wave = d[P::LFO::LFO1Wave];
     p.lfo2Wave = d[P::LFO::LFO2Wave];
 
+    DBG(
+        "LFO1 WAVE RAW = "
+        + juce::String(p.lfo1Wave)
+    );
+
     p.velocityLoudness =
         readS8(
             d,

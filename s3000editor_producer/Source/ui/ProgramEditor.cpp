@@ -185,6 +185,39 @@ ProgramEditor::ProgramEditor()
 
     addAndMakeVisible(midiChannelCombo);
 
+    lfo1WaveCombo.addItem("Triangle", 1);
+    lfo1WaveCombo.addItem("Sawtooth", 2);
+    lfo1WaveCombo.addItem("Square", 3);
+    lfo1WaveCombo.addItem("Random", 4);
+
+    lfo1WaveCombo.setSelectedId(
+        currentProgram.lfo1Wave + 1,
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1WaveCombo);
+
+    lfo1WaveCombo.onChange =
+        [this]()
+        {
+            const int selectedId =
+                lfo1WaveCombo.getSelectedId();
+
+            if (selectedId <= 0)
+                return;
+
+            currentProgram.lfo1Wave =
+                selectedId - 1;
+
+            DBG(
+                "PROGRAM LFO1 WAVE CHANGED RAW="
+                + juce::String(currentProgram.lfo1Wave)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
     midiChannelCombo.onChange =
         [this]()
         {
@@ -1378,6 +1411,7 @@ ProgramEditor::ProgramEditor()
     lfo2WaveCombo.addItem("Triangle", 1);
     lfo2WaveCombo.addItem("Sawtooth", 2);
     lfo2WaveCombo.addItem("Square", 3);
+    lfo2WaveCombo.addItem("Random", 4);
 
     addAndMakeVisible(lfo2WaveCombo);
 
@@ -2490,37 +2524,7 @@ void ProgramEditor::setProgram(
 
     addAndMakeVisible(lfo1WaveLabel);
 
-    //lfo1WaveCombo.addItem("Triangle", 1);
-    //lfo1WaveCombo.addItem("Sawtooth", 2);
-    //lfo1WaveCombo.addItem("Square", 3);
 
-    lfo1WaveCombo.setSelectedId(
-        program.lfo1Wave + 1,
-        juce::dontSendNotification
-    );
-
-    addAndMakeVisible(lfo1WaveCombo);
-
-    lfo1WaveCombo.onChange =
-        [this]()
-        {
-            const int selectedId =
-                lfo1WaveCombo.getSelectedId();
-
-            if (selectedId <= 0)
-                return;
-
-            currentProgram.lfo1Wave =
-                selectedId - 1;
-
-            DBG(
-                "PROGRAM LFO1 WAVE CHANGED RAW="
-                + juce::String(currentProgram.lfo1Wave)
-            );
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
-        };
 
     lfo1WaveCombo.setSelectedId(
         program.lfo1Wave + 1,
