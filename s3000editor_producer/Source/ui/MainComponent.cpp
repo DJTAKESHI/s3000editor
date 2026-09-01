@@ -207,7 +207,7 @@ MainComponent::MainComponent()
     );
 
     keyGroupViewport.setScrollBarsShown(
-        false,   // vertical
+        true,   // vertical
         false    // horizontal
     );
 
@@ -1697,7 +1697,7 @@ void MainComponent::resized()
             300,
             keyGroupViewport.getWidth() - 15
         ),
-        1000
+        1200
     );
 
     // Sample Header‚àViewport“à

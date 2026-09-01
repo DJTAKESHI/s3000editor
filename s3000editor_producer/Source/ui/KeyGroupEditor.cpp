@@ -177,6 +177,8 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(env1ReleaseLabel);
     addAndMakeVisible(env1ReleaseEditor);
 
+    addAndMakeVisible(env2Editor);
+
     //env2AttackLabel.setText("ENV2 Attack", juce::dontSendNotification);
     //env2DecayLabel.setText("ENV2 Decay", juce::dontSendNotification);
     //env2SustainLabel.setText("ENV2 Sustain", juce::dontSendNotification);
@@ -491,6 +493,61 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
+    env2Editor.onEnvelopeChanged =
+        [this](
+            int r1, int l1,
+            int r2, int l2,
+            int r3, int l3,
+            int r4, int l4)
+        {
+            currentKeygroup.env2.r1 = r1;
+            currentKeygroup.env2.l1 = l1;
+
+            currentKeygroup.env2.r2 = r2;
+            currentKeygroup.env2.l2 = l2;
+
+            currentKeygroup.env2.r3 = r3;
+            currentKeygroup.env2.l3 = l3;
+
+            currentKeygroup.env2.r4 = r4;
+            currentKeygroup.env2.l4 = l4;
+
+            env2R1Editor.setText(
+                juce::String(r1), false);
+
+            env2L1Editor.setText(
+                juce::String(l1), false);
+
+            env2R2Editor.setText(
+                juce::String(r2), false);
+
+            env2L2Editor.setText(
+                juce::String(l2), false);
+
+            env2R3Editor.setText(
+                juce::String(r3), false);
+
+            env2L3Editor.setText(
+                juce::String(l3), false);
+
+            env2R4Editor.setText(
+                juce::String(r4), false);
+
+            env2L4Editor.setText(
+                juce::String(l4), false);
+        };
+
+    env2Editor.onEditFinished =
+        [this]()
+        {
+            if (onKeygroupChanged)
+            {
+                onKeygroupChanged(
+                    currentKeygroupIndex,
+                    currentKeygroup
+                );
+            }
+        };
 
 
     addAndMakeVisible(velocityToFreqLabel);
@@ -1503,6 +1560,18 @@ void KeyGroupEditor::setKeygroup(
         false
     );
 
+    env2Editor.setEnvelope(
+        keygroup.env2.r1,
+        keygroup.env2.l1,
+        keygroup.env2.r2,
+        keygroup.env2.l2,
+        keygroup.env2.r3,
+        keygroup.env2.l3,
+        keygroup.env2.r4,
+        keygroup.env2.l4
+    );
+
+
     velocityEnv2Editor.setText(
         juce::String(keygroup.velocity.vEnv2),
         false
@@ -1816,12 +1885,12 @@ env2SectionLabel.setBounds(
     area.removeFromTop(24)
 );
 
-    // =========================
+// =========================
 // ENV2
 // =========================
 {
     auto section =
-        area.removeFromTop(96);
+        area.removeFromTop(280);
 
     const int envLabelWidth = 70;
     const int envEditorWidth = 90;
@@ -1831,6 +1900,8 @@ env2SectionLabel.setBounds(
     // R1 / L1 / R2 / L2
     // -------------------------
 
+
+    
     auto row1 =
         section.removeFromTop(30);
 
@@ -1986,6 +2057,12 @@ env2SectionLabel.setBounds(
 
     env2KeyTrackingEditor.setBounds(
         keyTrackArea.removeFromLeft(envEditorWidth)
+    );
+
+    section.removeFromTop(10);
+
+    env2Editor.setBounds(
+        section.removeFromTop(180)
     );
 }
 

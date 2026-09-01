@@ -45,6 +45,10 @@
         <FILE id="Zx338W" name="SysExUtils.h" compile="0" resource="0" file="Source/s3000/SysExUtils.h"/>
       </GROUP>
       <GROUP id="{4CDB8C56-5A74-CC7A-DD1A-8FCC92414609}" name="ui">
+        <FILE id="vt6jMk" name="Envelope2Editor.cpp" compile="1" resource="0"
+              file="Source/ui/Envelope2Editor.cpp"/>
+        <FILE id="lQs5cr" name="Envelope2Editor.h" compile="0" resource="0"
+              file="Source/ui/Envelope2Editor.h"/>
         <FILE id="asJO7C" name="EnvelopeEditor.cpp" compile="1" resource="0"
               file="Source/ui/EnvelopeEditor.cpp"/>
         <FILE id="Cg9pbQ" name="EnvelopeEditor.h" compile="0" resource="0"
