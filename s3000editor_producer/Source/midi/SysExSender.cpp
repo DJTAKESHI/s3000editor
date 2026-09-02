@@ -577,3 +577,35 @@ void SysExSender::sendProgramChange(
 
     midiOutput->sendMessageNow(message);
 }
+
+void SysExSender::sendDeleteProgram(
+    int programNumber)
+{
+    if (midiOutput == nullptr)
+        return;
+
+    programNumber =
+        juce::jlimit(0, 16383, programNumber);
+
+    uint8_t data[]
+    {
+        0x47,
+        0x00, // Exclusive channel
+        0x12, // DELP
+        0x48,
+
+        static_cast<uint8_t>(
+            programNumber & 0x7F),
+
+        static_cast<uint8_t>(
+            (programNumber >> 7) & 0x7F)
+    };
+
+    auto message =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    midiOutput->sendMessageNow(message);
+}

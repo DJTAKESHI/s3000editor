@@ -391,6 +391,28 @@ private:
 
     int basicMidiChannel = 15;  // Akai raw: 0-15
 
+    juce::TextButton deleteProgramButton{ "-" };
+
+    juce::TextButton addProgramButton{ "+" };
+
+    enum class PendingAddProgramStage
+    {
+        none,
+        waitingForProgramReply,
+        waitingForKeygroupReply
+    };
+
+    PendingAddProgramStage pendingAddProgramStage =
+        PendingAddProgramStage::none;
+
+    int pendingNewProgramNumber = -1;
+
+    Program pendingNewProgram;
+    Keygroup pendingNewProgramKeygroup;
+
+    int pendingProgramSelection = -1;
+
+
 
 
 

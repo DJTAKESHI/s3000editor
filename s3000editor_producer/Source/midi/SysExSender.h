@@ -53,6 +53,8 @@ public:
         int programNumber,
         int midiChannel = 16);
 
+    void sendDeleteProgram(int programNumber);
+
 
     
     

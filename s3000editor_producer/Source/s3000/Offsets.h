@@ -6,6 +6,9 @@ namespace ProgramOffset
 {
     namespace General
     {
+        constexpr std::size_t Name = 3;
+        constexpr std::size_t NameLength = 12;
+
         constexpr std::size_t Number = 15; // PRGNUM
         constexpr std::size_t MidiChannel = 16; // PMCHAN
         constexpr std::size_t Polyphony = 17; // POLYPH

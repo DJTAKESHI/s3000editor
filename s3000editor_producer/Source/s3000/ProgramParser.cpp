@@ -51,6 +51,32 @@ double ProgramParser::readTune(
         + static_cast<double>(fractionRaw) / 256.0;
 }
 
+static char decodeAkaiChar(uint8_t v)
+{
+    if (v <= 9)
+        return static_cast<char>('0' + v);
+
+    if (v == 10)
+        return ' ';
+
+    if (v >= 11 && v <= 36)
+        return static_cast<char>('A' + (v - 11));
+
+    if (v == 37)
+        return '#';
+
+    if (v == 38)
+        return '+';
+
+    if (v == 39)
+        return '-';
+
+    if (v == 40)
+        return '.';
+
+    return '?';
+}
+
 
 Program ProgramParser::parse(const std::vector<uint8_t>& d)
 {
@@ -86,6 +112,34 @@ void ProgramParser::parseHeader(
 
     // rawÇï€éù
     p.rawData = d;
+
+    // ===== Program Name =====
+
+    p.name.clear();
+
+    for (std::size_t i = 0;
+        i < ProgramOffset::General::NameLength;
+        ++i)
+    {
+        p.name += decodeAkaiChar(
+            d[ProgramOffset::General::Name + i]
+        );
+    }
+
+    while (!p.name.empty() && p.name.back() == ' ')
+        p.name.pop_back();
+
+    DBG(
+        "PROGRAM NAME = ["
+        + juce::String(p.name)
+        + "]"
+    );
+
+
+    // ===== General =====
+
+    p.programNumber =
+        d[ProgramOffset::General::Number];
 
     // ===== General =====
 

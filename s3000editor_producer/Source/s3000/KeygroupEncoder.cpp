@@ -37,29 +37,9 @@ std::vector<uint8_t> KeygroupEncoder::encode(
 )
 {
 
-    DBG("=== ENCODER INPUT ===");
 
-    DBG(
-        "FILTER FREQ = "
-        + juce::String(keygroup.filter.freq)
-    );
 
-    DBG(
-        "FILTER KEY FOLLOW = "
-        + juce::String(keygroup.filter.keyFollow)
-    );
-
-    DBG(
-        "ENV1 SUSTAIN = "
-        + juce::String(keygroup.env1.sustain)
-    );
-
-    DBG(
-        "ENV1 RELEASE = "
-        + juce::String(keygroup.env1.release)
-    );
-
-    // À‹@‚©‚çóM‚µ‚½Œ³‚Ì192 bytes‚ğƒRƒs[
+    // ï¿½ï¿½ï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½192 bytesï¿½ï¿½ï¿½Rï¿½sï¿½[
     auto data = keygroup.rawData;
 
     if (data.size() < 192)
@@ -263,7 +243,7 @@ std::vector<uint8_t> KeygroupEncoder::encode(
         data[KGF::Zone::ZPLAY[i]] =
             static_cast<uint8_t>(zone.playMode);
 
-        // internal use‚È‚Ì‚Å‘‚«Š·‚¦‚È‚¢
+        // internal useï¿½È‚Ì‚Åï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
         // data[KGF::Zone::LVXF[i]] = zone.lowVelXFade;
         // data[KGF::Zone::HVXF[i]] = zone.highVelXFade;
     }

@@ -2,6 +2,36 @@
 #include "Offsets.h"
 #include <cmath>
 
+static uint8_t encodeAkaiChar(char c)
+{
+    if (c >= '0' && c <= '9')
+        return static_cast<uint8_t>(c - '0');
+
+    if (c == ' ')
+        return 10;
+
+    if (c >= 'A' && c <= 'Z')
+        return static_cast<uint8_t>(11 + (c - 'A'));
+
+    if (c >= 'a' && c <= 'z')
+        return static_cast<uint8_t>(11 + (c - 'a'));
+
+    if (c == '#')
+        return 37;
+
+    if (c == '+')
+        return 38;
+
+    if (c == '-')
+        return 39;
+
+    if (c == '.')
+        return 40;
+
+    return 10;
+}
+
+
 std::vector<uint8_t>
 ProgramEncoder::encode(
     const Program& program)
@@ -18,6 +48,42 @@ ProgramEncoder::encode(
 
         return {};
     }
+
+    // =========================
+// Program Name
+// =========================
+
+    for (std::size_t i = 0;
+        i < ProgramOffset::General::NameLength;
+        ++i)
+    {
+        char c = ' ';
+
+        if (i < program.name.size())
+            c = program.name[i];
+
+        data[
+            ProgramOffset::General::Name + i
+        ] = encodeAkaiChar(c);
+    }
+
+    // =========================
+// MIDI Program Number
+// PRGNUM offset 15
+// =========================
+
+    data[
+        ProgramOffset::General::Number
+    ] =
+        static_cast<uint8_t>(
+            juce::jlimit(
+                0,
+                128,
+                program.programNumber
+            )
+            );
+
+
 
     // =========================
     // Keygroups

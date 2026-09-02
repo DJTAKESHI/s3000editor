@@ -17,7 +17,7 @@ char decodeAkaiChar(uint8_t v)
     if (v == 0x0A || v == 0x00)
         return ' ';
 
-    // printable ASCII fallbackÅií¥èdóvÅE
+    // printable ASCII fallbackÔøΩiÔøΩÔøΩÔøΩdÔøΩvÔøΩE
     if (v >= 0x20 && v <= 0x7E)
         return (char)v;
 
@@ -75,7 +75,7 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(programTree);
     //addAndMakeVisible(sampleHeaderEditor);
-    // 
+    //
     //addAndMakeVisible(sampleHeaderViewport);
 
     addAndMakeVisible(editorTabs);
@@ -142,7 +142,7 @@ MainComponent::MainComponent()
             );
 
             // ========================================
-            // 4 ZoneëSïîÇOverviewÇ÷
+            // 4 ZoneÔøΩSÔøΩÔøΩÔøΩÔøΩOverviewÔøΩÔøΩ
             // ========================================
 
             velocityZoneEditor.setZones(
@@ -150,7 +150,7 @@ MainComponent::MainComponent()
             );
 
             // ========================================
-            // Zone 1Çè⁄ç◊EditorÇ÷
+            // Zone 1ÔøΩÔøΩÔøΩ⁄çÔøΩEditorÔøΩÔøΩ
             // ========================================
 
             if (!kg.zones.empty())
@@ -382,12 +382,12 @@ MainComponent::MainComponent()
                     currentKeygroup
                 ];
 
-            // ëIëÇµÇΩZoneÇè⁄ç◊EditorÇ÷
+            // ÔøΩIÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩZoneÔøΩÔøΩÔøΩ⁄çÔøΩEditorÔøΩÔøΩ
             velocityZoneEditor.setZone(
                 kg.zones[currentZone]
             );
 
-            // Sample HeaderÇ‡êÿÇËë÷Ç¶ÇÈ
+            // Sample HeaderÔøΩÔøΩÔøΩÿÇÔøΩ÷ÇÔøΩÔøΩÔøΩ
             const int sampleId =
                 kg.zones[currentZone].sampleId;
 
@@ -437,7 +437,7 @@ MainComponent::MainComponent()
             );
 
             // ========================================
-            // 4 ZoneëSïîÇOverviewÇ÷
+            // 4 ZoneÔøΩSÔøΩÔøΩÔøΩÔøΩOverviewÔøΩÔøΩ
             // ========================================
 
             if (currentKeygroup >= 0 &&
@@ -458,7 +458,7 @@ MainComponent::MainComponent()
             }
 
             // ========================================
-            // ëIëZoneÇè⁄ç◊EditorÇ÷
+            // ÔøΩIÔøΩÔøΩZoneÔøΩÔøΩÔøΩ⁄çÔøΩEditorÔøΩÔøΩ
             // ========================================
 
             velocityZoneEditor.setZone(
@@ -484,7 +484,7 @@ MainComponent::MainComponent()
         juce::Colours::white
     );
 
-    // ÉfÉoÉbÉOópÅFï\é¶óÃàÊÇämîF
+    // ÔøΩfÔøΩoÔøΩbÔøΩOÔøΩpÔøΩFÔøΩ\ÔøΩÔøΩÔøΩÃàÔøΩÔøΩÔøΩmÔøΩF
     //deviceStatusLabel.setColour(
     //    juce::Label::backgroundColourId,
     //    juce::Colours::darkgrey
@@ -613,11 +613,11 @@ MainComponent::MainComponent()
             currentKeygroup = keygroupIndex;
             currentZone = zoneIndex;
 
-            // Velocity ZoneÇÕïKÇ∏ï\é¶
+            // Velocity ZoneÔøΩÕïKÔøΩÔøΩÔøΩ\ÔøΩÔøΩ
             velocityZoneEditor.setZone(zone);
 
             // ==============================
-            // Sample HeaderÇ‡IDÇ©ÇÁíTÇ∑
+            // Sample HeaderÔøΩÔøΩIDÔøΩÔøΩÔøΩÔøΩTÔøΩÔøΩ
             // ==============================
 
             if (zone.sampleId < 0)
@@ -709,7 +709,7 @@ MainComponent::MainComponent()
                 encodedProgram
             );
         };
-    
+
 
 #endif
 
@@ -748,7 +748,7 @@ MainComponent::MainComponent()
 
             currentKeygroup = keygroupIndex;
 
-            // KeygroupÇëIëÇµÇΩÇÁZone 1ÇëIëèÛë‘Ç…Ç∑ÇÈ
+            // KeygroupÔøΩÔøΩIÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩZone 1ÔøΩÔøΩIÔøΩÔøΩÔøΩÔøΩ‘Ç…ÇÔøΩÔøΩÔøΩ
             currentZone = 0;
 
             editorTabs.setCurrentTabIndex(0);
@@ -759,7 +759,7 @@ MainComponent::MainComponent()
             );
 
             // ========================================
-            // 4 Zone OverviewçXêV
+            // 4 Zone OverviewÔøΩXÔøΩV
             // ========================================
 
             velocityZoneEditor.setZones(
@@ -771,7 +771,7 @@ MainComponent::MainComponent()
             );
 
             // ========================================
-            // Zone 1Çè⁄ç◊EditorÇ…Ç‡ÉZÉbÉg
+            // Zone 1ÔøΩÔøΩÔøΩ⁄çÔøΩEditorÔøΩ…ÇÔøΩÔøΩZÔøΩbÔøΩg
             // ========================================
 
             velocityZoneEditor.setZone(
@@ -847,7 +847,7 @@ MainComponent::MainComponent()
                 "MIDI CHANNEL RAW = "
                 + juce::String(testProgram.midiChannel)
             );
-            
+
 
             sysExSender.sendProgramData(
                 loadedProgram.programNumber,
@@ -1067,7 +1067,7 @@ MainComponent::MainComponent()
                 + juce::String(highNote)
             );
 
-            // ëIëíÜÇÃKGÇ»ÇÁEditorÇ…Ç‡ë¶îΩâf
+            // ÔøΩIÔøΩíÜÇÔøΩKGÔøΩ»ÇÔøΩEditorÔøΩ…ÇÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩf
             if (currentKeygroup ==
                 keygroupIndex)
             {
@@ -1200,7 +1200,7 @@ MainComponent::MainComponent()
             loadedProgram.keygroups[keygroupIndex] =
                 keygroup;
 
-            // Keygroup MapÇ…Ç‡ïœçXÇîΩâf
+            // Keygroup MapÔøΩ…ÇÔøΩÔøΩœçXÔøΩîΩâf
             keygroupMap.setProgram(
                 loadedProgram
             );
@@ -1221,7 +1221,7 @@ MainComponent::MainComponent()
                 return;
             }
 
-            // ç∑ï™ämîF
+            // ÔøΩÔøΩÔøΩÔøΩÔøΩmÔøΩF
             const auto& raw =
                 updatedKeygroup.rawData;
 
@@ -1259,27 +1259,27 @@ MainComponent::MainComponent()
                 ];
 
             // ========================================
-            // ÉçÅ[ÉJÉãZoneçXêV
+            // ÔøΩÔøΩÔøΩ[ÔøΩJÔøΩÔøΩZoneÔøΩXÔøΩV
             // ========================================
 
             kg.zones[currentZone] =
                 zone;
 
             // ========================================
-            // 4-Zone OverviewÇ‡ë¶çXêV
+            // 4-Zone OverviewÔøΩÔøΩÔøΩÔøΩÔøΩXÔøΩV
             // ========================================
 
             velocityZoneEditor.setZones(
                 kg.zones
             );
 
-            // ëIëÉnÉCÉâÉCÉgÇ‡à€éù
+            // ÔøΩIÔøΩÔøΩÔøΩnÔøΩCÔøΩÔøΩÔøΩCÔøΩgÔøΩÔøΩÔøΩ€éÔøΩ
             velocityZoneEditor.setSelectedZone(
                 currentZone
             );
 
             // ========================================
-            // é¿ã@Ç÷KDATA
+            // ÔøΩÔøΩÔøΩ@ÔøΩÔøΩKDATA
             // ========================================
 
             auto encoded =
@@ -1403,7 +1403,7 @@ MainComponent::MainComponent()
                 + juce::String(header.tune, 2)
             );
 
-            // ÉçÅ[ÉJÉãÉfÅ[É^çXêV
+            // ÔøΩÔøΩÔøΩ[ÔøΩJÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩXÔøΩV
             sampleHeaders[header.id] = header;
 
             // Sample Header -> SysEx
@@ -1504,6 +1504,149 @@ MainComponent::MainComponent()
             );
         };
 
+    addAndMakeVisible(deleteProgramButton);
+    addAndMakeVisible(addProgramButton);
+
+
+    deleteProgramButton.onClick =
+        [this]()
+        {
+            const int programNumber =
+                loadedProgram.programNumber;
+
+            juce::AlertWindow::showOkCancelBox(
+                juce::AlertWindow::WarningIcon,
+                "Delete Program?",
+                "This will delete the program and all of its keygroups.",
+                "Delete",
+                "Cancel",
+                nullptr,
+                juce::ModalCallbackFunction::create(
+                    [this, programNumber](int result)
+                    {
+                        if (result == 0)
+                            return;
+
+                        sysExSender.sendDeleteProgram(
+                            programNumber
+                        );
+
+                        sysExSender.sendRPLIST();
+                    }
+                )
+            );
+        };
+
+
+    addProgramButton.onClick =
+        [this]()
+        {
+            if (pendingAddProgramStage !=
+                PendingAddProgramStage::none)
+            {
+                return;
+            }
+
+            if (loadedProgram.keygroups.empty())
+            {
+                DBG("ADD PROGRAM: NO KEYGROUP TEMPLATE");
+                return;
+            }
+
+            const int newProgramNumber =
+                static_cast<int>(programList.size());
+
+            auto newProgram =
+                loadedProgram;
+
+            newProgram.programNumber =
+                newProgramNumber;
+
+            newProgram.groups = 1;
+            newProgram.keygroups.clear();
+
+            auto newKeygroup =
+                loadedProgram.keygroups[0];
+
+            newProgram.keygroups.push_back(
+                newKeygroup
+            );
+
+            newProgram.name =
+                (
+                    juce::String("NEW PRG ")
+                    + juce::String(newProgramNumber)
+                    ).toStdString();
+
+            auto encodedProgram =
+                ProgramEncoder::encode(
+                    newProgram
+                );
+
+            if (encodedProgram.empty())
+            {
+                DBG("ADD PROGRAM: ENCODE FAILED");
+                return;
+            }
+
+
+
+            std::string decodedName;
+
+            for (std::size_t i = 0;
+                i < ProgramOffset::General::NameLength;
+                ++i)
+            {
+                const auto raw =
+                    encodedProgram[
+                        ProgramOffset::General::Name + i
+                    ];
+
+                DBG(
+                    juce::String((int)i)
+                    + ": "
+                    + juce::String::formatted(
+                        "%02X",
+                        (unsigned)raw
+                    )
+                );
+
+                decodedName += decodePlistChar(raw);
+            }
+
+            while (!decodedName.empty()
+                && decodedName.back() == ' ')
+            {
+                decodedName.pop_back();
+            }
+
+
+
+            pendingNewProgramNumber =
+                newProgramNumber;
+
+            pendingNewProgram =
+                newProgram;
+
+            pendingNewProgramKeygroup =
+                newKeygroup;
+
+            pendingAddProgramStage =
+                PendingAddProgramStage::
+                waitingForProgramReply;
+
+            DBG(
+                "ADD PROGRAM: SEND PDATA PROGRAM="
+                + juce::String(newProgramNumber)
+            );
+
+            sysExSender.sendProgramData(
+                newProgramNumber,
+                encodedProgram
+            );
+        };
+
+
 
     deviceStatusLabel.toFront(false);
     startTimer(1000);
@@ -1536,9 +1679,24 @@ void MainComponent::resized()
     // =========================
     auto topBar = area.removeFromTop(60);
 
+    auto programArea =
+        topBar.removeFromLeft(330)
+        .reduced(20, 15);
+
+    deleteProgramButton.setBounds(
+        programArea.removeFromRight(30)
+    );
+
+    programArea.removeFromRight(6);
+
+    addProgramButton.setBounds(
+        programArea.removeFromRight(30)
+    );
+
+    programArea.removeFromRight(6);
+
     programCombo.setBounds(
-        topBar.removeFromLeft(290)
-        .reduced(20, 15)
+        programArea
     );
 
     deviceStatusLabel.setBounds(
@@ -1660,7 +1818,7 @@ void MainComponent::resized()
         left.removeFromTop(220)
         .reduced(10);
 
-    // å≈íËÉwÉbÉ_
+    // ÔøΩ≈íÔøΩwÔøΩbÔøΩ_
     auto keygroupHeader =
         keygroupSection.removeFromTop(34);
 
@@ -1678,7 +1836,7 @@ void MainComponent::resized()
         keygroupHeader.removeFromRight(90)
     );
 
-    // ÉoÅ[ïîï™ÇæÇØÉXÉNÉçÅ[Éã
+    // ÔøΩoÔøΩ[ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩXÔøΩNÔøΩÔøΩÔøΩ[ÔøΩÔøΩ
     keygroupMapViewport.setBounds(
         keygroupSection
     );
@@ -1691,7 +1849,7 @@ void MainComponent::resized()
 
     editorTabs.setBounds(area);
 
-    // Keygroup Editor ÇÕViewportì‡Ç≈ÉXÉNÉçÅ[Éã
+    // Keygroup Editor ÔøΩÔøΩViewportÔøΩÔøΩÔøΩ≈ÉXÔøΩNÔøΩÔøΩÔøΩ[ÔøΩÔøΩ
     keyGroupEditor.setSize(
         juce::jmax(
             300,
@@ -1700,7 +1858,7 @@ void MainComponent::resized()
         1200
     );
 
-    // Sample HeaderÇ‡Viewportì‡
+    // Sample HeaderÔøΩÔøΩViewportÔøΩÔøΩ
     sampleHeaderEditor.setSize(
         juce::jmax(
             300,
@@ -1709,7 +1867,7 @@ void MainComponent::resized()
         750
     );
 
-    // Program EditorÇ‡Viewportì‡Ç≈ÉXÉNÉçÅ[Éã
+    // Program EditorÔøΩÔøΩViewportÔøΩÔøΩÔøΩ≈ÉXÔøΩNÔøΩÔøΩÔøΩ[ÔøΩÔøΩ
     programEditor.setSize(
         juce::jmax(
             300,
@@ -1839,8 +1997,8 @@ void MainComponent::setDeviceConnected(bool connected)
             }
             else
             {
-                // ÉAÉvÉäãNìÆå„ÇÃç≈èâÇÃê⁄ë±ämîF
-                // ãNìÆéûÇÃ AUTO RPLIST Ç™Ç∑Ç≈Ç…ëñÇ¡ÇƒÇ¢ÇÈ
+                // ÔøΩAÔøΩvÔøΩÔøΩÔøΩNÔøΩÔøΩÔøΩÔøΩÃç≈èÔøΩÔøΩÃê⁄ëÔøΩÔøΩmÔøΩF
+                // ÔøΩNÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ AUTO RPLIST ÔøΩÔøΩÔøΩÔøΩÔøΩ≈Ç…ëÔøΩÔøΩÔøΩÔøΩƒÇÔøΩÔøΩÔøΩ
                 DBG(
                     "DEVICE CONNECTED - "
                     "FIRST CONNECTION"
@@ -1944,6 +2102,11 @@ void MainComponent::processIncomingSysEx(
                 (data[10] & 0x0F)
                 | ((data[11] & 0x0F) << 4);
 
+            DBG(
+                "PHYSICAL SELECTED PROGRAM NUMBER = "
+                + juce::String(selectedProgram)
+            );
+
             juce::MessageManager::callAsync(
                 [this, selectedProgram, bmchan]()
                 {
@@ -1970,24 +2133,14 @@ void MainComponent::processIncomingSysEx(
         return;
     }
 
-    DBG("=== INCOMING SYSEX ===");
-    DBG("opcode = 0x" + juce::String::toHexString(opcode));
-    DBG("getSysExDataSize = " + juce::String((int)size));
-    DBG("message raw size = " + juce::String(message.getRawDataSize()));
+
 
     programBuffer.reset();
     programBuffer.append(data, size);
 
     static int captureIndex = 0;
 
-    //juce::String name =
-    //    (captureIndex == 0)
-    //    ? "rpdata_A"
-    //    : "rpdata_B";
 
-    //saveRawRPDATA(name, programBuffer);
-
-//    std::vector<uint8_t> decoded;
 
     switch (opcode)
     {
@@ -1997,7 +2150,7 @@ void MainComponent::processIncomingSysEx(
             break;
         }
 
-        
+
 
         case 0x16:
             handleCommandReply(data, size);
@@ -2006,11 +2159,20 @@ void MainComponent::processIncomingSysEx(
 
         case 0x28:
         {
-            // é¿ã@ÇÃÉpÉâÉÅÅ[É^ïœçX / ProgramïœçXí ím
+
+            if (size >= 6)
+            {
+                const int responseProgramNumber =
+                    (data[4] & 0x7F)
+                    | ((data[5] & 0x7F) << 7);
+
+
+            }
+
+            // ÔøΩÔøΩÔøΩ@ÔøΩÃÉpÔøΩÔøΩÔøΩÔøΩÔøΩ[ÔøΩ^ÔøΩœçX / ProgramÔøΩœçXÔøΩ ím
             if (size < 395)
             {
-                DBG("SHORT PROGRAM CHANGE");
-                DBG("SHORT 0x28 SIZE = " + juce::String((int)size));
+
 
                 for (size_t i = 0; i < size; ++i)
                 {
@@ -2028,7 +2190,7 @@ void MainComponent::processIncomingSysEx(
             handleProgramHeaderResponse();
             break;
         }
-            
+
         case 0x2A:
         {
             handleKeygroupHeaderResponse();
@@ -2055,35 +2217,35 @@ void MainComponent::processIncomingSysEx(
             break;
 
 
-            
+
         }
 
-            
+
         case 0x03:
         {
-            
+
 
             handleProgramListResponse(data, size);
             break;
         }
-            
+
         case 0x09:
         {
             handleKeygroupDataResponse(message);
             break;
         }
-        
 
-       
 
-      
+
+
+
 
 
 
         default:
             DBG("Unknown Opcode = 0x" + juce::String::toHexString((int)opcode));
             return;
-                    
+
 
         }
     captureIndex++;
@@ -2091,8 +2253,7 @@ void MainComponent::processIncomingSysEx(
 
 void MainComponent::handleSampleHeaderResponse()
 {
-    DBG("SAMPLE HEADER RECEIVED");
-    DBG("RAW SAMPLE HEADER SYSEX");
+
 
     auto* p =
         (uint8_t*)programBuffer.getData();
@@ -2101,7 +2262,7 @@ void MainComponent::handleSampleHeaderResponse()
         (int)programBuffer.getSize();
 
     // ==============================
-    // Raw SysExêÊì™ämîF
+    // Raw SysExÔøΩÊì™ÔøΩmÔøΩF
     // ==============================
 
     for (int i = 0;
@@ -2118,9 +2279,9 @@ void MainComponent::handleSampleHeaderResponse()
     DBG("=== RAW SYSEX END ===");
 
     // ==============================
-    // Raw SysExññîˆämîF
+    // Raw SysExÔøΩÔøΩÔøΩÔøΩÔøΩmÔøΩF
     // ==============================
-    
+
     for (int i =
         juce::jmax(0, rawSize - 30);
         i < rawSize;
@@ -2139,15 +2300,12 @@ void MainComponent::handleSampleHeaderResponse()
 
 //            decoded =
 //                decodeSampleHeader(programBuffer);
-    
+
     auto decoded =
         decodeSampleHeader(programBuffer);
 
-    DBG(
-        "FULL SAMPLE HEADER SIZE = "
-        + juce::String((int)decoded.size())
-    );
-    
+
+
     if (decoded.size() < 141)
     {
         DBG("INVALID SAMPLE HEADER SIZE");
@@ -2175,7 +2333,7 @@ void MainComponent::handleSampleHeaderResponse()
     }
 
     // ==============================
-    // DecodeêÊì™ämîF
+    // DecodeÔøΩÊì™ÔøΩmÔøΩF
     // ==============================
 
     for (int i = 0;
@@ -2189,9 +2347,9 @@ void MainComponent::handleSampleHeaderResponse()
             + juce::String::toHexString(decoded[i])
         );
     }
-    
+
     // ==============================
-    // pending requestämîF
+    // pending requestÔøΩmÔøΩF
     // ==============================
 
     if (pendingSampleRequests.empty())
@@ -2205,52 +2363,24 @@ void MainComponent::handleSampleHeaderResponse()
     }
 
     // ==============================
-    // ëŒè€Sample IDÇéÊìæ
+    // ÔøΩŒèÔøΩSample IDÔøΩÔøΩÔøΩÊìæ
     // ==============================
 
-    //const int sampleId =
-    //    pendingSampleRequests.front();
 
-    //pendingSampleRequests.pop();
-
-    //DBG(
-    //    "PENDING SAMPLE ID = "
-    //    + juce::String(sampleId)
-    //);
-
-    // ==============================
-    // Parse
-    // ==============================
-
-    //SampleHeader sh =
-    //    SampleHeaderParser::parse(
-    //        decoded,
-    //        sampleId
-    //    );
-
-    // Ç‹Ç∏IDñ¢ämíËÇ∆ÇµÇƒparse
+    // ÔøΩ‹ÇÔøΩIDÔøΩÔøΩÔøΩmÔøΩÔøΩ∆ÇÔøΩÔøΩÔøΩparse
     SampleHeader sh =
         SampleHeaderParser::parse(
             decoded,
             -1
         );
 
-    // é¿ç€Ç…ï‘Ç¡ÇƒÇ´ÇΩSampleñºÇ©ÇÁIDÇâåà
+    // ÔøΩÔøΩÔøΩ€Ç…ï‘ÇÔøΩÔøΩƒÇÔøΩÔøΩÔøΩSampleÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩIDÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
     const int resolvedSampleId =
         findSampleId(
             sh.name.trim()
         );
 
-    DBG(
-        "RECEIVED SAMPLE NAME=["
-        + sh.name
-        + "]"
-    );
 
-    DBG(
-        "RESOLVED SAMPLE ID = "
-        + juce::String(resolvedSampleId)
-    );
 
     if (resolvedSampleId < 0)
     {
@@ -2271,73 +2401,10 @@ void MainComponent::handleSampleHeaderResponse()
     // ==============================
 
     sampleHeaders[sh.id] = sh;
-    
-    DBG("=== SAMPLE HEADER VERIFY ===");
 
-    DBG("ID = " + juce::String(sh.id));
-    DBG("NAME = [" + sh.name + "]");
-    DBG("PITCH = " + juce::String(sh.originalPitch));
-    DBG("TUNE = " + juce::String(sh.tune, 2));
 
-    DBG(
-        "SAMPLE RATE = "
-        + juce::String(sh.sampleRate)
-    );
 
-    DBG(
-        "SAMPLE RATE VALID = "
-        + juce::String(sh.sampleRateValid)
-    );
 
-    DBG("NUM LOOPS = " + juce::String(sh.numLoops));
-    DBG("ACTIVE LOOP = " + juce::String(sh.activeLoop));
-    DBG("PLAY TYPE = " + juce::String(sh.playType));
-    DBG(
-        "NUM LOOPS = "
-        + juce::String(sh.numLoops)
-    );
-
-    DBG(
-        "ACTIVE LOOP = "
-        + juce::String(sh.activeLoop)
-    );
-
-    DBG(
-        "PLAY TYPE = "
-        + juce::String(sh.playType)
-    );
-
-    DBG(
-        "START = "
-        + juce::String(sh.start)
-    );
-
-    DBG(
-        "END = "
-        + juce::String(sh.end)
-    );
-
-    DBG(
-        "HOLD LOOP TUNE = "
-        + juce::String((int)sh.holdLoopTune)
-    );
-
-    DBG(
-        "LOOP1 POSITION = "
-        + juce::String(sh.loops[0].position)
-    );
-
-    DBG(
-        "LOOP1 LENGTH = "
-        + juce::String(sh.loops[0].length, 3)
-    );
-
-    DBG(
-        "LOOP1 DWELL = "
-        + juce::String(sh.loops[0].dwell)
-    );
-    
-    
     if (currentKeygroup >= 0 &&
         currentKeygroup < (int)loadedProgram.keygroups.size())
     {
@@ -2370,20 +2437,6 @@ void MainComponent::handleSampleHeaderResponse()
     }
 
 
-    DBG(
-        "STORED SAMPLE HEADER ID="
-        + juce::String(sh.id)
-        + " NAME=["
-        + sh.name
-        + "]"
-    );
-
-    DBG(
-        "sampleHeaders.size = "
-        + juce::String(
-            (int)sampleHeaders.size()
-        )
-    );
 
     for (const auto& [id, header] :
         sampleHeaders)
@@ -2398,45 +2451,12 @@ void MainComponent::handleSampleHeaderResponse()
     }
 
     // ==============================
-    // Sample HeaderèÓÅE
+    // Sample HeaderÔøΩÔøΩE
     // ==============================
 
-    DBG("=== SAMPLE HEADER ===");
 
-    DBG(
-        "ID = "
-        + juce::String(sh.id)
-    );
-
-    DBG(
-        "NAME = "
-        + sh.name
-    );
-
-    DBG(
-        "PITCH = "
-        + juce::String(sh.originalPitch)
-    );
-
-    DBG(
-        "LENGTH = "
-        + juce::String(
-            (juce::int64)sh.length
-        )
-    );
-
-    DBG(
-        "LOOPS = "
-        + juce::String(sh.numLoops)
-    );
-
-    DBG(
-        "PLAY TYPE = "
-        + juce::String(sh.playType)
-    );
-    
     // ==============================
-    // ëSSample HeaderéÛêMäÆóπÅH
+    // ÔøΩSSample HeaderÔøΩÔøΩMÔøΩÔøΩÔøΩÔøΩÔøΩH
     // ==============================
 
     if (pendingSampleRequests.empty())
@@ -2448,14 +2468,14 @@ void MainComponent::handleSampleHeaderResponse()
             {
                 DBG("CALL ASYNC START");
 
-                // Sample Name -> Sample ID çƒâåà
+                // Sample Name -> Sample ID ÔøΩƒâÔøΩÔøΩÔøΩ
                 resolveAllSampleIds();
 
                 DBG(
                     "AFTER resolveAllSampleIds"
                 );
 
-                // ämîFÉçÉO
+                // ÔøΩmÔøΩFÔøΩÔøΩÔøΩO
                 for (int k = 0;
                     k <
                     (int)loadedProgram
@@ -2488,16 +2508,13 @@ void MainComponent::handleSampleHeaderResponse()
                     }
                 }
 
-                // ç≈êVÉfÅ[É^Ç≈Treeçƒç\íz
+                // ÔøΩ≈êVÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩTreeÔøΩƒç\ÔøΩz
                 programTree.setProgram(
                     loadedProgram,
                     sampleHeaders
                 );
 
-                DBG(
-                    "PROGRAM TREE UPDATEd "
-                    "AFTER ALL SAMPLE HEADERS"
-                );
+
             }
         );
     }
@@ -2511,7 +2528,7 @@ void MainComponent::handleSampleHeaderResponse()
             )
         );
     }
-    
+
     // ==============================
     // Full decoded dump
     // ==============================
@@ -2563,17 +2580,16 @@ void MainComponent::handleSampleHeaderResponse()
 
 
 
-    
+
 }
 
 void MainComponent::handleSampleListResponse()
 {
-    DBG("SLIST RECEIVED");
-    DBG("BEFORE parseSLIST");
+
 
     parseSLIST(programBuffer);
 
-    DBG("AFTER parseSLIST");
+
 
     for (int i = 0; i < programBuffer.getSize(); ++i)
     {
@@ -2583,8 +2599,8 @@ void MainComponent::handleSampleListResponse()
             + juce::String::toHexString(programBuffer[i])
         );
     }
-    
-   
+
+
 //    break;
 }
 
@@ -2610,7 +2626,7 @@ void MainComponent::handleKeygroupDataResponse(
     const juce::MidiMessage& message)
 {
 
-    DBG("KEYGROUP DATA RECEIVED");
+
 
     auto* raw = programBuffer.getData();
     auto size = programBuffer.getSize();
@@ -2632,90 +2648,17 @@ void MainComponent::handleKeygroupDataResponse(
             message.getSysExDataSize()
         );
 
-    DBG(
-        "RELOADED KG INDEX = "
-        + juce::String(loadingKeygroup)
-    );
 
-    DBG(
-        "RELOADED LOW = "
-        + juce::String(
-            (int)decoded[
-                KeygroupHeaderOffset::Common::LONOTE
-            ]
-        )
-    );
-
-    DBG(
-        "RELOADED HIGH = "
-        + juce::String(
-            (int)decoded[
-                KeygroupHeaderOffset::Common::HINOTE
-            ]
-        )
-    );
 
     saveDecodedDump(
         "keygroup_basic",
         decoded
     );
 
-    DBG(
-        "FIXTURE SIZE = "
-        + juce::String((int)decoded.size())
-    );
 
 
-    DBG(
-        "ZONE1 LOW XFADE RAW = "
-        + juce::String((int)decoded[78])
-    );
-
-    DBG(
-        "ZONE1 HIGH XFADE RAW = "
-        + juce::String((int)decoded[79])
-    );
 
 
-    DBG(
-        "RELOADED RAW LONOTE = "
-        + juce::String(
-            (int)decoded[
-                KeygroupHeaderOffset::Common::LONOTE
-            ]
-        )
-    );
-
-    DBG(
-        "RELOADED RAW HINOTE = "
-        + juce::String(
-            (int)decoded[
-                KeygroupHeaderOffset::Common::HINOTE
-            ]
-        )
-    );
-
-
-    DBG("===== FULL KEYGROUP DECODED =====");
-
-    for (int i = 0; i < decoded.size(); ++i)
-    {
-        DBG(
-            juce::String(i)
-            + " : 0x"
-            + juce::String::toHexString((int)decoded[i])
-            + " ("
-            + juce::String((int)decoded[i])
-            + ")"
-        );
-    }
-
-    DBG("=================================");
-
-    DBG(
-        "KG FULL SIZE = "
-        + juce::String((int)decoded.size())
-    );
 
     if (decoded.size() < 132)
     {
@@ -2734,71 +2677,7 @@ void MainComponent::handleKeygroupDataResponse(
             residentSamples
         );
 
-    DBG("=== ENV2 ===");
 
-    DBG("R1 = " + juce::String(kg.env2.r1));
-    DBG("L1 = " + juce::String(kg.env2.l1));
-
-    DBG("R2 = " + juce::String(kg.env2.r2));
-    DBG("L2 = " + juce::String(kg.env2.l2));
-
-    DBG("R3 = " + juce::String(kg.env2.r3));
-    DBG("L3 = " + juce::String(kg.env2.l3));
-
-    DBG("R4 = " + juce::String(kg.env2.r4));
-    DBG("L4 = " + juce::String(kg.env2.l4));
-
-    DBG("=== ENV2 RAW ===");
-
-    DBG("d[20]  R1 = " + juce::String((int)decoded[20]));
-    DBG("d[156] L1 = " + juce::String((int)decoded[156]));
-    DBG("d[157] R2 = " + juce::String((int)decoded[157]));
-    DBG("d[158] L2 = " + juce::String((int)decoded[158]));
-    DBG("d[21]  R3 = " + juce::String((int)decoded[21]));
-    DBG("d[22]  L3 = " + juce::String((int)decoded[22]));
-    DBG("d[23]  R4 = " + juce::String((int)decoded[23]));
-    DBG("d[159] L4 = " + juce::String((int)decoded[159]));
-
-    DBG("TUNE = " + juce::String(kg.tune));
-
-    DBG("FILTER KEY FOLLOW = "
-        + juce::String(kg.filter.keyFollow));
-
-    DBG("VELOCITY TO FREQ = "
-        + juce::String(kg.filter.velocityToFreq));
-
-    DBG("PRESSURE TO FREQ = "
-        + juce::String(kg.filter.pressureToFreq));
-
-    DBG("ENVELOPE TO FREQ = "
-        + juce::String(kg.filter.envelopeToFreq));
-
-    DBG("ENV1 SUSTAIN = "
-        + juce::String(kg.env1.sustain));
-
-    DBG("ENV1 RELEASE = "
-        + juce::String(kg.env1.release));
-
-    DBG("ENV2 VEL ATTACK = "
-        + juce::String(kg.env2.velAttack));
-
-    DBG("ENV2 VEL RELEASE = "
-        + juce::String(kg.env2.velRelease));
-
-    DBG("ENV2 NOTE-OFF RELEASE = "
-        + juce::String(kg.env2.noteOffRelease));
-
-    DBG("ENV2 KEY TRACKING = "
-        + juce::String(kg.env2.keyTracking));
-
-    DBG("E_PTCH = "
-        + juce::String(kg.velocity.ePtch));
-
-    DBG("VXFADE = "
-        + juce::String(kg.velocity.vxFade));
-
-    DBG("VZONES = "
-        + juce::String(kg.velocity.vZones));
 
 
 
@@ -2875,20 +2754,10 @@ void MainComponent::handleKeygroupDataResponse(
 
 
 
-    DBG(
-        "STORED KEYGROUP INDEX = "
-        + juce::String(loadingKeygroup)
-    );
 
-    DBG(
-        "AFTER STORE loadedProgram.keygroups.size = "
-        + juce::String(
-            (int)loadedProgram.keygroups.size()
-        )
-    );
 
     // ========================================
-  // èââÒÉçÅ[ÉhíÜÇ‡Map / TreeÇíÄéüçXêV
+  // ÔøΩÔøΩÔøΩÒÉçÅ[ÔøΩhÔøΩÔøΩÔøΩÔøΩMap / TreeÔøΩíÄéÔøΩÔøΩXÔøΩV
   // ========================================
 
     const int mapUpdateIndex =
@@ -2897,22 +2766,12 @@ void MainComponent::handleKeygroupDataResponse(
     const Program programForMap =
         loadedProgram;
 
-    DBG(
-        "QUEUE MAP UPDATE KG="
-        + juce::String(mapUpdateIndex)
-    );
+
 
     juce::MessageManager::callAsync(
         [this, programForMap, mapUpdateIndex]()
         {
-            DBG(
-                "QUEUE MAP UPDATE KG="
-                + juce::String(mapUpdateIndex)
-                + " PROGRAM KG SIZE="
-                + juce::String(
-                    (int)programForMap.keygroups.size()
-                )
-            );
+
 
             // KeygroupMap
             keygroupMap.setProgram(
@@ -2925,10 +2784,7 @@ void MainComponent::handleKeygroupDataResponse(
                 sampleHeaders
             );
 
-            DBG(
-                "PARTIAL MAP + TREE UPDATE KG="
-                + juce::String(mapUpdateIndex)
-            );
+
         }
     );
 
@@ -2943,8 +2799,8 @@ void MainComponent::handleKeygroupDataResponse(
         if (zone.sampleId < 0)
             continue;
 
-        // Ç∑Ç≈Ç…éùÇ¡ÇƒÇ¢ÇÈSample HeaderÇ»ÇÁ
-        // çƒÉäÉNÉGÉXÉgÇµÇ»Ç¢
+        // ÔøΩÔøΩÔøΩ≈Ç…éÔøΩÔøΩÔøΩÔøΩƒÇÔøΩÔøΩÔøΩSample HeaderÔøΩ»ÇÔøΩ
+        // ÔøΩƒÉÔøΩÔøΩNÔøΩGÔøΩXÔøΩgÔøΩÔøΩÔøΩ»ÇÔøΩ
         if (sampleHeaders.find(zone.sampleId)
             != sampleHeaders.end())
         {
@@ -2958,13 +2814,7 @@ void MainComponent::handleKeygroupDataResponse(
 
 
 
-        DBG(
-            "REQUEST SAMPLE HEADER ID="
-            + juce::String(zone.sampleId)
-            + " NAME=["
-            + zone.sampleName
-            + "]"
-        );
+
 
         sendSampleHeader(
             zone.sampleId
@@ -2972,12 +2822,7 @@ void MainComponent::handleKeygroupDataResponse(
     }
 
 
-    DBG(
-        "PENDING SAMPLE REQUESTS = "
-        + juce::String(
-            (int)pendingSampleRequests.size()
-        )
-    );
+
 
 
     // ========================================
@@ -2993,10 +2838,7 @@ void MainComponent::handleKeygroupDataResponse(
         const auto& storedKg =
             loadedProgram.keygroups[k];
 
-        DBG(
-            "KEYGROUP "
-            + juce::String(k)
-        );
+
 
         for (int z = 0;
             z < storedKg.zones.size();
@@ -3005,96 +2847,11 @@ void MainComponent::handleKeygroupDataResponse(
             const auto& zone =
                 storedKg.zones[z];
 
-            DBG(
-                "ZONE "
-                + juce::String(z)
-                + " SAMPLE=["
-                + zone.sampleName
-                + "] ID="
-                + juce::String(zone.sampleId)
-            );
+
         }
     }
 
 
-    // ========================================
-    // Sample Header requestÇ™ñ≥Ç¢èÍçáÇæÇØ
-    // Ç±Ç±Ç≈TreeÇçXêV
-    //
-    // test
-    // ëSHeaderéÛêMå„Ç…TreeçXêV
-    // ========================================
-
-    // ========================================
-// KeygroupÇéÛêMÇµÇΩéûì_Ç≈TreeÇï\é¶
-// Sample HeaderÇ™ñ¢éÊìæÇ≈Ç‡ç\ÇÌÇ»Ç¢
-// ========================================
-
-    //juce::MessageManager::callAsync(
-    //    [this]
-    //    {
-    //        DBG("UPDATE TREE FROM KEYGROUP");
-
-    //        programTree.setProgram(
-    //            loadedProgram,
-    //            sampleHeaders
-    //        );
-
-    //        keygroupMap.setProgram(
-    //            loadedProgram
-    //        );
-
-    //        // =====================================
-    //        // Keygroup MapÇÃÉRÉìÉeÉìÉcÉTÉCÉY
-    //        // =====================================
-
-    //        constexpr int rowHeight = 32;
-
-    //        const int contentHeight =
-    //            juce::jmax(
-    //                200,
-    //                static_cast<int>(
-    //                    loadedProgram.keygroups.size()
-    //                    ) * rowHeight
-    //            );
-
-    //        keygroupMap.setSize(
-    //            juce::jmax(
-    //                1,
-    //                keygroupMapViewport.getWidth() - 16
-    //            ),
-    //            contentHeight
-    //        );
-
-    //        // à»â∫ÅAç°Ç‹Ç≈ÇÃèàóù
-    //        if (!loadedProgram.keygroups.empty())
-    //        {
-    //            auto& kg =
-    //                loadedProgram.keygroups[0];
-
-    //            keyGroupEditor.setKeygroup(
-    //                kg,
-    //                0
-    //            );
-
-    //            if (!kg.zones.empty())
-    //            {
-    //                currentZone = 0;
-
-    //                velocityZoneEditor.setZone(
-    //                    kg.zones[0]
-    //                );
-    //            }
-    //        }
-
-    //        DBG(
-    //            "PROGRAM TREE + KEYGROUP MAP + EDITORS "
-    //            "UPDATED FROM KEYGROUP"
-    //        );
-    //    }
-    //
-    //);
-  
 
     if (!pendingSampleRequests.empty())
     {
@@ -3129,21 +2886,9 @@ void MainComponent::handleKeygroupDataResponse(
         static int finishCount = 0;
         ++finishCount;
 
-        DBG(
-            "!!!!!!!! KG LOAD FINISHED #"
-            + juce::String(finishCount)
-            + " loadingKeygroup="
-            + juce::String(loadingKeygroup)
-            + " total="
-            + juce::String(totalKeygroups)
-        );
 
-        DBG(
-            "ALL KEYGROUPS LOADED count="
-            + juce::String(totalKeygroups)
-        );
 
-        // í êMë§ÇæÇØÉäÉZÉbÉg
+        // ÔøΩ êMÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩZÔøΩbÔøΩg
         loadingKeygroup = 0;
 
         juce::MessageManager::callAsync(
@@ -3161,7 +2906,7 @@ void MainComponent::handleKeygroupDataResponse(
                         + 20
                     );
 
-                // êÊÇ…ç≈èIÉTÉCÉYÇämíË
+                // ÔøΩÔøΩ…ç≈èIÔøΩTÔøΩCÔøΩYÔøΩÔøΩÔøΩmÔøΩÔøΩ
                 keygroupMap.setSize(
                     juce::jmax(
                         1,
@@ -3170,7 +2915,7 @@ void MainComponent::handleKeygroupDataResponse(
                     contentHeight
                 );
 
-                // ÇªÇÃå„ProgramÇìnÇ∑
+                // ÔøΩÔøΩÔøΩÃåÔøΩProgramÔøΩÔøΩnÔøΩÔøΩ
                 keygroupMap.setProgram(
                     loadedProgram
                 );
@@ -3180,11 +2925,11 @@ void MainComponent::handleKeygroupDataResponse(
                     sampleHeaders
                 );
             }
-        
+
         );
     }
 
-    
+
 }
 
 
@@ -3205,6 +2950,97 @@ void MainComponent::handleCommandReply(
         "AKAI REPLY CODE = "
         + juce::String((int)result)
     );
+
+    // ========================================
+// ADD PROGRAM - STEP 1 PDATA Reply
+// ========================================
+
+    if (pendingAddProgramStage ==
+        PendingAddProgramStage::
+        waitingForProgramReply)
+    {
+        if (result != 0)
+        {
+            DBG("ADD PROGRAM: PDATA FAILED");
+
+            pendingAddProgramStage =
+                PendingAddProgramStage::none;
+
+            pendingNewProgramNumber = -1;
+
+            return;
+        }
+
+
+
+        auto encodedKeygroup =
+            KeygroupEncoder::encode(
+                pendingNewProgramKeygroup
+            );
+
+        if (encodedKeygroup.empty())
+        {
+
+
+            pendingAddProgramStage =
+                PendingAddProgramStage::none;
+
+            pendingNewProgramNumber = -1;
+
+            return;
+        }
+
+        pendingAddProgramStage =
+            PendingAddProgramStage::
+            waitingForKeygroupReply;
+
+
+
+        sysExSender.sendKeygroupData(
+            pendingNewProgramNumber,
+            0,
+            encodedKeygroup
+        );
+
+        return;
+    }
+
+
+    // ========================================
+    // ADD PROGRAM - STEP 2 KDATA Reply
+    // ========================================
+
+    if (pendingAddProgramStage ==
+        PendingAddProgramStage::
+        waitingForKeygroupReply)
+    {
+        if (result != 0)
+        {
+            DBG("ADD PROGRAM: KDATA FAILED");
+
+            pendingAddProgramStage =
+                PendingAddProgramStage::none;
+
+            pendingNewProgramNumber = -1;
+
+            return;
+        }
+
+        DBG("ADD PROGRAM: KDATA REPLY OK");
+
+        pendingProgramSelection =
+            pendingNewProgramNumber;
+
+        pendingNewProgramNumber = -1;
+
+        pendingAddProgramStage =
+            PendingAddProgramStage::none;
+
+        // ÔøΩ≈êVÔøΩÔøΩProgramÔøΩÍóóÔøΩÔøΩÔøΩÔøΩÔøΩ@ÔøΩÔøΩÔøΩÔøΩÔøΩËíºÔøΩÔøΩ
+        sysExSender.sendRPLIST();
+
+        return;
+    }
 
 
     // ========================================
@@ -3232,7 +3068,7 @@ void MainComponent::handleCommandReply(
         );
 
         // ========================================
-        // GROUPS + 1 ÇÃPDATAÇçÏÇÈ
+        // GROUPS + 1 ÔøΩÔøΩPDATAÔøΩÔøΩÔøΩÔøΩÔøΩ
         // ========================================
 
         auto newProgram =
@@ -3309,12 +3145,12 @@ void MainComponent::handleCommandReply(
 
         pendingAddKeygroupIndex = -1;
 
-        // MIDI callbackÇ©ÇÁUIÇíºê⁄êGÇÁÇ»Ç¢
+        // MIDI callbackÔøΩÔøΩÔøΩÔøΩUIÔøΩíºê⁄êGÔøΩÔøΩ»ÇÔøΩ
         juce::MessageManager::callAsync(
             [this, addedIndex]()
             {
                 // ========================================
-                // ÉçÅ[ÉJÉãProgramçXêV
+                // ÔøΩÔøΩÔøΩ[ÔøΩJÔøΩÔøΩProgramÔøΩXÔøΩV
                 // ========================================
 
                 loadedProgram.keygroups.push_back(
@@ -3363,7 +3199,7 @@ void MainComponent::handleCommandReply(
 
 
                 // ========================================
-                // UIÇæÇØçXêV
+                // UIÔøΩÔøΩÔøΩÔøΩÔøΩXÔøΩV
                 // ========================================
 
                 keygroupMap.setProgram(
@@ -3394,9 +3230,7 @@ void MainComponent::handleCommandReply(
                     );
                 }
 
-                DBG(
-                    "ADD LOCAL UI UPDATE COMPLETE"
-                );
+
             }
         );
 
@@ -3435,7 +3269,7 @@ void MainComponent::handleCommandReply(
                     }
 
                     // =========================
-                    // ModelçXêV
+                    // ModelÔøΩXÔøΩV
                     // =========================
 
                     loadedProgram.keygroups.erase(
@@ -3471,15 +3305,10 @@ void MainComponent::handleCommandReply(
                     );
 
 
-                    DBG(
-                        "DELETE LOCAL UPDATE GROUPS="
-                        + juce::String(
-                            loadedProgram.groups
-                        )
-                    );
+
 
                     // =========================
-                    // ëIëà íuÇï‚ê≥
+                    // ÔøΩIÔøΩÔøΩÔøΩ íuÔøΩÔøΩ‚ê≥
                     // =========================
 
                     if (currentKeygroup >=
@@ -3495,7 +3324,7 @@ void MainComponent::handleCommandReply(
                     currentZone = 0;
 
                     // =========================
-                    // UIçXêV
+                    // UIÔøΩXÔøΩV
                     // =========================
 
                     keygroupMap.setProgram(
@@ -3543,24 +3372,15 @@ void MainComponent::handleCommandReply(
     }
 }
 
-    
+
 void MainComponent::handleProgramHeaderResponse()
 {
-    DBG("========== CASE 0x28 ENTERED ==========");
 
-
-
-    DBG("=== PROGRAM HEADER RESPONSE ===");
-    DBG("loadedProgram.programNumber = "
-        + juce::String(loadedProgram.programNumber));
 
     auto decoded =
         decodeProgramHeader(programBuffer);
 
-    DBG(
-        "PROGRAM SIZE = "
-        + juce::String((int)decoded.size())
-    );
+
 
     if (decoded.size() < 192)
     {
@@ -3575,15 +3395,16 @@ void MainComponent::handleProgramHeaderResponse()
     auto existingKeygroups =
         std::move(loadedProgram.keygroups);
 
+
+
+
     loadedProgram =
         ProgramParser::parse(decoded);
 
-    DBG("PARSED PROGRAM = "
-        + juce::String(loadedProgram.programNumber)
-        + " LFO1 RATE="
-        + juce::String(loadedProgram.lfo1Rate)
-        + " PAN="
-        + juce::String(loadedProgram.pan));
+    //loadedProgram.programNumber =
+    //    currentProgram;
+
+
 
     loadedProgram.keygroups =
         std::move(existingKeygroups);
@@ -3594,7 +3415,7 @@ void MainComponent::handleProgramHeaderResponse()
 
 
     // ========================================
-    // Program Editor ÇÕèÌÇ…çXêV
+    // Program Editor ÔøΩÕèÔøΩ…çXÔøΩV
     // ========================================
 
     const Program programForUI =
@@ -3603,29 +3424,20 @@ void MainComponent::handleProgramHeaderResponse()
     juce::MessageManager::callAsync(
         [this, programForUI]()
         {
-            DBG("CALLING programEditor.setProgram()");
 
-            DBG("PROGRAM UI MESSAGE THREAD = "
-                + juce::String(
-                    juce::MessageManager::getInstance()
-                    ->isThisTheMessageThread()
-                    ? "YES"
-                    : "NO"));
 
             programEditor.setProgram(
                 programForUI
             );
 
-            DBG(
-                "PROGRAM EDITOR SET FROM PROGRAM HEADER"
-            );
+
         }
     );
 
 
     // ========================================
-    // é¿ã@ÉpÉâÉÅÅ[É^ïœçXÇ…ÇÊÇÈçƒéÊìæÇ»ÇÁ
-    // ç∂ë§ÇÕàÍêÿçXêVÇµÇ»Ç¢
+    // ÔøΩÔøΩÔøΩ@ÔøΩpÔøΩÔøΩÔøΩÔøΩÔøΩ[ÔøΩ^ÔøΩœçXÔøΩ…ÇÔøΩÔøΩƒéÊìæÔøΩ»ÇÔøΩ
+    // ÔøΩÔøΩÔøΩÔøΩÔøΩÕàÔøΩÿçXÔøΩVÔøΩÔøΩÔøΩ»ÇÔøΩ
     // ========================================
 
     if (programRefreshOnly)
@@ -3642,7 +3454,7 @@ void MainComponent::handleProgramHeaderResponse()
 
 
     // ========================================
-    // Ç±Ç±Ç©ÇÁí èÌÇÃ Program Load
+    // ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ èÔøΩÔøΩ Program Load
     // ========================================
 
     totalKeygroups =
@@ -3675,19 +3487,11 @@ void MainComponent::handleProgramHeaderResponse()
                 contentHeight
             );
 
-            DBG(
-                "INITIAL MAP SIZE SET "
-                + juce::String(keygroupMap.getWidth())
-                + " x "
-                + juce::String(keygroupMap.getHeight())
-            );
+
         }
     );
 
-    DBG(
-        "TOTAL KEYGROUPS = "
-        + juce::String(totalKeygroups)
-    );
+
 
 
     // ========================================
@@ -3696,10 +3500,7 @@ void MainComponent::handleProgramHeaderResponse()
 
     if (totalKeygroups > 0)
     {
-        DBG(
-            "REQUEST KG HEADER INDEX="
-            + juce::String(loadingKeygroup)
-        );
+
 
         sysExSender.sendKGHeader(
             loadedProgram.programNumber,
@@ -3736,7 +3537,7 @@ void MainComponent::addKeygroup()
         oldGroups;
 
     // ========================================
-    // ç≈å„ÇÃKGÇÉRÉsÅ[ÇµÇƒêVKGÇçÏÇÈ
+    // ÔøΩ≈åÔøΩÔøΩKGÔøΩÔøΩÔøΩRÔøΩsÔøΩ[ÔøΩÔøΩÔøΩƒêVKGÔøΩÔøΩÔøΩÔøΩÔøΩ
     // ========================================
 
     if (currentKeygroup < 0 ||
@@ -3769,7 +3570,7 @@ void MainComponent::addKeygroup()
     }
 
     // ========================================
-    // Replyå„Ç…ïKóvÇ»ÇÃÇ≈ï€ë∂
+    // ReplyÔøΩÔøΩ…ïKÔøΩvÔøΩ»ÇÃÇ≈ï€ëÔøΩ
     // ========================================
 
     pendingAddedKeygroup =
@@ -3782,23 +3583,10 @@ void MainComponent::addKeygroup()
         PendingAddStage::
         waitingForKeygroupReply;
 
-    DBG("===== ADD KEYGROUP =====");
-
-    DBG(
-        "GROUPS "
-        + juce::String(oldGroups)
-        + " -> "
-        + juce::String(oldGroups + 1)
-    );
-
-    DBG(
-        "STEP 1: SEND KDATA KG="
-        + juce::String(newKeygroupIndex)
-    );
 
     // ========================================
     // STEP 1
-    // KDATAÇæÇØëóÇÈ
+    // KDATAÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
     // ========================================
 
     sysExSender.sendKeygroupData(
@@ -3810,17 +3598,12 @@ void MainComponent::addKeygroup()
 
 void MainComponent::handleKeygroupFullResponse()
 {
-    DBG("KEYGROUP DATA RECEIVED");
+
 
     auto decoded =
         decodeKeygroupFull(programBuffer);
 
-    DBG(
-        "FULL KG decoded size = "
-        + juce::String((int)decoded.size())
-    );
 
-    DBG("=== KEYGROUP FULL DATA ===");
 }
 
 void MainComponent::handleRPDataResponse()
@@ -3833,69 +3616,21 @@ void MainComponent::handleRPDataResponse()
 }
 
 
-//void MainComponent::handleKeygroupHeaderResponse()
-//{
-//    DBG("ENTER CASE 0x2A");
-//
-//    auto decoded =
-//        decodeKeygroupHeader(programBuffer);
-//
-//    DBG(
-//        "decodeKeygroupHeader size = "
-//        + juce::String((int)decoded.size())
-//    );
-//
-//    Keygroup kg =
-//        KeygroupParser::parse(
-//            decoded,
-//            residentSamples
-//        );
-//
-//    for (auto& zone : kg.zones)
-//    {
-//        if (zone.sampleName.isEmpty())
-//            continue;
-//
-//        zone.sampleId =
-//            findSampleId(
-//                juce::String(zone.sampleName)
-//            );
-//
-//        DBG(
-//            "Resolved "
-//            + juce::String(zone.sampleName)
-//            + " -> "
-//            + juce::String(zone.sampleId)
-//        );
-//    }
-//
-//    if (loadingKeygroup >=
-//        (int)loadedProgram.keygroups.size())
-//    {
-//        loadedProgram.keygroups.resize(
-//            loadingKeygroup + 1
-//        );
-//    }
-//
-//    loadedProgram.keygroups[loadingKeygroup] = kg;
-//
-//    sysExSender.sendRSLIST();
-//
-//    sysExSender.sendKData(
-//        loadedProgram.programNumber,
-//        loadingKeygroup
-//    );
-//
-//    DBG("ENV1 SUSTAIN = "
-//        + juce::String(kg.env1.sustain));
-//
-//    DBG("ENV1 RELEASE = "
-//        + juce::String(kg.env1.release));
-//}
+
 
 void MainComponent::handleKeygroupHeaderResponse()
 {
     DBG("ENTER CASE 0x2A");
+
+    if (pendingAddProgramStage !=
+        PendingAddProgramStage::none)
+    {
+        DBG(
+            "ADD PROGRAM ACTIVE: IGNORE OLD KG HEADER RESPONSE"
+        );
+        return;
+    }
+
 
     auto decoded =
         decodeKeygroupHeader(programBuffer);
@@ -3905,8 +3640,8 @@ void MainComponent::handleKeygroupHeaderResponse()
         + juce::String((int)decoded.size())
     );
 
-    // 0x2AÇ≈ÇÕloadedProgramÇçXêVÇµÇ»Ç¢ÅB
-    // äÆëSÇ»KeygroupèÓïÒÇÕ0x09 KDATAÇ≈éÊìæÇ∑ÇÈÅB
+    // 0x2AÔøΩ≈ÇÔøΩloadedProgramÔøΩÔøΩÔøΩXÔøΩVÔøΩÔøΩÔøΩ»ÇÔøΩÔøΩB
+    // ÔøΩÔøΩÔøΩSÔøΩÔøΩKeygroupÔøΩÔøΩÔøΩÔøΩ0x09 KDATAÔøΩ≈éÊìæÔøΩÔøΩÔøΩÔøΩB
 
     DBG(
         "REQUEST KDATA INDEX="
@@ -3927,33 +3662,14 @@ int MainComponent::findSampleId(
     const auto target =
         name.trim();
 
-    DBG("===== findSampleId =====");
 
-    DBG(
-        "TARGET=["
-        + target
-        + "]"
-    );
-
-    DBG(
-        "residentSamples.size = "
-        + juce::String(
-            (int)residentSamples.size()
-        )
-    );
 
     for (const auto& s : residentSamples)
     {
         const auto candidate =
             s.second.trim();
 
-        DBG(
-            "ID="
-            + juce::String(s.first)
-            + " NAME=["
-            + candidate
-            + "]"
-        );
+
 
         if (candidate == target)
         {
@@ -3966,11 +3682,7 @@ int MainComponent::findSampleId(
         }
     }
 
-    DBG(
-        "NO MATCH FOR ["
-        + target
-        + "]"
-    );
+
 
     return -1;
 }
@@ -3987,21 +3699,12 @@ void MainComponent::resolveAllSampleIds()
             int sampleIndex =
                 findSampleId(zone.sampleName);
 
-            DBG(
-                "RESOLVE SAMPLE = "
-                + zone.sampleName
-                + " ID = "
-                + juce::String(sampleIndex)
-            );
 
             if (sampleIndex >= 0)
             {
                 zone.sampleId = sampleIndex;
 
-                DBG(
-                    "ASSIGNED SAMPLE ID = "
-                    + juce::String(zone.sampleId)
-                );
+
             }
         }
     }
@@ -4037,10 +3740,6 @@ std::vector<uint8_t> MainComponent::decodeProgramHeader(
     }
 
 
-    DBG("Program decoded size = "
-        + juce::String((int)decoded.size()));
-
-
     return decoded;
 }
 
@@ -4051,11 +3750,9 @@ void MainComponent::parseSLIST(
     const auto dataSize =
         static_cast<int>(data.getSize());
 
-    DBG("=== parseSLIST ===");
-    DBG("SLIST DATA SIZE = "
-        + juce::String(dataSize));
 
-    // countÇì«ÇﬁÇ…ÇÕç≈í·6 bytesïKóv
+
+    // countÔøΩÔøΩ«ÇﬁÇ…ÇÕç≈íÔøΩ6 bytesÔøΩKÔøΩv
     if (dataSize < 6)
     {
         DBG("SLIST ERROR: data too short");
@@ -4077,8 +3774,7 @@ void MainComponent::parseSLIST(
     const int requiredSize =
         6 + count * 12;
 
-    DBG("SLIST REQUIRED SIZE = "
-        + juce::String(requiredSize));
+
 
     if (requiredSize > dataSize)
     {
@@ -4121,12 +3817,7 @@ void MainComponent::parseSLIST(
         offset += 12;
     }
 
-    DBG(
-        "RESIDENT SAMPLE SIZE = "
-        + juce::String(
-            residentSamples.size()
-        )
-    );
+
 
     const auto samplesCopy =
         residentSamples;
@@ -4134,19 +3825,13 @@ void MainComponent::parseSLIST(
     juce::MessageManager::callAsync(
         [this, samplesCopy]()
         {
-            DBG(
-                "SETTING RESIDENT SAMPLES TO "
-                "VELOCITY ZONE EDITOR"
-            );
+
 
             velocityZoneEditor.setResidentSamples(
                 samplesCopy
             );
 
-            DBG(
-                "RESIDENT SAMPLES SET TO "
-                "VELOCITY ZONE EDITOR"
-            );
+
         }
     );
 }
@@ -4156,8 +3841,7 @@ void MainComponent::parseSLIST(
 
 void MainComponent::saveDump(const juce::String& name)
 {
-    DBG("Saving size = "
-        + juce::String((int)sysExBuffer.getSize()));
+
     auto file = juce::File::getSpecialLocation(
         juce::File::userDesktopDirectory)
         .getChildFile(name + ".bin");
@@ -4165,7 +3849,7 @@ void MainComponent::saveDump(const juce::String& name)
     file.replaceWithData(sysExBuffer.getData(),
         sysExBuffer.getSize());
 
-    DBG("Saved: " + file.getFullPathName());
+
 
 }
 
@@ -4180,7 +3864,7 @@ void MainComponent::saveDecodedDump(const juce::String& name,
     file.replaceWithData(decoded.data(),
         decoded.size());
 
-    DBG("Saved: " + file.getFullPathName());
+
 
 }
 
@@ -4202,21 +3886,7 @@ void MainComponent::compareDumps(const juce::File& fileA, const juce::File& file
         return;
     }
 
-    DBG("=== DEBUG RAW CHECK ===");
 
-    DBG("A size = " + juce::String((int)dataA.getSize()));
-    DBG("B size = " + juce::String((int)dataB.getSize()));
-
-    DBG("A ptr = " + juce::String((uintptr_t)dataA.getData()));
-    DBG("B ptr = " + juce::String((uintptr_t)dataB.getData()));
-
-    DBG("A first 16 bytes:");
-    for (int i = 0; i < 16; ++i)
-        DBG(juce::String::toHexString(((uint8_t*)dataA.getData())[i]));
-
-    DBG("B first 16 bytes:");
-    for (int i = 0; i < 16; ++i)
-        DBG(juce::String::toHexString(((uint8_t*)dataB.getData())[i]));
 
 
     const auto* a = (const uint8_t*)dataA.getData();
@@ -4247,29 +3917,13 @@ void MainComponent::compareDumps(const juce::File& fileA, const juce::File& file
         }
     }
 
-    DBG("=== END ===");
-    DBG("A size = "
-        + juce::String((int)dataA.getSize()));
-
-    DBG("B size = "
-        + juce::String((int)dataB.getSize()));
-
-
 
 }
 
 
-
-//void MainComponent::sendSampleHeader(int sampleId)
-//{
-//    pendingSampleRequests.push(sampleId);
-//
-//    sysExSender.sendSampleHeader(sampleId);
-//}
-
 void MainComponent::sendSampleHeader(int sampleId)
 {
-    // Ç∑Ç≈Ç…ë“Ç¡ÇƒÇ¢ÇÈÇ»ÇÁèdï°requestÇµÇ»Ç¢
+    // ÔøΩÔøΩÔøΩ≈Ç…ë“ÇÔøΩÔøΩƒÇÔøΩÔøΩÔøΩ»ÇÔøΩdÔøΩÔøΩrequestÔøΩÔøΩÔøΩ»ÇÔøΩ
     if (pendingSampleRequests.find(sampleId)
         != pendingSampleRequests.end())
     {
@@ -4312,12 +3966,6 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
 
 
 
-
-    DBG("DECODED SIZE = "
-        + juce::String((int)decoded.size()));
-
-    DBG("=== FIRST 32 BYTES ===");
-
     juce::String s;
 
     for (int i = 0; i < 32 && i < decoded.size(); ++i)
@@ -4339,91 +3987,12 @@ void MainComponent::parseRPDATA(const std::vector<uint8_t>& decoded)
 
     Program program = ProgramParser::parse(decoded);
 
-    DBG("===== PROGRAM =====");
-
-    DBG("Program Number = "
-        + juce::String(program.programNumber));
 
 
-    DBG("MIDI Channel = "
-        + juce::String(program.midiChannel));
-
-
-    DBG("Polyphony = "
-        + juce::String(program.polyphony));
-
-
-    DBG("Keygroup Count = "
-        + juce::String(
-            (int)program.keygroups.size()
-        ));
-
-    DBG("=== PROGRAM HEX ===");
-
-    for (int i = 0; i < 100; i++)
-    {
-        DBG(
-            juce::String(i)
-            + " : "
-            + juce::String::toHexString(decoded[i])
-        );
-    }
-
-    DBG("=== FIRST 64 BYTES ===");
-
-    for (int i = 0; i < 64; i++)
-    {
-        DBG(
-            juce::String(i)
-            + " : "
-            + juce::String::toHexString(decoded[i])
-        );
-    }
-
-    DBG("=== FIRST 100 BYTES ===");
-
-    for (int i = 0; i < 100; i++)
-    {
-        DBG(
-            juce::String(i)
-            + " : "
-            + juce::String::toHexString(decoded[i])
-        );
-    }
-
-
-  
 }
 
 
 
-//void MainComponent::sendRSLIST()
-//{
-//    DBG("sendRSLIST called");
-//
-//
-//    uint8_t data[]
-//    {
-//        0x47,   // AKAI manufacturer ID
-//        0x00,   // channel
-//
-//        0x04,   // RSLIST request
-//
-//        0x48    // S1000 identity
-//    };
-//
-//
-//    auto msg =
-//        juce::MidiMessage::createSysExMessage(
-//            data,
-//            sizeof(data));
-//
-//
-//    midiOutput->sendMessageNow(msg);
-//
-//
-//    DBG("RSLIST REQUEST SENT");
-//}
 
 
 void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
@@ -4435,9 +4004,16 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 
     int i = 4;
 
-    int count = d[i++];
+    if (d.size() < 6)
+        return;
 
-    DBG("count = " + juce::String(count));
+    const int count =
+        (d[i] & 0x7F)
+        | ((d[i + 1] & 0x7F) << 7);
+
+    i += 2;
+
+
 
     for (int p = 0; p < count; ++p)
     {
@@ -4461,12 +4037,12 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
             name.pop_back();
 
         ProgramEntry entry;
-        entry.index = p; // Å© âºëzindexÅié¿ã@ÇÕñ≥éãÅj
+        entry.index = p; // ÔøΩÔøΩ ÔøΩÔøΩÔøΩzindexÔøΩiÔøΩÔøΩÔøΩ@ÔøΩÕñÔøΩÔøΩÔøΩÔøΩj
         entry.name = name;
 
         programList.push_back(entry);
 
-        // ComboBoxÇ…Ç‡í«â¡
+        // ComboBoxÔøΩ…ÇÔøΩÔøΩ«âÔøΩ
         programCombo.addItem(
             juce::String(name),
             p + 1
@@ -4477,10 +4053,38 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 
     if (programCombo.getNumItems() > 0)
     {
-        programCombo.setSelectedId(
-            1,
-            juce::sendNotification
-        );
+        if (pendingProgramSelection >= 0)
+        {
+            if (pendingProgramSelection
+                < programCombo.getNumItems())
+            {
+                const int comboId =
+                    pendingProgramSelection + 1;
+
+                pendingProgramSelection = -1;
+
+                programCombo.setSelectedId(
+                    comboId,
+                    juce::sendNotification
+                );
+            }
+            else
+            {
+                DBG(
+                    "PLIST: WAITING FOR PROGRAM "
+                    + juce::String(pendingProgramSelection)
+                    + " CURRENT COUNT="
+                    + juce::String(programCombo.getNumItems())
+                );
+            }
+        }
+        else
+        {
+            programCombo.setSelectedId(
+                1,
+                juce::sendNotification
+            );
+        }
     }
 
     listBox.updateContent();
@@ -4488,108 +4092,6 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
 
     repaint();
 }
-
-//void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
-//{
-//
-//    DBG("First name raw:");
-//
-//    for (int k = 0; k < 12; ++k)
-//    {
-//        DBG(juce::String(k) + " = "
-//            + juce::String::toHexString((int)d[5 + k]));
-//    }
-//
-//    programList.clear();
-//
-//    int i = 4;
-//
-//    if (i >= (int)d.size())
-//        return;
-//
-//
-//    int count = d[i++];
-//
-//    DBG("count = " + juce::String(count));
-//
-//    for (int p = 0; p < count; ++p)
-//    {
-//        ProgramEntry entry;
-//
-//        //entry.index = d[i++];
-//        entry.index = p;
-//
-//        std::string name;
-//        name.reserve(16);
-//
-//        for (int n = 0; n < 12; ++n)
-//        {
-//            if (i >= (int)d.size())
-//                break;
-//
-//            uint8_t v = d[i++];
-//            if (v == 0x00)
-//                continue;   // Å© Ç±ÇÍÇæÇØèIí[àµÇ¢
-//            char c = decodePlistChar(v);
-//            name += c;
-//        }
-//
-//        while (!name.empty() && name.back() == ' ')
-//            name.pop_back();
-//
-//        //entry.name = trimRightSpaces(name);
-//        //programList.push_back(entry);
-//        DBG(juce::String(p) + " : " + name);
-//        //DBG(juce::String(entry.index) + " : " + entry.name);
-//    }
-//}
-//void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
-//{
-//    programList.clear();
-//
-//    if (d.size() < 6)
-//        return;
-//
-//    int i = 4;
-//
-//    int count = d[i++];
-//    DBG("count = " + juce::String(count));
-//
-//    count = juce::jmin(count, 128);
-//
-//    for (int p = 0; p < count; ++p)
-//    {
-//        if (i >= (int)d.size())
-//            break;
-//
-//        ProgramEntry entry;
-//        entry.index = d[i++];
-//
-//        std::string name;
-//        name.reserve(12);
-//
-//        // ÅöäÆëSå≈íË12ÉoÉCÉg
-//        for (int n = 0; n < 12; ++n)
-//        {
-//            if (i >= (int)d.size())
-//                break;
-//
-//            uint8_t v = d[i++];
-//
-//            if (v == 0x0A)
-//                name += ' ';
-//            else
-//                name += decodePlistChar(v);
-//        }
-//
-//        entry.name = trimRightSpaces(name);
-//        programList.push_back(entry);
-//
-//        DBG(juce::String(entry.index) + " : " + entry.name);
-//    }
-//
-//    repaint();
-//}
 
 uint8_t MainComponent::unpack7bit(const std::vector<uint8_t>& d, int& bitPos)
 {
@@ -4615,7 +4117,7 @@ uint8_t MainComponent::unpack7bit(const std::vector<uint8_t>& d, int& bitPos)
 
 std::vector<uint8_t> MainComponent::decodeNibbleData(const juce::MemoryBlock& data)
 {
-    DBG("RAW SIZE = " + juce::String((int)data.getSize()));
+
 
     auto* raw = (const uint8_t*)data.getData();
 
@@ -4645,7 +4147,7 @@ std::vector<uint8_t> MainComponent::decodeNibbleData(const juce::MemoryBlock& da
         decoded.push_back(value);
     }
 
-    DBG("decoded size = " + juce::String((int)decoded.size()));
+
     return decoded;
 }
 
@@ -4672,11 +4174,7 @@ std::vector<uint8_t> MainComponent::decodeKeygroupNibbleData(
 void MainComponent::loadProgram(
     int programIndex)
 {
-    DBG(
-        "========== LOAD PROGRAM CALLED INDEX="
-        + juce::String(programIndex)
-        + " =========="
-    );
+
 
     if (programIndex < 0)
         return;
@@ -4701,12 +4199,9 @@ void MainComponent::loadProgram(
 
     sysExSender.sendRSLIST();
 
-    DBG(
-        "LOAD PROGRAM INDEX="
-        + juce::String(programIndex)
-    );
 
-    // ProgramÉçÅ[ÉhäJén
+
+    // ProgramÔøΩÔøΩÔøΩ[ÔøΩhÔøΩJÔøΩn
     sysExSender.sendProgramHeader(
         programIndex
     );
@@ -4737,17 +4232,7 @@ std::vector<uint8_t> MainComponent::decodeKeygroupHeader(
         );
     }
 
-    DBG("KG decoded size = "
-        + juce::String((int)decoded.size()));
 
-    for (size_t i = 0; i < decoded.size(); i++)
-    {
-        DBG(
-            juce::String((int)i)
-            + " : 0x"
-            + juce::String::toHexString(decoded[i])
-        );
-    }
 
     return decoded;
 }
@@ -4762,8 +4247,8 @@ std::vector<uint8_t> MainComponent::decodeKData(
 
 
     // SysEx header
-    // F0ÇÕmessage.getSysExData()Ç…ÇÕä‹Ç‹ÇÍÇ»Ç¢
-    // 47 cc 09 48 pp pp kk ÇÃå„Ç©ÇÁdataäJén
+    // F0ÔøΩÔøΩmessage.getSysExData()ÔøΩ…ÇÕä‹Ç‹ÇÔøΩ»ÇÔøΩ
+    // 47 cc 09 48 pp pp kk ÔøΩÃå„Ç©ÔøΩÔøΩdataÔøΩJÔøΩn
 
     const int start = 7;
 
@@ -4825,10 +4310,7 @@ std::vector<uint8_t> MainComponent::decodeKeygroupFull(
 std::vector<uint8_t> MainComponent::decodeSampleHeader(
     const juce::MemoryBlock& data)
 {
-    DBG("SAMPLE HEADER RAW BUFFER SIZE = "
-        + juce::String((int)data.getSize()));
 
-    DBG("SAMPLE HEADER DECODE START = 11");
 
     std::vector<uint8_t> decoded;
 
@@ -4857,8 +4339,7 @@ std::vector<uint8_t> MainComponent::decodeSampleHeader(
             (high << 4) | low
         );
     }
-    DBG("SAMPLE HEADER DECODED SIZE = "
-        + juce::String((int)decoded.size()));
+
 
     return decoded;
 }
@@ -4906,38 +4387,15 @@ void MainComponent::parseProgram(const std::vector<uint8_t>& decoded)
         decoded.size()
     );
 
-    DBG("=== BEFORE PARSE ===");
-
-    for (int i = 0; i < 40; i++)
-    {
-        DBG(juce::String(i)
-            + " : "
-            + juce::String::toHexString(decoded[i]));
-    }
 
 
     Program program = ProgramParser::parse(decoded);
 
 
-    DBG("===== PROGRAM =====");
-    DBG("SIZE   = " + juce::String((int)decoded.size()));
-    //DBG("PAN    = " + juce::String(params.pan));
-    //DBG("FREQ   = " + juce::String(params.frequency));
-    //DBG("FILTER = " + juce::String(params.filter));
 
 
 }
 
-//void MainComponent::parseKeygroup(
-//    const std::vector<uint8_t>& decoded
-//)
-//{
-//    dumpKeygroup(decoded);
-//
-//    Keygroup k = parseKeygroupStruct(decoded);
-//
-//   
-//}
 
 
 
@@ -4950,7 +4408,7 @@ void MainComponent::saveRawDump(const juce::String& name)
     file.replaceWithData(sysExBuffer.getData(),
         sysExBuffer.getSize());
 
-    DBG("Saved RAW: " + file.getFullPathName());
+
 }
 
 void MainComponent::saveRawRPDATA(const juce::String& name,
@@ -4962,7 +4420,7 @@ void MainComponent::saveRawRPDATA(const juce::String& name,
 
     file.replaceWithData(data.getData(), data.getSize());
 
-    DBG("Save Raw SysEx: " + file.getFullPathName());
+
 }
 
 
@@ -5003,8 +4461,6 @@ void MainComponent::listBoxItemClicked(
     int row,
     const juce::MouseEvent&)
 {
-    DBG("========== listBoxItemClicked CALLED ==========");
-    DBG("ROW = " + juce::String(row));
 
     if (row < 0 || row >= programList.size())
     {
@@ -5016,16 +4472,9 @@ void MainComponent::listBoxItemClicked(
         programList[row].index;
 
 
-    DBG(
-        "Selected Program = "
-        + juce::String(currentProgramIndex)
-    );
 
 
-//    sendProgramHeader(
-//        currentProgramIndex
-//    );
-    
+
     sysExSender.sendProgramHeader(currentProgramIndex);
 }
 
