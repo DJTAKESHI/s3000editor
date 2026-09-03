@@ -2267,6 +2267,22 @@ ProgramEditor::ProgramEditor()
 
 }
 
+void ProgramEditor::setModPitchAmount(int value)
+{
+    modPitchAmountSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+
+    modPitchAmountLabel.setText(
+        value > 0
+        ? "+" + juce::String(value)
+        : juce::String(value),
+        juce::dontSendNotification
+    );
+}
+
+
 void ProgramEditor::paint(
     juce::Graphics& g)
 {
@@ -2963,10 +2979,10 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
     );
 
-    modPitchAmountSlider.setValue(
+    /*modPitchAmountSlider.setValue(
         program.modVPitch,
         juce::dontSendNotification
-    );
+    );*/
 
     modPitchAmountLabel.setText(
         program.modVPitch > 0

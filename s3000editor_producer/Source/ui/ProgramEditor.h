@@ -17,6 +17,8 @@ public:
 
     std::function<void(int)> onEnv2PitchChanged;
 
+    void setModPitchAmount(int value);
+
 
 
 private:

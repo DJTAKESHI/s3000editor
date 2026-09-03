@@ -570,6 +570,15 @@ MainComponent::MainComponent()
             )
         {
             currentKeygroup = keygroupIndex;
+
+            if (currentKeygroup >= 0
+                && currentKeygroup < static_cast<int>(loadedProgram.keygroups.size()))
+            {
+                programEditor.setModPitchAmount(
+                    loadedProgram.keygroups[currentKeygroup].modVPitch
+                );
+            }
+
             currentZone = zoneIndex;
 
             DBG("MAIN COMPONENT RECEIVED ZONE SELECTION");
@@ -2739,17 +2748,71 @@ void MainComponent::processIncomingSysEx(
         {
             if (size == 13)
             {
-                DBG("=== SHORT 0x2A ===");
+                const int programNumber =
+                    (data[4] & 0x7F)
+                    | ((data[5] & 0x7F) << 7);
 
-                for (size_t i = 0; i < size; ++i)
+                const int keygroup =
+                    data[6] & 0x7F;
+
+                const int offset =
+                    (data[7] & 0x7F)
+                    | ((data[8] & 0x7F) << 7);
+
+                const int length =
+                    (data[9] & 0x7F)
+                    | ((data[10] & 0x7F) << 7);
+
+                const uint8_t rawValue =
+                    (data[11] & 0x0F)
+                    | ((data[12] & 0x0F) << 4);
+
+                const int signedValue =
+                    static_cast<int8_t>(rawValue);
+
+                DBG(
+                    "SHORT 0x2A"
+                    + juce::String(" PROGRAM=")
+                    + juce::String(programNumber)
+                    + " KG="
+                    + juce::String(keygroup)
+                    + " OFFSET="
+                    + juce::String(offset)
+                    + " LENGTH="
+                    + juce::String(length)
+                    + " RAW="
+                    + juce::String((int)rawValue)
+                    + " VALUE="
+                    + juce::String(signedValue)
+                );
+
+                if (offset == KeygroupHeaderOffset::Mod::ModVPitch
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
                 {
+                    loadedProgram.keygroups[keygroup].modVPitch =
+                        signedValue;
+
                     DBG(
-                        "SHORT2A["
-                        + juce::String((int)i)
-                        + "] = 0x"
-                        + juce::String::toHexString((int)data[i])
+                        "UPDATE KG MODVPITCH KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(signedValue)
                     );
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, signedValue]()
+                            {
+                                programEditor.setModPitchAmount(
+                                    signedValue
+                                );
+                            }
+                        );
+                    }
                 }
+
 
                 break;
             }
@@ -3395,6 +3458,26 @@ void MainComponent::handleKeygroupDataResponse(
     }
 
     loadedProgram.keygroups[loadingKeygroup] = kg;
+
+    if (loadingKeygroup == currentKeygroup)
+    {
+        const int modVPitch =
+            loadedProgram.keygroups[loadingKeygroup].modVPitch;
+
+        DBG(
+            "INITIAL KG MODVPITCH UI="
+            + juce::String(modVPitch)
+        );
+
+        juce::MessageManager::callAsync(
+            [this, modVPitch]()
+            {
+                programEditor.setModPitchAmount(
+                    modVPitch
+                );
+            }
+        );
+    }
 
 
 
