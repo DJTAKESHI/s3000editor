@@ -1413,10 +1413,16 @@ MainComponent::MainComponent()
             auto updatedKeygroup =
                 keygroup;
 
+            // KeyGroupEditor が編集していない最新データを保持
             updatedKeygroup.zones =
                 loadedProgram
                 .keygroups[keygroupIndex]
                 .zones;
+
+            updatedKeygroup.modVPitch =
+                loadedProgram
+                .keygroups[keygroupIndex]
+                .modVPitch;
 
             loadedProgram.keygroups[keygroupIndex] =
                 updatedKeygroup;
