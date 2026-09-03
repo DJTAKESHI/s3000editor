@@ -127,4 +127,61 @@ void ProgramTree::setProgram(
     setRootItem(rootItem.get());
 
     DBG("AFTER setRootItem(rootItem)");
+
+    // ========================================
+// デフォルトでKeygroup 1を選択
+// ========================================
+
+    rootItem->setOpen(true);
+
+    if (rootItem->getNumSubItems() > 0
+        && !program.keygroups.empty())
+    {
+        auto* firstKeygroupItem =
+            rootItem->getSubItem(0);
+
+        if (firstKeygroupItem != nullptr)
+        {
+            // Tree上の見た目を選択状態にする
+            firstKeygroupItem->setSelected(
+                true,
+                true
+            );
+
+            DBG("DEFAULT SELECTED KEYGROUP 1");
+
+            // Keygroupタブにも値を渡す
+            if (onKeygroupSelected)
+            {
+                DBG(
+                    "NOTIFY DEFAULT KEYGROUP SELECTION"
+                );
+
+                onKeygroupSelected(
+                    0,
+                    program.keygroups[0]
+                );
+            }
+        }
+    }
+
+}
+
+void ProgramTree::updateZone(
+    int keygroupIndex,
+    int zoneIndex,
+    const VelocityZone& zone
+)
+{
+    if (rootItem == nullptr)
+    {
+        DBG("UPDATE ZONE: ROOT ITEM IS NULL");
+        return;
+    }
+
+    rootItem->updateZone(
+        keygroupIndex,
+        zoneIndex,
+        zone
+    );
 }

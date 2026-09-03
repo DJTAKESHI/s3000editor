@@ -378,6 +378,74 @@ std::vector<uint8_t> SampleHeaderEncoder::encodeNibbleData(
 }
 
 std::vector<uint8_t>
+SampleHeaderEncoder::makeNameSysEx(
+    const SampleHeader& header)
+{
+    std::vector<uint8_t> nameData;
+
+    nameData.reserve(12);
+
+    for (int i = 0; i < 12; ++i)
+    {
+        uint8_t value = 10; // space
+
+        if (i < header.name.length())
+            value = encodePlistChar(header.name[i]);
+
+        nameData.push_back(value);
+    }
+
+    const auto encodedData =
+        encodeNibbleData(nameData);
+
+    std::vector<uint8_t> data;
+
+    data.push_back(0x47);
+    data.push_back(0x00);
+    data.push_back(0x2C);
+    data.push_back(0x48);
+
+    // Sample number
+    data.push_back(
+        static_cast<uint8_t>(
+            header.id & 0x7F
+            )
+    );
+
+    data.push_back(
+        static_cast<uint8_t>(
+            (header.id >> 7) & 0x7F
+            )
+    );
+
+    // Reserved
+    data.push_back(0x00);
+
+    // Offset = SHNAME = 3
+    data.push_back(0x03);
+    data.push_back(0x00);
+
+    // Number of bytes = 12
+    data.push_back(0x0C);
+    data.push_back(0x00);
+
+    data.insert(
+        data.end(),
+        encodedData.begin(),
+        encodedData.end()
+    );
+    DBG("SAMPLE NAME WRITE OFFSET = 3");
+    DBG("SAMPLE NAME WRITE LENGTH = 12");
+    DBG(
+        "SAMPLE NAME SYSEX SIZE = "
+        + juce::String((int)data.size())
+    );
+
+    return data;
+}
+
+
+std::vector<uint8_t>
 SampleHeaderEncoder::makeSysEx(
     const SampleHeader& header)
 {

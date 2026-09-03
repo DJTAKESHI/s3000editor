@@ -164,3 +164,29 @@ void KeygroupItem::itemClicked(
         );
     }
 }
+
+void KeygroupItem::updateZone(
+    int targetZoneIndex,
+    const VelocityZone& zone
+)
+{
+    if (targetZoneIndex < 0
+        || targetZoneIndex >= getNumSubItems())
+    {
+        DBG("UPDATE ZONE: INVALID ZONE INDEX");
+        return;
+    }
+
+    auto* zoneItem =
+        dynamic_cast<VelocityZoneItem*>(
+            getSubItem(targetZoneIndex)
+            );
+
+    if (zoneItem == nullptr)
+    {
+        DBG("UPDATE ZONE: ZONE ITEM NOT FOUND");
+        return;
+    }
+
+    zoneItem->setZone(zone);
+}

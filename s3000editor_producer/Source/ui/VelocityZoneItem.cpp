@@ -193,6 +193,23 @@ VelocityZoneItem::~VelocityZoneItem()
     );
 }
 
+void VelocityZoneItem::setZone(
+    const VelocityZone& zone
+)
+{
+    zoneData = zone;
+
+    DBG(
+        "TREE ZONE UPDATED INDEX="
+        + juce::String(zoneIndex)
+        + " SAMPLE=["
+        + zoneData.sampleName
+        + "]"
+    );
+
+    repaintItem();
+}
+
 
 void VelocityZoneItem::paintItem(
     juce::Graphics& g,

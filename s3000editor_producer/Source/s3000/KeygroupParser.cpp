@@ -1,4 +1,4 @@
-#include <JuceHeader.h>
+﻿#include <JuceHeader.h>
 
 #include "KeygroupParser.h"
 #include "Offsets.h"
@@ -137,6 +137,23 @@ Keygroup KeygroupParser::parse(
             d[KGH::Filter::E_FREQ]
             );
 
+    k.filter.resonance =
+        d[KGH::Filter::FILQ];
+
+    DBG(
+        "DECODED FILQ OFFSET 149 = "
+        + juce::String(
+            k.filter.resonance
+        )
+    );
+
+    DBG(
+        "ZONE 1 CONSTANT PITCH RAW = "
+        + juce::String(
+            static_cast<int>(d[132])
+        )
+    );
+
     // ===== Velocity Control =====
     k.velocity.vEnv2 =
         static_cast<int8_t>(
@@ -208,7 +225,23 @@ Keygroup KeygroupParser::parse(
             );
 
     k.velocity.ePtch =
-        d[KGH::Velocity::E_PTCH];
+        static_cast<int8_t>(
+            d[KGH::Velocity::E_PTCH]
+            );
+
+    k.modVPitch =
+        static_cast<int8_t>(
+            d[KeygroupHeaderOffset::Mod::ModVPitch]
+            );
+
+    DBG(
+        "PARSE KG MODVPITCH OFFSET154 RAW="
+        + juce::String(
+            (int)d[KeygroupHeaderOffset::Mod::ModVPitch]
+        )
+        + " VALUE="
+        + juce::String(k.modVPitch)
+    );
 
     k.velocity.vxFade =
         d[KGH::Velocity::VXFADE];
@@ -279,7 +312,21 @@ Keygroup KeygroupParser::parse(
 
 
     k.velocity.ePtch =
-        d[KGH::Velocity::E_PTCH];
+        static_cast<int8_t>(
+            d[KGH::Velocity::E_PTCH]
+            );
+
+    DBG(
+        "PARSE E_PTCH OFFSET29 RAW="
+        + juce::String(
+            (int)d[
+                KeygroupHeaderOffset::Velocity::E_PTCH
+            ]
+        )
+        + " VALUE="
+        + juce::String(k.velocity.ePtch)
+    );
+
 
     k.velocity.vxFade =
         d[KGH::Velocity::VXFADE];
@@ -333,64 +380,47 @@ Keygroup KeygroupParser::parse(
     //                        residentSamples);
     //    }
     //}
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; ++i)
     {
-        if (KGF::Zone::SNAME[i] + 12 >= d.size())
+        if (KGF::Zone::SNAME[i] + 12 > d.size())
         {
             DBG("No more zones");
             break;
         }
 
-        DBG("ABOUT TO CALL parseZone");
-
-        k.zones[i] =
-            parseZone(
-                d,
-                i,
-                residentSamples
-            );
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (KGF::Zone::SNAME[i] + 12 >= d.size())
-        {
-            DBG("No more zones");
-            break;
-        }
-
-        DBG("ABOUT TO CALL parseZone");
-
-        k.zones[i] =
-            parseZone(
-                d,
-                i,
-                residentSamples
-            );
-
-        //DBG(
-        //    "STORED ZONE "
-        //    + juce::String(i)
-        //    + " NAME=["
-        //    + k.zones[i].sampleName
-        //    + "] ID="
-        //    + juce::String(k.zones[i].sampleId)
-        //);
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
         DBG(
-            "KEYGROUP ZONE "
+            "ABOUT TO CALL parseZone "
             + juce::String(i)
-            + " SAMPLE ID = "
-            + juce::String(k.zones[i].sampleId)
         );
 
-        //DBG(
-        //    "SAMPLE NAME = "
-        //    + k.zones[i].sampleName
-        //);
+        k.zones[i] =
+            parseZone(
+                d,
+                i,
+                residentSamples
+            );
+
+        // CP1〜CP4
+        // offset 132〜135
+        const std::size_t constantPitchOffset =
+            132 + static_cast<std::size_t>(i);
+
+        if (constantPitchOffset < d.size())
+        {
+            k.zones[i].constantPitch =
+                d[constantPitchOffset] != 0;
+        }
+
+        DBG(
+            "ZONE "
+            + juce::String(i + 1)
+            + " PITCH MODE = "
+            + juce::String(
+                k.zones[i].constantPitch
+                ? "CONST"
+                : "TRACK"
+            )
+        );
     }
 
 

@@ -15,6 +15,9 @@ public:
     std::function<void(const Program&)>
         onProgramChanged;
 
+    std::function<void(int)> onEnv2PitchChanged;
+
+
 
 private:
     Program currentProgram;
@@ -22,7 +25,13 @@ private:
     juce::Label titleLabel;
 
     juce::Label generalSectionLabel;
+
     juce::Label outputSectionLabel;
+
+    juce::Label programNameLabel;
+    juce::TextEditor programNameEditor;
+
+
 
 
     //juce::Label midiChannelLabel;
@@ -236,6 +245,8 @@ private:
 
     juce::Label modPitchLabel;
     juce::ComboBox modPitchSourceCombo;
+    juce::Slider modPitchAmountSlider;
+    juce::Label modPitchAmountLabel;
 
     juce::Label velocityLoudnessLabel;
     juce::Slider velocityLoudnessSlider;
@@ -255,6 +266,9 @@ private:
     juce::Label velocityDepthLabel;
     juce::Slider velocityDepthSlider;
     juce::Label velocityDepthValueLabel;
+
+    //juce::Slider modPitchAmountSlider;
+    //juce::Label modPitchAmountLabel;
 
 
 

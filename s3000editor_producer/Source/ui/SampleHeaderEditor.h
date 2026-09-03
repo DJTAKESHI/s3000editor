@@ -20,6 +20,9 @@ public:
     std::function<void(const SampleHeader&)> onSampleHeaderChanged;
     void updateLoopDwellStatus();
     juce::String midiNoteName(int note);
+    void setSampleNameWithoutNotification(
+        const juce::String& name);
+
     void clear();
 
 private:

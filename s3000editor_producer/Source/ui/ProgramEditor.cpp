@@ -171,6 +171,45 @@ ProgramEditor::ProgramEditor()
             editor.setReadOnly(true);
         };
 
+    programNameLabel.setText(
+        "Program Name",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(programNameLabel);
+    addAndMakeVisible(programNameEditor);
+
+    programNameEditor.onReturnKey =
+        [this]()
+        {
+            auto name =
+                programNameEditor.getText()
+                .trim()
+                .toUpperCase()
+                .substring(0, 12);
+
+            if (name.isEmpty())
+            {
+                programNameEditor.setText(
+                    juce::String(currentProgram.name),
+                    false
+                );
+                return;
+            }
+
+            programNameEditor.setText(
+                name,
+                false
+            );
+
+            currentProgram.name =
+                name.toStdString();
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
+
     midiChannelLabel.setText(
         "MIDI Channel",
         juce::dontSendNotification
@@ -287,6 +326,11 @@ ProgramEditor::ProgramEditor()
         -50.0,
         50.0,
         0.01
+    );
+
+    tuneSlider.setDoubleClickReturnValue(
+        true,
+        0.0
     );
 
     tuneSlider.setSliderStyle(
@@ -1747,6 +1791,11 @@ ProgramEditor::ProgramEditor()
     );
 
     setupModAmountSlider(
+        modPitchAmountSlider,
+        modPitchAmountLabel
+    );
+
+    setupModAmountSlider(
         modPan2AmountSlider,
         modPan2AmountLabel
     );
@@ -1923,6 +1972,8 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
+
+
     modPan1AmountSlider.onDragEnd = [this]()
         {
             currentProgram.modVPan1 =
@@ -1996,6 +2047,22 @@ ProgramEditor::ProgramEditor()
             if (onProgramChanged)
                 onProgramChanged(currentProgram);
         };
+
+    modPitchAmountSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                (int)modPitchAmountSlider.getValue();
+
+            DBG(
+                "ENV2 PITCH EDIT FINISHED="
+                + juce::String(value)
+            );
+
+            if (onEnv2PitchChanged)
+                onEnv2PitchChanged(value);
+        };
+
 
     velocityLoudnessLabel.setText(
         "Vel -> Loud",
@@ -2255,6 +2322,11 @@ void ProgramEditor::setProgram(
         + " PAN=" + juce::String(program.pan));
 
     currentProgram = program;
+
+    programNameEditor.setText(
+        juce::String(program.name),
+        juce::dontSendNotification
+    );
 
     // raw 0 = MIDI CH 1
     if (program.midiChannel == 255)
@@ -2728,6 +2800,10 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
     );
 
+    modPan1AmountSlider.setDoubleClickReturnValue(true, 0.0);
+    modPan2AmountSlider.setDoubleClickReturnValue(true, 0.0);
+    modPan3AmountSlider.setDoubleClickReturnValue(true, 0.0);
+
 
     modAmp1AmountSlider.setValue(
         program.modVAmp1,
@@ -2738,6 +2814,16 @@ void ProgramEditor::setProgram(
         program.modVAmp2,
         juce::dontSendNotification
     );
+    modAmp1AmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modAmp2AmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
 
 
     modLfo1RateAmountSlider.setValue(
@@ -2753,6 +2839,21 @@ void ProgramEditor::setProgram(
     modLfo1DelayAmountSlider.setValue(
         program.modVLfo1Delay,
         juce::dontSendNotification
+    );
+
+    modLfo1RateAmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modLfo1DepthAmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modLfo1DelayAmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
     );
 
     auto setAmountLabel =
@@ -2861,6 +2962,18 @@ void ProgramEditor::setProgram(
         juce::String(program.velocityDepth),
         juce::dontSendNotification
     );
+
+    modPitchAmountSlider.setValue(
+        program.modVPitch,
+        juce::dontSendNotification
+    );
+
+    modPitchAmountLabel.setText(
+        program.modVPitch > 0
+        ? "+" + juce::String(program.modVPitch)
+        : juce::String(program.modVPitch),
+        juce::dontSendNotification
+    );
 }
 
 void ProgramEditor::resized()
@@ -2919,6 +3032,19 @@ void ProgramEditor::resized()
                 row.reduced(2)
             );
         };
+
+    {
+        auto row =
+            general.removeFromTop(rowHeight);
+
+        programNameLabel.setBounds(
+            row.removeFromLeft(labelWidth)
+        );
+
+        programNameEditor.setBounds(
+            row.reduced(2)
+        );
+    }
 
     {
         auto row =
@@ -3720,10 +3846,12 @@ void ProgramEditor::resized()
         modFilter3SourceCombo
     );
 
-    layoutModSourceRow(
+    layoutModAmountRow(
         modFilterPitch,
         modPitchLabel,
-        modPitchSourceCombo
+        modPitchSourceCombo,
+        modPitchAmountSlider,
+        modPitchAmountLabel
     );
 
 

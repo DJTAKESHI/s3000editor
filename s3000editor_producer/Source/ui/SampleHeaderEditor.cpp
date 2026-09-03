@@ -197,7 +197,8 @@ SampleHeaderEditor::SampleHeaderEditor()
 
 
 
-    nameEditor.onFocusLost = [this]()
+    nameEditor.onFocusLost =
+        [this]()
         {
             if (!hasValidHeader)
             {
@@ -205,22 +206,95 @@ SampleHeaderEditor::SampleHeaderEditor()
                 return;
             }
 
-            const auto newName =
-                nameEditor.getText();
+            auto newName =
+                nameEditor.getText()
+                .trim()
+                .toUpperCase()
+                .substring(0, 12);
 
-            if (newName == currentHeader.name)
+            juce::String filtered;
+
+            for (auto c : newName)
+            {
+                const bool allowed =
+                    (c >= 'A' && c <= 'Z') ||
+                    (c >= '0' && c <= '9') ||
+                    c == ' ' ||
+                    c == '#' ||
+                    c == '+' ||
+                    c == '-' ||
+                    c == '.';
+
+                if (allowed)
+                    filtered +=
+                    juce::String::charToString(c);
+            }
+
+            newName = filtered.trim();
+
+            if (newName.isEmpty())
+            {
+                nameEditor.setText(
+                    currentHeader.name.trim(),
+                    false
+                );
+
                 return;
+            }
 
-            currentHeader.name = newName;
+            if (newName.equalsIgnoreCase(
+                currentHeader.name.trim()))
+            {
+                nameEditor.setText(
+                    currentHeader.name.trim(),
+                    false
+                );
+
+                return;
+            }
+
+            nameEditor.setText(
+                newName,
+                false
+            );
+
+            // Make a candidate.
+            // Do NOT modify currentHeader yet.
+            auto candidate =
+                currentHeader;
+
+            candidate.name =
+                newName;
+
+            DBG(
+                "SAMPLE NAME CHANGE REQUEST = ["
+                + candidate.name
+                + "]"
+            );
 
             if (onSampleHeaderChanged)
-                onSampleHeaderChanged(currentHeader);
+                onSampleHeaderChanged(candidate);
         };
 
-    idEditor.onFocusLost = [this]()
+    idEditor.onFocusLost =
+        [this]()
         {
-            currentHeader.id =
+            if (!hasValidHeader)
+                return;
+
+            const int newId =
                 idEditor.getText().getIntValue();
+
+            if (newId == currentHeader.id)
+                return;
+
+            currentHeader.id =
+                newId;
+
+            DBG(
+                "SAMPLE ID CHANGED = "
+                + juce::String(currentHeader.id)
+            );
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
@@ -1055,7 +1129,7 @@ SampleHeaderEditor::SampleHeaderEditor()
     // =========================================================
 
     nameEditor.setMultiLine(false);
-    nameEditor.setReadOnly(true);
+    nameEditor.setReadOnly(false);
 
     loopsEditor.setMultiLine(true);
     loopsEditor.setReadOnly(true);
@@ -1145,6 +1219,19 @@ void SampleHeaderEditor::updateLoopDwellStatus()
         );
     }
 }
+
+void SampleHeaderEditor::setSampleNameWithoutNotification(
+    const juce::String& name)
+{
+    currentHeader.name =
+        name.trimEnd();
+
+    nameEditor.setText(
+        currentHeader.name,
+        false
+    );
+}
+
 
 void SampleHeaderEditor::setSampleHeader(
     const SampleHeader& header)

@@ -7,6 +7,19 @@ class SysExSender
 public:
     SysExSender() = default;
 
+    void sendKeygroupByte(
+        int programIndex,
+        int keygroupIndex,
+        int byteOffset,
+        uint8_t value
+    );
+
+    void sendKeygroupHeaderByte(
+        int programIndex,
+        int keygroup,
+        int offset,
+        int value);
+
     void setMidiOutput(juce::MidiOutput* output);
 
     void sendRPLIST();

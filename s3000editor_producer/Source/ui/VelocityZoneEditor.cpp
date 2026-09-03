@@ -90,6 +90,63 @@ VelocityZoneEditor::VelocityZoneEditor()
         "CNT",
         juce::dontSendNotification
     );
+
+    pitchTrackingLabel.setText(
+        "Tracking",
+        juce::dontSendNotification
+    );
+
+    pitchTrackingCombo.addItem(
+        "TRACK",
+        1
+    );
+
+    pitchTrackingCombo.addItem(
+        "CONST",
+        2
+    );
+
+    pitchTrackingCombo.onChange =
+        [this]()
+        {
+            const int selectedId =
+                pitchTrackingCombo.getSelectedId();
+
+            if (selectedId <= 0)
+                return;
+
+            // ID 1 = TRACK = false
+            // ID 2 = CONST = true
+            currentZone.constantPitch =
+                selectedId == 2;
+
+            DBG(
+                "TRACKING COMBO ID="
+                + juce::String(selectedId)
+                + " CONSTANT PITCH="
+                + juce::String(
+                    currentZone.constantPitch
+                    ? 1
+                    : 0
+                )
+            );
+
+            if (onZoneChanged)
+            {
+                onZoneChanged(
+                    currentZone
+                );
+            }
+        };
+
+    addAndMakeVisible(
+        pitchTrackingLabel
+    );
+
+    addAndMakeVisible(
+        pitchTrackingCombo
+    );
+
     addAndMakeVisible(
         velocityZoneMap
     );
@@ -676,10 +733,12 @@ void VelocityZoneEditor::setZone(
     
     currentZone = zone;
 
-    //sampleNameEditor.setText(
-    //    zone.sampleName,
-    //    false
-    //);
+    pitchTrackingCombo.setSelectedId(
+        zone.constantPitch
+        ? 2
+        : 1,
+        juce::dontSendNotification
+    );
 
     if (zone.sampleId >= 0)
     {
@@ -825,7 +884,7 @@ void VelocityZoneEditor::resized()
 
     const int pitchCardHeight =
         sectionHeight
-        + rowHeight * 2
+        + rowHeight * 3
         + cardPadding * 2;
 
     const int velocityCardHeight =
@@ -999,6 +1058,12 @@ void VelocityZoneEditor::resized()
         pitchArea,
         fineTuneLabel,
         fineTuneEditor
+    );
+
+    addRow(
+        pitchArea,
+        pitchTrackingLabel,
+        pitchTrackingCombo
     );
 
     // ========================================

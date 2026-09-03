@@ -16,4 +16,8 @@ public:
         makeSysEx(
             const SampleHeader& header);
 
+    static std::vector<uint8_t> makeNameSysEx(
+        const SampleHeader& header);
+
+
 };

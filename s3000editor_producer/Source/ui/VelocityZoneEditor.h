@@ -79,6 +79,9 @@ private:
     juce::Label playModeLabel;
     juce::ComboBox playModeCombo;
 
+    juce::Label pitchTrackingLabel;
+    juce::ComboBox pitchTrackingCombo;
+
     juce::Label filterFreqLabel;
     juce::TextEditor filterFreqEditor;
 

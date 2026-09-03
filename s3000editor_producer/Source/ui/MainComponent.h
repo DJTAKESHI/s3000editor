@@ -105,6 +105,7 @@ private:
     //KeygroupMap keygroupMap;
     int pendingDeleteKeygroup = -1;
     bool waitingForDeleteReply = false;
+    int pendingSampleRenameReadbackId = -1;
 
     enum class PendingAddStage
     {
@@ -118,6 +119,9 @@ private:
 
     Keygroup pendingAddedKeygroup;
     int pendingAddKeygroupIndex = -1;
+
+    bool waitingForSampleRenameReply = false;
+    int pendingRenamedSampleId = -1;
 
 
     KeyGroupEditor keyGroupEditor;
@@ -265,6 +269,8 @@ private:
         int midiNoteNumber,
         float velocity) override;
 
+    int currentResidentProgramIndex = -1;
+
 
 
 
@@ -411,6 +417,8 @@ private:
     Keygroup pendingNewProgramKeygroup;
 
     int pendingProgramSelection = -1;
+
+    bool restoringKeygroupDisplay = false;
 
 
 

@@ -87,6 +87,24 @@ std::vector<uint8_t> KeygroupEncoder::encode(
             keygroup.filter.envelopeToFreq
             );
 
+    data[KeygroupHeaderOffset::Filter::FILQ] =
+        static_cast<uint8_t>(
+            juce::jlimit(
+                0,
+                15,
+                keygroup.filter.resonance
+            )
+            );
+
+    DBG(
+        "ENCODED FILQ OFFSET 149 = "
+        + juce::String(
+            data[
+                KeygroupHeaderOffset::Filter::FILQ
+            ]
+        )
+    );
+
     // ===== ENV1 =====
     data[KeygroupHeaderOffset::Env1::ATTACK] =
         static_cast<uint8_t>(
@@ -167,7 +185,9 @@ std::vector<uint8_t> KeygroupEncoder::encode(
 
     data[KeygroupHeaderOffset::Velocity::E_PTCH] =
         static_cast<uint8_t>(
-            keygroup.velocity.ePtch
+            static_cast<int8_t>(
+                keygroup.velocity.ePtch
+                )
             );
 
     data[KeygroupHeaderOffset::Velocity::VXFADE] =
@@ -181,6 +201,22 @@ std::vector<uint8_t> KeygroupEncoder::encode(
 
     data[KeygroupHeaderOffset::Velocity::RKXF] =
         keygroup.velocity.rkxf;
+
+    data[KeygroupHeaderOffset::Mod::ModVPitch] =
+        static_cast<uint8_t>(
+            static_cast<int8_t>(
+                keygroup.modVPitch
+                )
+            );
+
+    DBG(
+        "ENCODE KG MODVPITCH OFFSET154 RAW="
+        + juce::String(
+            (int)data[
+                KeygroupHeaderOffset::Mod::ModVPitch
+            ]
+        )
+    );
 
 
     // ===== Velocity Zones =====
@@ -242,6 +278,19 @@ std::vector<uint8_t> KeygroupEncoder::encode(
 
         data[KGF::Zone::ZPLAY[i]] =
             static_cast<uint8_t>(zone.playMode);
+
+        // ==============================
+// Pitch Tracking
+// CP1〜CP4: offset 132〜135
+// 0 = TRACK, 1 = CONST
+// ==============================
+
+        const std::size_t constantPitchOffset =
+            132 + static_cast<std::size_t>(i);
+
+        data[constantPitchOffset] =
+            zone.constantPitch ? 1 : 0;
+
 
         // internal use�Ȃ̂ŏ��������Ȃ�
         // data[KGF::Zone::LVXF[i]] = zone.lowVelXFade;

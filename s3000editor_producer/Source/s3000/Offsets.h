@@ -120,6 +120,8 @@ namespace ProgramOffset
         constexpr std::size_t ModVLFO1Depth = 95;
         constexpr std::size_t ModVLFO1Delay = 96;
 
+        constexpr size_t ModVPitch = 154;
+
     }
 }
 
@@ -250,6 +252,8 @@ namespace KeygroupHeaderOffset
         constexpr std::size_t V_FREQ = 9;
         constexpr std::size_t P_FREQ = 10;
         constexpr std::size_t E_FREQ = 11;
+
+        constexpr std::size_t FILQ = 149;
     }
 
 
@@ -282,6 +286,7 @@ namespace KeygroupHeaderOffset
     }
 
 
+    
     namespace Velocity
     {
         constexpr std::size_t V_ATT2 = 24;
@@ -298,6 +303,12 @@ namespace KeygroupHeaderOffset
         constexpr std::size_t LKXF = 32;
         constexpr std::size_t RKXF = 33;
     }
+
+    namespace Mod
+    {
+        constexpr std::size_t ModVPitch = 154;
+    }
+
 }
 
 

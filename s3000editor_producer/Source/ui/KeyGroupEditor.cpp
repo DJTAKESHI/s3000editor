@@ -135,15 +135,29 @@ KeyGroupEditor::KeyGroupEditor()
         };
 
     addAndMakeVisible(filterFreqLabel);
-    addAndMakeVisible(filterFreqEditor);
+    addAndMakeVisible(filterFreqKnob);
 
     addAndMakeVisible(filterKeyFollowLabel);
-    addAndMakeVisible(filterKeyFollowEditor);
+    addAndMakeVisible(filterKeyFollowKnob);
+
+    resonanceLabel.setText(
+        "Resonance",
+        juce::dontSendNotification
+    );
+
+    resonanceLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    addAndMakeVisible(resonanceLabel);
+    addAndMakeVisible(resonanceKnob);
 
     env1AttackLabel.setText("Attack", juce::dontSendNotification);
     env1DecayLabel.setText("Decay", juce::dontSendNotification);
     env1SustainLabel.setText("Sustain", juce::dontSendNotification);
     env1ReleaseLabel.setText("Release", juce::dontSendNotification);
+
+
 
     addAndMakeVisible(env1SectionLabel);
     env1SectionLabel.setText(
@@ -551,38 +565,117 @@ KeyGroupEditor::KeyGroupEditor()
 
 
     addAndMakeVisible(velocityToFreqLabel);
-    addAndMakeVisible(velocityToFreqEditor);
+    addAndMakeVisible(velocityToFreqKnob);
 
     addAndMakeVisible(pressureToFreqLabel);
-    addAndMakeVisible(pressureToFreqEditor);
+    addAndMakeVisible(pressureToFreqKnob);
 
     addAndMakeVisible(envelopeToFreqLabel);
-    addAndMakeVisible(envelopeToFreqEditor);
+    addAndMakeVisible(envelopeToFreqKnob);
 
-
-    filterFreqEditor.onFocusLost = [this]()
+    auto setupFilterKnob =
+        [this](
+            juce::Slider& knob,
+            double minimum,
+            double maximum
+            )
         {
-            const int value =
-                filterFreqEditor.getText().getIntValue();
+            knob.setSliderStyle(
+                juce::Slider::RotaryHorizontalVerticalDrag
+            );
 
-            if (value < 0 || value > 127)
-            {
-                filterFreqEditor.setText(
-                    juce::String(currentKeygroup.filter.freq),
-                    false
+            knob.setTextBoxStyle(
+                juce::Slider::TextBoxBelow,
+                false,
+                58,
+                20
+            );
+
+            knob.setRange(
+                minimum,
+                maximum,
+                1.0
+            );
+
+            knob.setNumDecimalPlacesToDisplay(0);
+
+            knob.setDoubleClickReturnValue(
+                true,
+                0.0
+            );
+
+            knob.setColour(
+                juce::Slider::rotarySliderFillColourId,
+                juce::Colour(0xff51a9c9)
+            );
+
+            knob.setColour(
+                juce::Slider::rotarySliderOutlineColourId,
+                juce::Colour(0xff26343a)
+            );
+
+            knob.setColour(
+                juce::Slider::thumbColourId,
+                juce::Colours::white
+            );
+        };
+
+
+
+    setupFilterKnob(filterFreqKnob, 0.0, 99.0);
+    setupFilterKnob(filterKeyFollowKnob, 0.0, 12.0);
+    setupFilterKnob(velocityToFreqKnob, -50.0, 50.0);
+    setupFilterKnob(pressureToFreqKnob, -50.0, 50.0);
+    setupFilterKnob(envelopeToFreqKnob, -50.0, 50.0);
+    setupFilterKnob(resonanceKnob, 0.0, 15.0);
+
+    filterFreqLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    filterKeyFollowLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    velocityToFreqLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    pressureToFreqLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    envelopeToFreqLabel.setJustificationType(
+        juce::Justification::centred
+    );
+
+    resonanceKnob.onValueChange = [this]()
+        {
+            currentKeygroup.filter.resonance =
+                juce::roundToInt(
+                    resonanceKnob.getValue()
                 );
-                return;
+
+            // 数値欄への直接入力時
+            if (!resonanceKnob.isMouseButtonDown())
+            {
+                if (onKeygroupChanged)
+                {
+                    onKeygroupChanged(
+                        currentKeygroupIndex,
+                        currentKeygroup
+                    );
+                }
             }
+        };
 
-            // ★ 値が同じなら送信しない
-            if (value == currentKeygroup.filter.freq)
-                return;
-
-            currentKeygroup.filter.freq = value;
-
+    resonanceKnob.onDragEnd = [this]()
+        {
             DBG(
-                "FILTER FREQ CHANGED = "
-                + juce::String(value)
+                "FILTER RESONANCE CHANGED = "
+                + juce::String(
+                    currentKeygroup.filter.resonance
+                )
             );
 
             if (onKeygroupChanged)
@@ -594,40 +687,9 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
-    filterKeyFollowEditor.onFocusLost = [this]()
-        {
-            const int value =
-                filterKeyFollowEditor.getText().getIntValue();
 
-            // ひとまず安全な範囲
-            if (value < 0 || value > 127)
-            {
-                filterKeyFollowEditor.setText(
-                    juce::String(currentKeygroup.filter.keyFollow),
-                    false
-                );
-                return;
-            }
 
-            // 値が変わっていなければ何もしない
-            if (value == currentKeygroup.filter.keyFollow)
-                return;
 
-            currentKeygroup.filter.keyFollow = value;
-
-            DBG(
-                "FILTER KEY FOLLOW CHANGED = "
-                + juce::String(value)
-            );
-
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
-        };
 
     tuneEditor.onFocusLost = [this]()
         {
@@ -662,27 +724,91 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
-    velocityToFreqEditor.onFocusLost = [this]()
+    filterFreqKnob.onValueChange = [this]()
         {
             const int value =
-                velocityToFreqEditor.getText().getIntValue();
+                juce::roundToInt(filterFreqKnob.getValue());
 
-            if (value < -128 || value > 127)
-            {
-                velocityToFreqEditor.setText(
-                    juce::String(currentKeygroup.filter.velocityToFreq),
-                    false
-                );
-                return;
-            }
-
-            if (value == currentKeygroup.filter.velocityToFreq)
-                return;
-
-            currentKeygroup.filter.velocityToFreq = value;
+            currentKeygroup.filter.freq = value;
 
             DBG(
-                "VELOCITY TO FREQ CHANGED = "
+                "FILTER FREQ PREVIEW = "
+                + juce::String(value)
+            );
+
+            // 数値欄への直接入力など、
+            // マウスドラッグ以外の変更はここで送信
+            if (!filterFreqKnob.isMouseButtonDown())
+            {
+                if (onKeygroupChanged)
+                {
+                    onKeygroupChanged(
+                        currentKeygroupIndex,
+                        currentKeygroup
+                    );
+                }
+            }
+        };
+
+    filterFreqKnob.onDragEnd = [this]()
+        {
+            DBG(
+                "FILTER FREQ DRAG FINISHED = "
+                + juce::String(
+                    currentKeygroup.filter.freq
+                )
+            );
+
+            if (onKeygroupChanged)
+            {
+                onKeygroupChanged(
+                    currentKeygroupIndex,
+                    currentKeygroup
+                );
+            }
+        };
+
+    auto sendKeygroupChange = [this]()
+        {
+            if (onKeygroupChanged)
+            {
+                onKeygroupChanged(
+                    currentKeygroupIndex,
+                    currentKeygroup
+                );
+            }
+        };
+
+    filterKeyFollowKnob.onValueChange =
+        [this, sendKeygroupChange]()
+        {
+            currentKeygroup.filter.keyFollow =
+                juce::roundToInt(
+                    filterKeyFollowKnob.getValue()
+                );
+
+            if (!filterKeyFollowKnob.isMouseButtonDown())
+                sendKeygroupChange();
+        };
+
+    filterKeyFollowKnob.onDragEnd =
+        [sendKeygroupChange]()
+        {
+            sendKeygroupChange();
+        };
+
+    filterKeyFollowKnob.onValueChange = [this]()
+        {
+            const int value =
+                juce::roundToInt(filterKeyFollowKnob.getValue());
+
+            if (value == currentKeygroup.filter.keyFollow)
+                return;
+
+            currentKeygroup.filter.keyFollow = value;
+
+            DBG(
+                "FILTER KEY FOLLOW CHANGED = "
                 + juce::String(value)
             );
 
@@ -695,71 +821,60 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
-    pressureToFreqEditor.onFocusLost = [this]()
+    velocityToFreqKnob.onValueChange =
+        [this, sendKeygroupChange]()
         {
-            const int value =
-                pressureToFreqEditor.getText().getIntValue();
-
-            if (value < -128 || value > 127)
-            {
-                pressureToFreqEditor.setText(
-                    juce::String(currentKeygroup.filter.pressureToFreq),
-                    false
+            currentKeygroup.filter.velocityToFreq =
+                juce::roundToInt(
+                    velocityToFreqKnob.getValue()
                 );
-                return;
-            }
 
-            if (value == currentKeygroup.filter.pressureToFreq)
-                return;
-
-            currentKeygroup.filter.pressureToFreq = value;
-
-            DBG(
-                "PRESSURE TO FREQ CHANGED = "
-                + juce::String(value)
-            );
-
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
+            if (!velocityToFreqKnob.isMouseButtonDown())
+                sendKeygroupChange();
         };
 
-    envelopeToFreqEditor.onFocusLost = [this]()
+    velocityToFreqKnob.onDragEnd =
+        [sendKeygroupChange]()
         {
-            const int value =
-                envelopeToFreqEditor.getText().getIntValue();
-
-            if (value < -128 || value > 127)
-            {
-                envelopeToFreqEditor.setText(
-                    juce::String(currentKeygroup.filter.envelopeToFreq),
-                    false
-                );
-                return;
-            }
-
-            if (value == currentKeygroup.filter.envelopeToFreq)
-                return;
-
-            currentKeygroup.filter.envelopeToFreq = value;
-
-            DBG(
-                "ENVELOPE TO FREQ CHANGED = "
-                + juce::String(value)
-            );
-
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
+            sendKeygroupChange();
         };
+
+    pressureToFreqKnob.onValueChange =
+        [this, sendKeygroupChange]()
+        {
+            currentKeygroup.filter.pressureToFreq =
+                juce::roundToInt(
+                    pressureToFreqKnob.getValue()
+                );
+
+            if (!pressureToFreqKnob.isMouseButtonDown())
+                sendKeygroupChange();
+        };
+
+    pressureToFreqKnob.onDragEnd =
+        [sendKeygroupChange]()
+        {
+            sendKeygroupChange();
+        };
+
+    envelopeToFreqKnob.onValueChange =
+        [this, sendKeygroupChange]()
+        {
+            currentKeygroup.filter.envelopeToFreq =
+                juce::roundToInt(
+                    envelopeToFreqKnob.getValue()
+                );
+
+            if (!envelopeToFreqKnob.isMouseButtonDown())
+                sendKeygroupChange();
+        };
+
+    envelopeToFreqKnob.onDragEnd =
+        [sendKeygroupChange]()
+        {
+            sendKeygroupChange();
+        };
+   
 
     /*env2AttackEditor.onFocusLost = [this]()
         {
@@ -1070,10 +1185,11 @@ KeyGroupEditor::KeyGroupEditor()
 
     ePtchEditor.onFocusLost = [this]()
         {
+            DBG("E_PTCH FOCUS LOST");
             const int value =
                 ePtchEditor.getText().getIntValue();
 
-            if (value < 0 || value > 127)
+            if (value < -50 || value > 50)
                 return;
 
             if (value == currentKeygroup.velocity.ePtch)
@@ -1093,6 +1209,15 @@ KeyGroupEditor::KeyGroupEditor()
                     currentKeygroup
                 );
             }
+        };
+
+    ePtchEditor.onTextChange =
+        [this]()
+        {
+            DBG(
+                "E_PTCH TEXT CHANGED = "
+                + ePtchEditor.getText()
+            );
         };
 
     velocityXFadeEditor.onFocusLost = [this]()
@@ -1338,6 +1463,8 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(ePtchLabel);
     addAndMakeVisible(ePtchEditor);
 
+    ePtchEditor.toFront(false);
+
 
     addAndMakeVisible(env2VelAttackLabel);
     addAndMakeVisible(env2VelAttackEditor);
@@ -1427,29 +1554,34 @@ void KeyGroupEditor::setKeygroup(
         false
     );
 
-    filterFreqEditor.setText(
-        juce::String(keygroup.filter.freq),
-        false
+    filterFreqKnob.setValue(
+        keygroup.filter.freq,
+        juce::dontSendNotification
     );
 
-    filterKeyFollowEditor.setText(
-        juce::String(keygroup.filter.keyFollow),
-        false
+    filterKeyFollowKnob.setValue(
+        keygroup.filter.keyFollow,
+        juce::dontSendNotification
     );
 
-    velocityToFreqEditor.setText(
-        juce::String(keygroup.filter.velocityToFreq),
-        false
+    resonanceKnob.setValue(
+        keygroup.filter.resonance,
+        juce::dontSendNotification
     );
 
-    pressureToFreqEditor.setText(
-        juce::String(keygroup.filter.pressureToFreq),
-        false
+    velocityToFreqKnob.setValue(
+        keygroup.filter.velocityToFreq,
+        juce::dontSendNotification
     );
 
-    envelopeToFreqEditor.setText(
-        juce::String(keygroup.filter.envelopeToFreq),
-        false
+    pressureToFreqKnob.setValue(
+        keygroup.filter.pressureToFreq,
+        juce::dontSendNotification
+    );
+
+    envelopeToFreqKnob.setValue(
+        keygroup.filter.envelopeToFreq,
+        juce::dontSendNotification
     );
 
     env1AttackEditor.setText(
@@ -1706,83 +1838,87 @@ void KeyGroupEditor::resized()
     );
 
 
-{
-    auto section =
-        area.removeFromTop(64);
+    {
+        auto section =
+            area.removeFromTop(130);
 
-    // 1行目
-    auto row1 =
-        section.removeFromTop(30);
+        constexpr int numberOfKnobs = 6;
 
-    const int itemWidth =
-        row1.getWidth() / 3;
+        const int itemWidth =
+            section.getWidth() / numberOfKnobs;
 
-    auto freqArea =
-        row1.removeFromLeft(itemWidth);
+        auto layoutKnob =
+            [itemWidth](
+                juce::Rectangle<int> itemArea,
+                juce::Label& label,
+                juce::Slider& knob
+                )
+            {
+                itemArea.reduce(5, 0);
 
-    auto keyFollowArea =
-        row1.removeFromLeft(itemWidth);
+                label.setBounds(
+                    itemArea.removeFromTop(22)
+                );
 
-    auto velocityArea =
-        row1;
+                knob.setBounds(itemArea);
+            };
 
+        auto freqArea =
+            section.removeFromLeft(itemWidth);
 
-    filterFreqLabel.setBounds(
-        freqArea.removeFromLeft(fieldLabelWidth)
-    );
+        auto keyFollowArea =
+            section.removeFromLeft(itemWidth);
 
-    filterFreqEditor.setBounds(
-        freqArea.removeFromLeft(editorWidth)
-        
-    );
+        auto velocityArea =
+            section.removeFromLeft(itemWidth);
 
+        auto pressureArea =
+            section.removeFromLeft(itemWidth);
 
-    filterKeyFollowLabel.setBounds(
-        keyFollowArea.removeFromLeft(fieldLabelWidth)
-    );
+        auto envelopeArea =
+            section.removeFromLeft(itemWidth);
 
-    filterKeyFollowEditor.setBounds(
-        keyFollowArea.removeFromLeft(editorWidth)
-    );
+        auto resonanceArea =
+            section;
 
-
-    velocityToFreqLabel.setBounds(
-        velocityArea.removeFromLeft(fieldLabelWidth)
-    );
-
-    velocityToFreqEditor.setBounds(
-        velocityArea.removeFromLeft(editorWidth)
-    );
-
-
-    // 2行目
-    auto row2 =
-        section.removeFromTop(30);
-
-    auto pressureArea =
-        row2.removeFromLeft(itemWidth);
-
-    auto envelopeArea =
-        row2.removeFromLeft(itemWidth);
+        layoutKnob(
+            freqArea,
+            filterFreqLabel,
+            filterFreqKnob
+        );
 
 
-    pressureToFreqLabel.setBounds(
-        pressureArea.removeFromLeft(fieldLabelWidth)
-    );
 
-    pressureToFreqEditor.setBounds(
-        pressureArea.removeFromLeft(editorWidth)
-    );
+        layoutKnob(
+            keyFollowArea,
+            filterKeyFollowLabel,
+            filterKeyFollowKnob
+        );
 
+        layoutKnob(
+            velocityArea,
+            velocityToFreqLabel,
+            velocityToFreqKnob
+        );
 
-    envelopeToFreqLabel.setBounds(
-        envelopeArea.removeFromLeft(fieldLabelWidth)
-    );
+        layoutKnob(
+            pressureArea,
+            pressureToFreqLabel,
+            pressureToFreqKnob
+        );
 
-    envelopeToFreqEditor.setBounds(
-        envelopeArea.removeFromLeft(editorWidth)
-    );
-}
+        layoutKnob(
+            envelopeArea,
+            envelopeToFreqLabel,
+            envelopeToFreqKnob
+        );
+
+        layoutKnob(
+            resonanceArea,
+            resonanceLabel,
+            resonanceKnob
+        );
+    }
 
 env1SectionLabel.setBounds(
     area.removeFromTop(24)

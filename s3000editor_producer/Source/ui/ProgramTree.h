@@ -38,6 +38,12 @@ public:
         )> onBasicZoneSelected;
 
 
+    void updateZone(
+        int keygroupIndex,
+        int zoneIndex,
+        const VelocityZone& zone
+    );
+
 
 private:
 

@@ -46,6 +46,10 @@ public:
         const VelocityZone&
         )> onZoneSelected;
 
+    void setZone(
+        const VelocityZone& zone
+    );
+
 
 
 private:

@@ -40,19 +40,22 @@ private:
     juce::TextEditor tuneEditor;
 
     juce::Label filterFreqLabel;
-    juce::TextEditor filterFreqEditor;
+    juce::Slider filterFreqKnob;
 
     juce::Label filterKeyFollowLabel;
-    juce::TextEditor filterKeyFollowEditor;
+    juce::Slider filterKeyFollowKnob;
 
     juce::Label velocityToFreqLabel;
-    juce::TextEditor velocityToFreqEditor;
+    juce::Slider velocityToFreqKnob;
 
     juce::Label pressureToFreqLabel;
-    juce::TextEditor pressureToFreqEditor;
+    juce::Slider pressureToFreqKnob;
 
     juce::Label envelopeToFreqLabel;
-    juce::TextEditor envelopeToFreqEditor;
+    juce::Slider envelopeToFreqKnob;
+
+    juce::Label resonanceLabel;
+    juce::Slider resonanceKnob;
 
     juce::Label env1AttackLabel;
     juce::TextEditor env1AttackEditor;

@@ -465,6 +465,41 @@ void ProgramParser::parseHeader(
     p.lfo1Wave = d[P::LFO::LFO1Wave];
     p.lfo2Wave = d[P::LFO::LFO2Wave];
 
+    if (d.size() > P::Mod::ModVPitch)
+    {
+        p.modVPitch =
+            readS8(
+                d,
+                P::Mod::ModVPitch
+            );
+    }
+
+    DBG(
+        "PARSE MODSPITCH OFFSET87 RAW="
+        + juce::String(
+            (int)d[P::Mod::ModSPitch]
+        )
+        + " VALUE="
+        + juce::String(p.modSPitch)
+
+    );
+
+    DBG(
+        "PARSE MODVPITCH OFFSET154 RAW="
+        + juce::String(
+            (int)d[P::Mod::ModVPitch]
+        )
+        + " VALUE="
+        + juce::String(p.modVPitch)
+    );
+
+    DBG(
+        "MODVPITCH OFFSET="
+        + juce::String((int)P::Mod::ModVPitch)
+        + " DATA SIZE="
+        + juce::String((int)d.size())
+    );
+
     DBG(
         "LFO1 WAVE RAW = "
         + juce::String(p.lfo1Wave)

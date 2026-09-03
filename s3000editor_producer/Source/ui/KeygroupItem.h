@@ -49,6 +49,11 @@ public:
         const VelocityZone&
         )> onBasicZoneSelected;
 
+    void updateZone(
+        int zoneIndex,
+        const VelocityZone& zone
+    );
+
 
 
 private:

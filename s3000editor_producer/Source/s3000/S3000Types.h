@@ -107,6 +107,9 @@ struct VelocityZone
     // Åöí«â¡
     uint8_t lowVelXFade = 0;
     uint8_t highVelXFade = 0;
+
+    // 0 = TRACK, 1 = CONST
+    bool constantPitch = false;
 };
 
 struct Sample
@@ -151,6 +154,8 @@ struct Keygroup
     // ===== Internal block information =====
     uint8_t id = 0;              // KGIDENT
     uint16_t nextAddress = 0;    // NXTKG@
+
+    int modVPitch = 0;
 
     // ===== Key range =====
     int lowNote = 0;
@@ -269,6 +274,8 @@ struct Program
     int modSFilter3 = 0;
 
     int modSPitch = 0;
+    int modVPitch = 0;
+
     int modSAmp3 = 0;
 
     int modVPan1 = 0;

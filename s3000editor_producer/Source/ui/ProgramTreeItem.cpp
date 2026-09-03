@@ -160,3 +160,33 @@ void ProgramTreeItem::paintItem(
         juce::Justification::centredLeft
     );
 }
+
+void ProgramTreeItem::updateZone(
+    int keygroupIndex,
+    int zoneIndex,
+    const VelocityZone& zone
+)
+{
+    if (keygroupIndex < 0
+        || keygroupIndex >= getNumSubItems())
+    {
+        DBG("UPDATE ZONE: INVALID KEYGROUP INDEX");
+        return;
+    }
+
+    auto* keygroupItem =
+        dynamic_cast<KeygroupItem*>(
+            getSubItem(keygroupIndex)
+            );
+
+    if (keygroupItem == nullptr)
+    {
+        DBG("UPDATE ZONE: KEYGROUP ITEM NOT FOUND");
+        return;
+    }
+
+    keygroupItem->updateZone(
+        zoneIndex,
+        zone
+    );
+}

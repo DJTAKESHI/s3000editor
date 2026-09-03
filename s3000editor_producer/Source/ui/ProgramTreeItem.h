@@ -40,7 +40,11 @@ public:
         const VelocityZone&
         )> onBasicZoneSelected;
 
-
+    void updateZone(
+        int keygroupIndex,
+        int zoneIndex,
+        const VelocityZone& zone
+    );
 
 
 

@@ -256,14 +256,109 @@ MainComponent::MainComponent()
         false
     );
 
+    
     programEditor.onProgramChanged =
         [this](
             const Program& program)
         {
+            const bool nameChanged =
+                program.name != loadedProgram.name;
+
+            if (nameChanged)
+            {
+                const auto newName =
+                    juce::String(program.name)
+                    .trim()
+                    .toUpperCase();
+
+                for (const auto& entry : programList)
+                {
+                    if (entry.index == currentProgram)
+                        continue;
+
+                    if (juce::String(entry.name)
+                        .trim()
+                        .equalsIgnoreCase(newName))
+                    {
+                        DBG(
+                            "PROGRAM RENAME REJECTED: DUPLICATE NAME = "
+                            + newName
+                        );
+
+                        programEditor.setProgram(
+                            loadedProgram
+                        );
+
+                        return;
+                    }
+                }
+            }
+            
             auto encodedProgram =
                 ProgramEncoder::encode(
                     program
                 );
+
+            static std::vector<uint8_t> previousSentProgram;
+
+            if (!previousSentProgram.empty()
+                && previousSentProgram.size() == encodedProgram.size())
+            {
+                DBG("=== PDATA DIFF BEFORE SEND ===");
+
+                for (size_t i = 0; i < encodedProgram.size(); ++i)
+                {
+                    if (encodedProgram[i] != previousSentProgram[i])
+                    {
+                        DBG(
+                            "OFFSET "
+                            + juce::String((int)i)
+                            + ": "
+                            + juce::String((int)previousSentProgram[i])
+                            + " -> "
+                            + juce::String((int)encodedProgram[i])
+                        );
+                    }
+                }
+            }
+
+            previousSentProgram = encodedProgram;
+
+
+            DBG(
+                "MAIN MODSPITCH="
+                + juce::String(program.modSPitch)
+            );
+
+            DBG(
+                "ENCODED MODSPITCH OFFSET="
+                + juce::String((int)ProgramOffset::Mod::ModSPitch)
+                + " RAW="
+                + juce::String(
+                    (int)encodedProgram[
+                        ProgramOffset::Mod::ModSPitch
+                    ]
+                )
+            );
+
+
+
+            DBG(
+                "MAIN MODVPITCH="
+                + juce::String(program.modVPitch)
+            );
+
+            DBG(
+                "ENCODED MODVPITCH OFFSET="
+                + juce::String((int)ProgramOffset::Mod::ModVPitch)
+                + " RAW="
+                + juce::String(
+                    (int)encodedProgram[
+                        ProgramOffset::Mod::ModVPitch
+                    ]
+                )
+            );
+
 
             if (encodedProgram.empty())
             {
@@ -280,7 +375,6 @@ MainComponent::MainComponent()
                     program.output
                 )
             );
-
 
             DBG(
                 "=== PROGRAM EDITOR WRITE ==="
@@ -299,6 +393,7 @@ MainComponent::MainComponent()
                     program.playHigh
                 )
             );
+
             DBG(
                 "PAN = "
                 + juce::String(program.pan)
@@ -311,11 +406,33 @@ MainComponent::MainComponent()
                 )
             );
 
+            DBG("PROGRAM WRITE: EXPECT REFRESH-ONLY RESPONSE");
+
+            programRefreshOnly = true;
 
             sysExSender.sendProgramData(
                 program.programNumber,
                 encodedProgram
             );
+
+            // 診断用
+            sysExSender.sendProgramHeader(
+                program.programNumber
+            );
+
+            if (nameChanged)
+            {
+                loadedProgram.name =
+                    program.name;
+
+                DBG(
+                    "PROGRAM RENAMED TO ["
+                    + juce::String(loadedProgram.name)
+                    + "]"
+                );
+
+                sysExSender.sendRPLIST();
+            }
 
             loadedProgram.playLow =
                 program.playLow;
@@ -352,9 +469,40 @@ MainComponent::MainComponent()
             loadedProgram.modVLfo1Rate = program.modVLfo1Rate;
             loadedProgram.modVLfo1Depth = program.modVLfo1Depth;
             loadedProgram.modVLfo1Delay = program.modVLfo1Delay;
+            loadedProgram.modVPitch = program.modVPitch;
         };
 
-    //addAndMakeVisible(programTree);
+
+        programEditor.onEnv2PitchChanged =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    DBG("ENV2 PITCH: INVALID KEYGROUP");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.modVPitch = value;
+
+                DBG(
+                    "KG ENV2 PITCH WRITE KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(keygroup.modVPitch)
+                );
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    KeygroupHeaderOffset::Mod::ModVPitch,
+                    keygroup.modVPitch
+                );
+            };
 
     velocityZoneEditor.onZoneSelected =
         [this](int zoneIndex)
@@ -461,6 +609,21 @@ MainComponent::MainComponent()
             // �I��Zone���ڍ�Editor��
             // ========================================
 
+            DBG(
+                "TREE SELECT ZONE SAMPLE=["
+                + zone.sampleName
+                + "] ID="
+                + juce::String(zone.sampleId)
+            );
+
+            DBG(
+                "TREE SELECT HEADER NAME=["
+                + sampleHeader.name
+                + "] ID="
+                + juce::String(sampleHeader.id)
+            );
+
+
             velocityZoneEditor.setZone(
                 zone
             );
@@ -533,6 +696,8 @@ MainComponent::MainComponent()
                     currentKeygroup,
                     encoded
                 );
+
+
             }
         };
 
@@ -946,6 +1111,7 @@ MainComponent::MainComponent()
                 programIndex,
                 basicMidiChannel + 1
             );
+            DBG("=== UI PROGRAM CLICK ===");
 
             loadProgram(
                 programIndex
@@ -1171,6 +1337,8 @@ MainComponent::MainComponent()
             const Keygroup& keygroup
             )
         {
+            DBG("KEYGROUP CALLBACK FIRED");
+
             DBG("===== KEYGROUP UPDATED =====");
             DBG(
                 "KEYGROUP = "
@@ -1197,29 +1365,113 @@ MainComponent::MainComponent()
                 return;
             }
 
-            loadedProgram.keygroups[keygroupIndex] =
+            if (currentProgramIndex < 0)
+            {
+                const int selectedId =
+                    programCombo.getSelectedId();
+
+                if (selectedId > 0)
+                {
+                    currentProgramIndex =
+                        selectedId - 1;
+
+                    DBG(
+                        "RECOVERED PROGRAM INDEX FROM COMBO = "
+                        + juce::String(currentProgramIndex)
+                    );
+                }
+            }
+
+            if (currentProgramIndex < 0)
+            {
+                DBG(
+                    "KEYGROUP SEND CANCELLED: "
+                    "NO RESIDENT PROGRAM SELECTED"
+                );
+
+                return;
+            }
+
+            const auto& previousKeygroup =
+                loadedProgram.keygroups[keygroupIndex];
+
+            const bool keyRangeChanged =
+                previousKeygroup.lowNote != keygroup.lowNote
+                || previousKeygroup.highNote != keygroup.highNote;
+
+            // KeyGroupEditorはZoneを編集しないため、
+// loadedProgram内の最新Zoneを保持する
+            auto updatedKeygroup =
                 keygroup;
 
-            // Keygroup Map�ɂ��ύX�𔽉f
-            keygroupMap.setProgram(
+            updatedKeygroup.zones =
                 loadedProgram
-            );
+                .keygroups[keygroupIndex]
+                .zones;
 
-            DBG("LOADED PROGRAM KEYGROUP UPDATED");
+            loadedProgram.keygroups[keygroupIndex] =
+                updatedKeygroup;
 
-            auto& updatedKeygroup =
+            auto& storedKeygroup =
                 loadedProgram.keygroups[keygroupIndex];
 
             auto encoded =
                 KeygroupEncoder::encode(
-                    updatedKeygroup
+                    storedKeygroup
                 );
+
+            if (keyRangeChanged)
+            {
+                DBG("KEY RANGE CHANGED - UPDATE KEYGROUP MAP");
+
+                keygroupMap.setProgram(
+                    loadedProgram
+                );
+            }
+
+            DBG("LOADED PROGRAM KEYGROUP UPDATED");
+
+            //auto& updatedKeygroup =
+            //    loadedProgram.keygroups[keygroupIndex];
+
+            //auto encoded =
+            //    KeygroupEncoder::encode(
+            //        updatedKeygroup
+            //    );
 
             if (encoded.empty())
             {
                 DBG("KEYGROUP ENCODE FAILED");
                 return;
             }
+
+            DBG(
+                "E_PTCH OFFSET=29 RAW="
+                + juce::String(
+                    (int)encoded[
+                        KeygroupHeaderOffset::Velocity::E_PTCH
+                    ]
+                )
+            );
+
+            DBG(
+                "ENCODED FILFRQ = "
+                + juce::String(
+                    encoded[
+                        KeygroupHeaderOffset::Filter::FILFRQ
+                    ]
+                )
+            );
+
+            DBG(
+                "ENCODED FILQ = "
+                + juce::String(
+                    encoded[
+                        KeygroupHeaderOffset::Filter::FILQ
+                    ]
+                )
+            );
+
 
             // �����m�F
             const auto& raw =
@@ -1242,17 +1494,114 @@ MainComponent::MainComponent()
 
 
             sysExSender.sendKeygroupData(
-                loadedProgram.programNumber,
+                currentProgramIndex,
                 keygroupIndex,
                 encoded
             );
 
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::FILQ,
+                static_cast<uint8_t>(
+                    storedKeygroup.filter.resonance
+                    )
+            );
+
         };
+
+        /*rogramEditor.onEnv2PitchChanged =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    DBG("NO VALID KEYGROUP SELECTED");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.velocity.ePtch = value;
+
+                DBG(
+                    "PROGRAM TAB -> KEYGROUP E_PTCH = "
+                    + juce::String(value)
+                );
+
+                auto encoded =
+                    KeygroupEncoder::encode(keygroup);
+
+                if (encoded.empty())
+                {
+                    DBG("KEYGROUP ENCODE FAILED");
+                    return;
+                }
+
+                DBG(
+                    "E_PTCH OFFSET=29 RAW="
+                    + juce::String(
+                        (int)encoded[
+                            KeygroupHeaderOffset::Velocity::E_PTCH
+                        ]
+                    )
+                );
+
+                sysExSender.sendKeygroupData(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    encoded
+                );
+            };*/
+
 
 
     velocityZoneEditor.onZoneChanged =
         [this](const VelocityZone& zone)
         {
+            DBG(
+                "ZONE CHANGE:"
+                " currentKeygroup="
+                + juce::String(currentKeygroup)
+                + " currentZone="
+                + juce::String(currentZone)
+                + " keygroupCount="
+                + juce::String(
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        )
+                )
+            );
+
+            const int keygroupCount =
+                static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    );
+
+            if (currentKeygroup < 0
+                || currentKeygroup >= keygroupCount)
+            {
+                DBG(
+                    "ZONE CHANGE CANCELLED: "
+                    "INVALID KEYGROUP INDEX"
+                );
+
+                return;
+            }
+
+            if (currentZone < 0
+                || currentZone >= 4)
+            {
+                DBG(
+                    "ZONE CHANGE CANCELLED: "
+                    "INVALID ZONE INDEX"
+                );
+
+                return;
+            }
+
             auto& kg =
                 loadedProgram.keygroups[
                     currentKeygroup
@@ -1278,6 +1627,12 @@ MainComponent::MainComponent()
                 currentZone
             );
 
+            programTree.updateZone(
+                currentKeygroup,
+                currentZone,
+                zone
+            );
+
             // ========================================
             // ���@��KDATA
             // ========================================
@@ -1294,10 +1649,65 @@ MainComponent::MainComponent()
             }
 
             sysExSender.sendKeygroupData(
-                loadedProgram.programNumber,
+                currentProgramIndex,
                 currentKeygroup,
                 encoded
             );
+
+            // ========================================
+// CP1〜CP4を個別送信
+// 0 = TRACK, 1 = CONST
+// ========================================
+
+            const int constantPitchOffset =
+                132 + currentZone;
+
+            const uint8_t constantPitchValue =
+                kg.zones[currentZone].constantPitch
+                ? 1
+                : 0;
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                currentKeygroup,
+                constantPitchOffset,
+                constantPitchValue
+            );
+
+
+
+            // ========================================
+// Update Sample Header Editor
+// ========================================
+
+            if (zone.sampleId >= 0)
+            {
+                auto it =
+                    sampleHeaders.find(zone.sampleId);
+
+                if (it != sampleHeaders.end())
+                {
+                    sampleHeaderEditor.setSampleHeader(
+                        it->second
+                    );
+                }
+                else
+                {
+                    DBG(
+                        "REQUEST SAMPLE HEADER ID="
+                        + juce::String(zone.sampleId)
+                    );
+
+                    pendingSampleRequests.insert(
+                        zone.sampleId
+                    );
+
+                    sysExSender.sendSampleHeader(
+                        zone.sampleId
+                    );
+                }
+            }
+
         };;
 
 
@@ -1379,6 +1789,97 @@ MainComponent::MainComponent()
                 return;
             }
 
+            const auto oldIt =
+                sampleHeaders.find(header.id);
+
+            const juce::String oldName =
+                oldIt != sampleHeaders.end()
+                ? oldIt->second.name
+                : juce::String();
+
+            const bool nameChanged =
+                !oldName.isEmpty()
+                && !oldName.equalsIgnoreCase(header.name);
+
+            if (nameChanged)
+            {
+                const auto newName =
+                    header.name
+                    .trim()
+                    .toUpperCase();
+
+                for (const auto& [sampleId, existingName] : residentSamples)
+                {
+                    if (sampleId == header.id)
+                        continue;
+
+                    if (existingName
+                        .trim()
+                        .equalsIgnoreCase(newName))
+                    {
+                        DBG(
+                            "SAMPLE RENAME REJECTED: DUPLICATE NAME = "
+                            + newName
+                        );
+
+                        sampleHeaderEditor.setSampleNameWithoutNotification(
+                            oldIt->second.name
+                        );
+
+                        return;
+                    }
+                }
+            }
+
+            DBG(
+                "RENAME DEBUG oldName=["
+                + oldName
+                + "] newName=["
+                + header.name
+                + "] nameChanged="
+                + juce::String(nameChanged ? "true" : "false")
+            );
+
+            if (oldIt != sampleHeaders.end())
+            {
+                DBG(
+                    "CACHE NAME=["
+                    + oldIt->second.name
+                    + "]"
+                );
+            }
+            else
+            {
+                DBG("CACHE HEADER NOT FOUND");
+            }
+
+            // ==============================
+// Ignore no-op updates
+// ==============================
+
+            if (oldIt != sampleHeaders.end())
+            {
+                const auto oldEncoded =
+                    SampleHeaderEncoder::encode(
+                        oldIt->second
+                    );
+
+                const auto newEncoded =
+                    SampleHeaderEncoder::encode(
+                        header
+                    );
+
+                if (oldEncoded == newEncoded)
+                {
+                    DBG(
+                        "IGNORE SAMPLE HEADER SEND: NO DATA CHANGE"
+                    );
+
+                    return;
+                }
+            }
+
+
             DBG("SAMPLE HEADER CHANGED");
 
             DBG(
@@ -1404,13 +1905,29 @@ MainComponent::MainComponent()
             );
 
             // ���[�J���f�[�^�X�V
-            sampleHeaders[header.id] = header;
+            //sampleHeaders[header.id] = header;
 
-            // Sample Header -> SysEx
-            auto sysex =
-                SampleHeaderEncoder::makeSysEx(
-                    header
-                );
+            std::vector<uint8_t> sysex;
+
+            if (nameChanged)
+            {
+                DBG("SEND SAMPLE NAME ONLY");
+
+                waitingForSampleRenameReply = true;
+                pendingRenamedSampleId = header.id;
+
+                sysex =
+                    SampleHeaderEncoder::makeNameSysEx(
+                        header
+                    );
+            }
+            else
+            {
+                sysex =
+                    SampleHeaderEncoder::makeSysEx(
+                        header
+                    );
+            }
 
             DBG(
                 "SYSEX SIZE = "
@@ -1420,10 +1937,12 @@ MainComponent::MainComponent()
             );
 
             sysExSender.sendSysEx(sysex);
-
-
-
             DBG("SAMPLE HEADER SYSEX SENT");
+
+            if (!nameChanged)
+            {
+                sampleHeaders[header.id] = header;
+            }
         };
 
     keyboardState.addListener(this);
@@ -1446,8 +1965,8 @@ MainComponent::MainComponent()
             keyboardVelocityLabel.setVisible(showKeyboard);
             keyboardVelocitySlider.setVisible(showKeyboard);
 
-            keyboardOctaveLabel.setVisible(showKeyboard);
-            keyboardOctaveCombo.setVisible(showKeyboard);
+            //keyboardOctaveLabel.setVisible(showKeyboard);
+            //keyboardOctaveCombo.setVisible(showKeyboard);
 
             resized();
             repaint();
@@ -1472,37 +1991,37 @@ MainComponent::MainComponent()
         20
     );
 
-    addAndMakeVisible(keyboardOctaveLabel);
-    keyboardOctaveLabel.setText(
-        "Octave",
-        juce::dontSendNotification
-    );
+    //addAndMakeVisible(keyboardOctaveLabel);
+    //keyboardOctaveLabel.setText(
+    //    "Octave",
+    //    juce::dontSendNotification
+    //);
 
-    addAndMakeVisible(keyboardOctaveCombo);
+    //addAndMakeVisible(keyboardOctaveCombo);
 
-    keyboardOctaveCombo.addItem("C1", 1);
-    keyboardOctaveCombo.addItem("C2", 2);
-    keyboardOctaveCombo.addItem("C3", 3);
-    keyboardOctaveCombo.addItem("C4", 4);
-    keyboardOctaveCombo.addItem("C5", 5);
+    //keyboardOctaveCombo.addItem("C1", 1);
+    //keyboardOctaveCombo.addItem("C2", 2);
+    //keyboardOctaveCombo.addItem("C3", 3);
+    //keyboardOctaveCombo.addItem("C4", 4);
+    //keyboardOctaveCombo.addItem("C5", 5);
 
-    keyboardOctaveCombo.setSelectedId(
-        3,
-        juce::dontSendNotification
-    );
+    //keyboardOctaveCombo.setSelectedId(
+    //    3,
+    //    juce::dontSendNotification
+    //);
 
-    keyboardOctaveCombo.onChange = [this]()
-        {
-            const int octave =
-                keyboardOctaveCombo.getSelectedId();
+    //keyboardOctaveCombo.onChange = [this]()
+    //    {
+    //        const int octave =
+    //            keyboardOctaveCombo.getSelectedId();
 
-            const int noteNumber =
-                octave * 12;
+    //        const int noteNumber =
+    //            octave * 12;
 
-            keyboardComponent.setLowestVisibleKey(
-                noteNumber
-            );
-        };
+    //        keyboardComponent.setLowestVisibleKey(
+    //            noteNumber
+    //        );
+    //    };
 
     addAndMakeVisible(deleteProgramButton);
     addAndMakeVisible(addProgramButton);
@@ -1733,13 +2252,13 @@ void MainComponent::resized()
 
         keyboardControls.removeFromLeft(20);
 
-        keyboardOctaveLabel.setBounds(
-            keyboardControls.removeFromLeft(55)
-        );
+        //keyboardOctaveLabel.setBounds(
+        //    keyboardControls.removeFromLeft(55)
+        //);
 
-        keyboardOctaveCombo.setBounds(
-            keyboardControls.removeFromLeft(80)
-        );
+        //keyboardOctaveCombo.setBounds(
+        //    keyboardControls.removeFromLeft(80)
+       /* );*/
 
         keyboardComponent.setBounds(
             keyboardSection.reduced(20, 5)
@@ -1761,8 +2280,8 @@ void MainComponent::resized()
         keyboardComponent.setBounds({});
         keyboardVelocityLabel.setBounds({});
         keyboardVelocitySlider.setBounds({});
-        keyboardOctaveLabel.setBounds({});
-        keyboardOctaveCombo.setBounds({});
+        //keyboardOctaveLabel.setBounds({});
+        //keyboardOctaveCombo.setBounds({});
     }
 
 
@@ -1937,10 +2456,14 @@ void MainComponent::timerCallback()
 
         if (now - lastShortProgramChangeTime > 150.0)
         {
+            DBG("TIMER: SET programRefreshOnly = true");
             programRefreshPending = false;
             programRefreshOnly = true;
 
-            DBG("PROGRAM REFRESH ONLY REQUEST");
+            DBG(
+                "TIMER: BEFORE sendProgramHeader programRefreshOnly="
+                + juce::String(programRefreshOnly ? 1 : 0)
+            );
 
             sysExSender.sendProgramHeader(
                 loadedProgram.programNumber
@@ -2074,8 +2597,12 @@ void MainComponent::handleIncomingMidiMessage(
 void MainComponent::processIncomingSysEx(
     const juce::MidiMessage& message)
 {
+
     auto* data = message.getSysExData();
     auto size = message.getSysExDataSize();
+
+
+
 
     if (size < 4)
         return;
@@ -2084,6 +2611,14 @@ void MainComponent::processIncomingSysEx(
         return;
 
     uint8_t opcode = data[2];
+
+    DBG(
+        "RX SYSEX OPCODE=0x"
+        + juce::String::toHexString((int)opcode)
+        + " SIZE="
+        + juce::String((int)size)
+
+    );
 
     // MDATA response = heartbeat response
     if (opcode == 0x11)
@@ -2159,6 +2694,15 @@ void MainComponent::processIncomingSysEx(
 
         case 0x28:
         {
+            DBG(
+                "RECEIVED 0x28 size="
+                + juce::String((int)size)
+                + " refreshPending="
+                + juce::String(programRefreshPending ? 1 : 0)
+                + " refreshOnly="
+                + juce::String(programRefreshOnly ? 1 : 0)
+            );
+
 
             if (size >= 6)
             {
@@ -2193,6 +2737,23 @@ void MainComponent::processIncomingSysEx(
 
         case 0x2A:
         {
+            if (size == 13)
+            {
+                DBG("=== SHORT 0x2A ===");
+
+                for (size_t i = 0; i < size; ++i)
+                {
+                    DBG(
+                        "SHORT2A["
+                        + juce::String((int)i)
+                        + "] = 0x"
+                        + juce::String::toHexString((int)data[i])
+                    );
+                }
+
+                break;
+            }
+
             handleKeygroupHeaderResponse();
             break;
         }
@@ -2309,6 +2870,78 @@ void MainComponent::handleSampleHeaderResponse()
     if (decoded.size() < 141)
     {
         DBG("INVALID SAMPLE HEADER SIZE");
+        return;
+    }
+
+    // ========================================
+// SAMPLE RENAME READBACK
+// ========================================
+
+    if (pendingSampleRenameReadbackId >= 0)
+    {
+        const int sampleId =
+            pendingSampleRenameReadbackId;
+
+        pendingSampleRenameReadbackId = -1;
+
+        SampleHeader sh =
+            SampleHeaderParser::parse(
+                decoded,
+                sampleId
+            );
+
+        sh.id = sampleId;
+
+        DBG(
+            "SAMPLE RENAME READBACK ID="
+            + juce::String(sampleId)
+            + " NAME=["
+            + sh.name
+            + "]"
+        );
+
+        // Hardware readback is now authoritative
+        sampleHeaders[sampleId] = sh;
+
+        residentSamples[sampleId] =
+            sh.name.trim();
+
+        for (auto& kg : loadedProgram.keygroups)
+        {
+            for (auto& zone : kg.zones)
+            {
+                if (zone.sampleId == sampleId)
+                {
+                    zone.sampleName =
+                        sh.name;
+                }
+            }
+        }
+
+
+        juce::MessageManager::callAsync(
+            [this, sh, sampleId]()
+            {
+                sampleHeaderEditor.setSampleHeader(
+                    sh
+                );
+
+                velocityZoneEditor.setResidentSamples(
+                    residentSamples
+                );
+
+                programTree.setProgram(
+                    loadedProgram,
+                    sampleHeaders
+                );
+
+                DBG(
+                    "SAMPLE RENAME READBACK UI UPDATED ID="
+                    + juce::String(sampleId)
+                );
+            }
+        );
+
         return;
     }
 
@@ -2648,6 +3281,17 @@ void MainComponent::handleKeygroupDataResponse(
             message.getSysExDataSize()
         );
 
+    DBG("=== KDATA AFTER HARDWARE KNOB ===");
+
+    for (int i = 0; i < (int)decoded.size(); ++i)
+    {
+        DBG(
+            juce::String(i)
+            + " = 0x"
+            + juce::String::toHexString((int)decoded[i])
+        );
+    }
+
 
 
     saveDecodedDump(
@@ -2886,6 +3530,25 @@ void MainComponent::handleKeygroupDataResponse(
         static int finishCount = 0;
         ++finishCount;
 
+        const int restoreKeygroup =
+            juce::jlimit(
+                0,
+                juce::jmax(0, totalKeygroups - 1),
+                currentKeygroup
+            );
+
+        DBG(
+            "RESTORE HARDWARE KG DISPLAY INDEX="
+            + juce::String(restoreKeygroup)
+        );
+
+        restoringKeygroupDisplay = true;
+
+        sysExSender.sendKGHeader(
+            loadedProgram.programNumber,
+            restoreKeygroup
+        );
+
 
 
         // �ʐM���������Z�b�g
@@ -2950,6 +3613,48 @@ void MainComponent::handleCommandReply(
         "AKAI REPLY CODE = "
         + juce::String((int)result)
     );
+
+    // ========================================
+// SAMPLE RENAME Reply
+// ========================================
+
+    if (waitingForSampleRenameReply)
+    {
+        waitingForSampleRenameReply = false;
+
+        const int sampleId =
+            pendingRenamedSampleId;
+
+        pendingRenamedSampleId = -1;
+
+        if (result != 0)
+        {
+            DBG(
+                "SAMPLE RENAME FAILED CODE="
+                + juce::String((int)result)
+            );
+
+            return;
+        }
+
+        DBG(
+            "SAMPLE RENAME REPLY OK ID="
+            + juce::String(sampleId)
+        );
+
+        pendingSampleRenameReadbackId =
+            sampleId;
+
+        // Refresh resident sample names
+        sysExSender.sendRSLIST();
+
+        // Read actual Sample Header back from hardware
+        sysExSender.sendSampleHeader(
+            sampleId
+        );
+
+        return;
+    }
 
     // ========================================
 // ADD PROGRAM - STEP 1 PDATA Reply
@@ -3202,14 +3907,14 @@ void MainComponent::handleCommandReply(
                 // UI�����X�V
                 // ========================================
 
-                keygroupMap.setProgram(
-                    loadedProgram
-                );
+                //keygroupMap.setProgram(
+                //    loadedProgram
+                //);
 
-                programTree.setProgram(
-                    loadedProgram,
-                    sampleHeaders
-                );
+                //programTree.setProgram(
+                //    loadedProgram,
+                //    sampleHeaders
+                //);
 
                 auto& kg =
                     loadedProgram.keygroups[
@@ -3380,6 +4085,64 @@ void MainComponent::handleProgramHeaderResponse()
     auto decoded =
         decodeProgramHeader(programBuffer);
 
+    DBG("=== ENTER handleProgramHeaderResponse ===");
+
+    DBG(
+        "PROGRAM HEADER MODSPITCH="
+        + juce::String(
+            static_cast<int8_t>(
+                decoded[ProgramOffset::Mod::ModSPitch]
+                )
+        )
+        + " MODVPITCH="
+        + juce::String(
+            static_cast<int8_t>(
+                decoded[ProgramOffset::Mod::ModVPitch]
+                )
+        )
+    );
+
+    static std::vector<uint8_t> previousProgramData;
+
+    DBG(
+        "PROGRAM HEADER MODSPITCH="
+        + juce::String(
+            static_cast<int8_t>(
+                decoded[ProgramOffset::Mod::ModSPitch]
+                )
+        )
+        + " MODVPITCH="
+        + juce::String(
+            static_cast<int8_t>(
+                decoded[ProgramOffset::Mod::ModVPitch]
+                )
+        )
+    );
+
+    if (!previousProgramData.empty()
+        && previousProgramData.size() == decoded.size())
+    {
+        DBG("=== PROGRAM HEADER DIFF ===");
+
+        for (size_t i = 0; i < decoded.size(); ++i)
+        {
+            if (decoded[i] != previousProgramData[i])
+            {
+                DBG(
+                    "OFFSET "
+                    + juce::String((int)i)
+                    + ": "
+                    + juce::String((int)previousProgramData[i])
+                    + " -> "
+                    + juce::String((int)decoded[i])
+                );
+            }
+        }
+    }
+
+    previousProgramData = decoded;
+
+
 
 
     if (decoded.size() < 192)
@@ -3439,6 +4202,12 @@ void MainComponent::handleProgramHeaderResponse()
     // ���@�p�����[�^�ύX�ɂ��Ď擾�Ȃ�
     // �����͈�؍X�V���Ȃ�
     // ========================================
+
+    DBG(
+        "PROGRAM HEADER RESPONSE: programRefreshOnly="
+        + juce::String(programRefreshOnly ? 1 : 0)
+    );
+
 
     if (programRefreshOnly)
     {
@@ -3500,6 +4269,20 @@ void MainComponent::handleProgramHeaderResponse()
 
     if (totalKeygroups > 0)
     {
+        DBG(
+            "PROGRAM HEADER RESPONSE: FULL LOAD -> SEND KG HEADER "
+            + juce::String(loadingKeygroup)
+        );
+
+        DBG(
+            "START FULL KG LOAD"
+            " program=" + juce::String(loadedProgram.programNumber)
+            + " groups=" + juce::String(totalKeygroups)
+            + " refreshOnly="
+            + juce::String(programRefreshOnly ? 1 : 0)
+            + " refreshPending="
+            + juce::String(programRefreshPending ? 1 : 0)
+        );
 
 
         sysExSender.sendKGHeader(
@@ -3621,6 +4404,14 @@ void MainComponent::handleRPDataResponse()
 void MainComponent::handleKeygroupHeaderResponse()
 {
     DBG("ENTER CASE 0x2A");
+
+    if (restoringKeygroupDisplay)
+    {
+        DBG("RESTORE KG DISPLAY RESPONSE - IGNORE KDATA REQUEST");
+
+        restoringKeygroupDisplay = false;
+        return;
+    }
 
     if (pendingAddProgramStage !=
         PendingAddProgramStage::none)
@@ -4181,6 +4972,9 @@ void MainComponent::loadProgram(
 
     currentProgram = programIndex;
 
+    currentProgramIndex =
+        programIndex;
+
     programCombo.setSelectedItemIndex(
         programIndex,
         juce::dontSendNotification
@@ -4192,8 +4986,8 @@ void MainComponent::loadProgram(
 
     loadingKeygroup = 0;
 
-    loadedProgram.programNumber =
-        programIndex;
+ /*   loadedProgram.programNumber =
+        programIndex;*/
 
     loadedProgram.keygroups.clear();
 
@@ -4470,6 +5264,16 @@ void MainComponent::listBoxItemClicked(
 
     currentProgramIndex =
         programList[row].index;
+
+
+
+    DBG(
+        "RESIDENT PROGRAM SELECTED"
+        " ROW="
+        + juce::String(row)
+        + " INDEX="
+        + juce::String(currentProgramIndex)
+    );
 
 
 
