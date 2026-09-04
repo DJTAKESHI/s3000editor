@@ -318,6 +318,57 @@ MainComponent::MainComponent()
         false
     );
 
+    programEditor.onModFilter1SourceChanged =
+        [this](int value)
+        {
+            DBG(
+                "PROGRAM MOD FILTER1 SOURCE WRITE VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Mod::ModSFilter1,
+                value
+            );
+
+            loadedProgram.modSFilter1 = value;
+        };
+
+    programEditor.onModFilter2SourceChanged =
+        [this](int value)
+        {
+            DBG(
+                "PROGRAM MOD FILTER2 SOURCE WRITE VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Mod::ModSFilter2,
+                value
+            );
+
+            loadedProgram.modSFilter2 = value;
+        };
+
+    programEditor.onModFilter3SourceChanged =
+        [this](int value)
+        {
+            DBG(
+                "PROGRAM MOD FILTER3 SOURCE WRITE VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Mod::ModSFilter3,
+                value
+            );
+
+            loadedProgram.modSFilter3 = value;
+        };
+
     
     programEditor.onProgramChanged =
         [this](
@@ -3001,6 +3052,49 @@ void MainComponent::processIncomingSysEx(
                 {
                     DBG("SHORT[" + juce::String((int)i) + "] = 0x"
                         + juce::String::toHexString((int)data[i]));
+                }
+
+                // Short Program Header byte update
+                if (size == 13)
+                {
+                    const int offset =
+                        (data[7] & 0x7F)
+                        | ((data[8] & 0x7F) << 7);
+
+                    const uint8_t rawValue =
+                        (data[11] & 0x0F)
+                        | ((data[12] & 0x0F) << 4);
+
+                    const int value = static_cast<int>(rawValue);
+
+                    DBG(
+                        "SHORT PROGRAM HEADER OFFSET="
+                        + juce::String(offset)
+                        + " VALUE="
+                        + juce::String(value)
+                    );
+
+                    if (offset == ProgramOffset::Mod::ModSFilter1)
+                    {
+                        loadedProgram.modSFilter1 = value;
+
+                        DBG("UPDATE PROGRAM MODSFILTER1 VALUE="
+                            + juce::String(value));
+                    }
+                    else if (offset == ProgramOffset::Mod::ModSFilter2)
+                    {
+                        loadedProgram.modSFilter2 = value;
+
+                        DBG("UPDATE PROGRAM MODSFILTER2 VALUE="
+                            + juce::String(value));
+                    }
+                    else if (offset == ProgramOffset::Mod::ModSFilter3)
+                    {
+                        loadedProgram.modSFilter3 = value;
+
+                        DBG("UPDATE PROGRAM MODSFILTER3 VALUE="
+                            + juce::String(value));
+                    }
                 }
 
                 lastShortProgramChangeTime =

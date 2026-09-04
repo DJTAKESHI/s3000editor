@@ -1964,29 +1964,50 @@ ProgramEditor::ProgramEditor()
 
     modFilter1SourceCombo.onChange = [this]()
         {
-            currentProgram.modSFilter1 =
+            const int value =
                 modFilter1SourceCombo.getSelectedId() - 1;
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            currentProgram.modSFilter1 = value;
+
+            DBG(
+                "FILTER1 SOURCE CHANGED VALUE="
+                + juce::String(value)
+            );
+
+            if (onModFilter1SourceChanged)
+                onModFilter1SourceChanged(value);
         };
 
     modFilter2SourceCombo.onChange = [this]()
         {
-            currentProgram.modSFilter2 =
+            const int value =
                 modFilter2SourceCombo.getSelectedId() - 1;
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            currentProgram.modSFilter2 = value;
+
+            DBG(
+                "FILTER2 SOURCE CHANGED VALUE="
+                + juce::String(value)
+            );
+
+            if (onModFilter2SourceChanged)
+                onModFilter2SourceChanged(value);
         };
 
     modFilter3SourceCombo.onChange = [this]()
         {
-            currentProgram.modSFilter3 =
+            const int value =
                 modFilter3SourceCombo.getSelectedId() - 1;
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            currentProgram.modSFilter3 = value;
+
+            DBG(
+                "FILTER3 SOURCE CHANGED VALUE="
+                + juce::String(value)
+            );
+
+            if (onModFilter3SourceChanged)
+                onModFilter3SourceChanged(value);
         };
 
     modPitchSourceCombo.onChange = [this]()

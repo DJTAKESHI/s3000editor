@@ -23,6 +23,10 @@ public:
     std::function<void(int)> onLfo1PitchChanged;
     std::function<void(int)> onModFilter2Changed;
     std::function<void(int)> onModFilter3Changed;
+    std::function<void(int)> onModFilter1SourceChanged;
+    std::function<void(int)> onModFilter2SourceChanged;
+    std::function<void(int)> onModFilter3SourceChanged;
+
 
 
 
