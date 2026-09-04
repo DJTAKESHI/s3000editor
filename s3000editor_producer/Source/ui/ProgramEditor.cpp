@@ -1790,6 +1790,18 @@ ProgramEditor::ProgramEditor()
         modPan1AmountLabel
     );
 
+    lfo1PitchLabel.setText(
+        "LFO1 -> Pitch",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(lfo1PitchLabel);
+
+    setupModAmountSlider(
+        lfo1PitchSlider,
+        lfo1PitchAmountLabel
+    );
+
     setupModAmountSlider(
         modPitchAmountSlider,
         modPitchAmountLabel
@@ -1828,6 +1840,20 @@ ProgramEditor::ProgramEditor()
     setupModAmountSlider(
         modLfo1DelayAmountSlider,
         modLfo1DelayAmountLabel
+    );
+
+    setupModAmountSlider(
+        modFilter1AmountSlider,
+        modFilter1AmountLabel
+    );
+
+    setupModAmountSlider(
+        modFilter2AmountSlider,
+        modFilter2AmountLabel
+    );
+    setupModAmountSlider(
+        modFilter3AmountSlider,
+        modFilter3AmountLabel
     );
 
     modPan1SourceCombo.onChange = [this]()
@@ -1968,8 +1994,15 @@ ProgramEditor::ProgramEditor()
             currentProgram.modSPitch =
                 modPitchSourceCombo.getSelectedId() - 1;
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            DBG(
+                "MOD PITCH SOURCE CHANGED="
+                + juce::String(currentProgram.modSPitch)
+            );
+
+            if (onModPitchSourceChanged)
+                onModPitchSourceChanged(
+                    currentProgram.modSPitch
+                );
         };
 
 
@@ -2048,6 +2081,51 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
+    modFilter1AmountSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                (int)modFilter1AmountSlider.getValue();
+
+            DBG(
+                "FILTER1 AMOUNT EDIT FINISHED="
+                + juce::String(value)
+            );
+
+            if (onModFilter1Changed)
+                onModFilter1Changed(value);
+        };
+
+    modFilter2AmountSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                (int)modFilter2AmountSlider.getValue();
+
+            DBG(
+                "FILTER2 AMOUNT EDIT FINISHED="
+                + juce::String(value)
+            );
+
+            if (onModFilter2Changed)
+                onModFilter2Changed(value);
+        };
+
+    modFilter3AmountSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                (int)modFilter3AmountSlider.getValue();
+
+            DBG(
+                "FILTER3 AMOUNT EDIT FINISHED="
+                + juce::String(value)
+            );
+
+            if (onModFilter3Changed)
+                onModFilter3Changed(value);
+        };
+
     modPitchAmountSlider.onDragEnd =
         [this]()
         {
@@ -2063,6 +2141,20 @@ ProgramEditor::ProgramEditor()
                 onEnv2PitchChanged(value);
         };
 
+    lfo1PitchSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                (int)lfo1PitchSlider.getValue();
+
+            DBG(
+                "LFO1 PITCH EDIT FINISHED="
+                + juce::String(value)
+            );
+
+            if (onLfo1PitchChanged)
+                onLfo1PitchChanged(value);
+        };
 
     velocityLoudnessLabel.setText(
         "Vel -> Loud",
@@ -2267,6 +2359,45 @@ ProgramEditor::ProgramEditor()
 
 }
 
+void ProgramEditor::setModFilter1Amount(int value)
+{
+    modFilter1AmountSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+
+    modFilter1AmountLabel.setText(
+        juce::String(value),
+        juce::dontSendNotification
+    );
+}
+
+void ProgramEditor::setModFilter2Amount(int value)
+{
+    modFilter2AmountSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+
+    modFilter2AmountLabel.setText(
+        juce::String(value),
+        juce::dontSendNotification
+    );
+}
+
+void ProgramEditor::setModFilter3Amount(int value)
+{
+    modFilter3AmountSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+
+    modFilter3AmountLabel.setText(
+        juce::String(value),
+        juce::dontSendNotification
+    );
+}
+
 void ProgramEditor::setModPitchAmount(int value)
 {
     modPitchAmountSlider.setValue(
@@ -2275,6 +2406,21 @@ void ProgramEditor::setModPitchAmount(int value)
     );
 
     modPitchAmountLabel.setText(
+        value > 0
+        ? "+" + juce::String(value)
+        : juce::String(value),
+        juce::dontSendNotification
+    );
+}
+
+void ProgramEditor::setLfo1PitchAmount(int value)
+{
+    lfo1PitchSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+
+    lfo1PitchAmountLabel.setText(
         value > 0
         ? "+" + juce::String(value)
         : juce::String(value),
@@ -3818,7 +3964,7 @@ void ProgramEditor::resized()
     // =========================
 
     modFilterPitchCardBounds =
-        right.removeFromTop(190);
+        right.removeFromTop(230);
 
     auto modFilterPitch =
         modFilterPitchCardBounds.reduced(10);
@@ -3844,22 +3990,28 @@ void ProgramEditor::resized()
             );
         };
 
-    layoutModSourceRow(
+    layoutModAmountRow(
         modFilterPitch,
         modFilter1Label,
-        modFilter1SourceCombo
+        modFilter1SourceCombo,
+        modFilter1AmountSlider,
+        modFilter1AmountLabel
     );
 
-    layoutModSourceRow(
+    layoutModAmountRow(
         modFilterPitch,
         modFilter2Label,
-        modFilter2SourceCombo
+        modFilter2SourceCombo,
+        modFilter2AmountSlider,
+        modFilter2AmountLabel
     );
 
-    layoutModSourceRow(
+    layoutModAmountRow(
         modFilterPitch,
         modFilter3Label,
-        modFilter3SourceCombo
+        modFilter3SourceCombo,
+        modFilter3AmountSlider,
+        modFilter3AmountLabel
     );
 
     layoutModAmountRow(
@@ -3869,6 +4021,23 @@ void ProgramEditor::resized()
         modPitchAmountSlider,
         modPitchAmountLabel
     );
+
+    {
+        auto row =
+            modFilterPitch.removeFromTop(modRowHeight);
+
+        lfo1PitchLabel.setBounds(
+            row.removeFromLeft(modNameWidth)
+        );
+
+        lfo1PitchAmountLabel.setBounds(
+            row.removeFromRight(modValueWidth)
+        );
+
+        lfo1PitchSlider.setBounds(
+            row.reduced(4, 7)
+        );
+    }
 
 
 

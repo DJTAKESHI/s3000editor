@@ -373,12 +373,19 @@ ProgramEncoder::encode(
 			program.lfo1Desync ? 1 : 0
 			);
 
+	data[ProgramOffset::LFO::LFO1Rate] =
+		static_cast<uint8_t>(
+			program.lfo1Rate
+			);
+
 	data[
 		ProgramOffset::LFO::LFO1Depth
 	] =
 		static_cast<uint8_t>(
 			program.lfo1Depth
 			);
+
+
 
 	DBG(
 		"ENCODE PROGRAM TUNE = "

@@ -526,6 +526,107 @@ void SysExSender::sendKeygroupHeaderByte(
 //    midiOutput->sendMessageNow(message);
 //}
 
+void SysExSender::sendProgramHeaderByte(
+    int programIndex,
+    int offset,
+    int value)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    const uint8_t raw =
+        static_cast<uint8_t>(
+            static_cast<int8_t>(value)
+            );
+
+    uint8_t data[]
+    {
+        0x47,
+        0x00,
+        0x28,
+        0x48,
+
+        static_cast<uint8_t>(programIndex & 0x7F),
+        static_cast<uint8_t>((programIndex >> 7) & 0x7F),
+
+        0x00, // Reserved Å© Ç±ÇÍÇ™ïKóv
+
+        static_cast<uint8_t>(offset & 0x7F),
+        static_cast<uint8_t>((offset >> 7) & 0x7F),
+
+        0x01,
+        0x00,
+
+        static_cast<uint8_t>(raw & 0x0F),
+        static_cast<uint8_t>((raw >> 4) & 0x0F)
+    };
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG(
+        "SEND PROGRAM HEADER BYTE OFFSET="
+        + juce::String(offset)
+        + " VALUE="
+        + juce::String(value)
+    );
+}
+
+void SysExSender::sendKeygroupHeaderByteRequest(
+    int programIndex,
+    int keygroup,
+    int offset)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    uint8_t data[]
+    {
+        0x47,
+        0x00,
+        0x29,
+        0x48,
+
+        static_cast<uint8_t>(programIndex & 0x7F),
+        static_cast<uint8_t>((programIndex >> 7) & 0x7F),
+
+        static_cast<uint8_t>(keygroup & 0x7F),
+
+        static_cast<uint8_t>(offset & 0x7F),
+        static_cast<uint8_t>((offset >> 7) & 0x7F),
+
+        0x01,
+        0x00
+    };
+
+    auto msg =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    midiOutput->sendMessageNow(msg);
+
+    DBG(
+        "REQUEST KG HEADER BYTE KG="
+        + juce::String(keygroup)
+        + " OFFSET="
+        + juce::String(offset)
+    );
+}
+
+
 void SysExSender::sendKeygroupData(
     int programIndex,
     int keygroupIndex,

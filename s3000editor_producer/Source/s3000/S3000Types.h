@@ -156,6 +156,11 @@ struct Keygroup
     uint16_t nextAddress = 0;    // NXTKG@
 
     int modVPitch = 0;
+    int lfo1Pitch = 0;
+
+    int modFilter1 = 0;
+    int modFilter2 = 0;
+    int modFilter3 = 0;
 
     // ===== Key range =====
     int lowNote = 0;
@@ -225,6 +230,8 @@ struct Program
     int lfo1Rate = 0;
     int lfo1Depth = 0;
     int lfo1Delay = 0;
+
+    //int lfo1Pitch = 0;
 
     int lfo2Rate = 0;
     int lfo2Depth = 0;

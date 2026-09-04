@@ -122,6 +122,68 @@ MainComponent::MainComponent()
             currentKeygroup = index;
             currentZone = 0;
 
+            const int modVPitch =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .modVPitch;
+
+            DBG(
+                "MAP SELECT KG MODVPITCH KG="
+                + juce::String(currentKeygroup)
+                + " VALUE="
+                + juce::String(modVPitch)
+            );
+
+            const int modFilter1 =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .modFilter1;
+
+            const int modFilter2 =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .modFilter2;
+
+            const int modFilter3 =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .modFilter3;
+
+
+            programEditor.setModPitchAmount(
+                modVPitch
+            );
+
+            programEditor.setModFilter1Amount(
+                modFilter1
+            );
+
+            programEditor.setModFilter2Amount(
+                modFilter2
+            );
+
+            programEditor.setModFilter3Amount(
+                modFilter3
+            );
+
+
+            const int lfo1Pitch =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .lfo1Pitch;
+
+            DBG(
+                "MAP SELECT KG LFO1PITCH KG="
+                + juce::String(currentKeygroup)
+                + " VALUE="
+                + juce::String(lfo1Pitch)
+            );
+
+            programEditor.setLfo1PitchAmount(
+                lfo1Pitch
+            );
+
+
             const auto& kg =
                 loadedProgram.keygroups[index];
 
@@ -261,6 +323,14 @@ MainComponent::MainComponent()
         [this](
             const Program& program)
         {
+
+            DBG(
+                "PROGRAM CHANGE MODSPITCH="
+                + juce::String(program.modSPitch)
+                + " MODVPITCH="
+                + juce::String(program.modVPitch)
+            );
+
             const bool nameChanged =
                 program.name != loadedProgram.name;
 
@@ -472,6 +542,131 @@ MainComponent::MainComponent()
             loadedProgram.modVPitch = program.modVPitch;
         };
 
+        programEditor.onModPitchSourceChanged =
+            [this](int value)
+            {
+                DBG(
+                    "PROGRAM MOD PITCH SOURCE WRITE VALUE="
+                    + juce::String(value)
+                );
+
+                DBG("SOURCE STEP 1");
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    ProgramOffset::Mod::ModSPitch,
+                    value
+                );
+
+                DBG("SOURCE STEP 2");
+
+                loadedProgram.modSPitch = value;
+
+                DBG("SOURCE STEP 3");
+
+                
+
+            };
+
+        programEditor.onModFilter1Changed =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        ))
+                {
+                    DBG("FILTER1 AMOUNT: INVALID KEYGROUP");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.modFilter1 = value;
+
+                DBG(
+                    "KG FILTER1 AMOUNT WRITE KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    KeygroupHeaderOffset::Mod::Filter1,
+                    value
+                );
+
+            };
+
+        programEditor.onModFilter2Changed =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        ))
+                {
+                    DBG("FILTER2 AMOUNT: INVALID KEYGROUP");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.modFilter2 = value;
+
+                DBG(
+                    "KG FILTER2 AMOUNT WRITE KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    KeygroupHeaderOffset::Mod::Filter2,
+                    value
+                );
+            };
+
+        programEditor.onModFilter3Changed =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        ))
+                {
+                    DBG("FILTER3 AMOUNT: INVALID KEYGROUP");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.modFilter3 = value;
+
+                DBG(
+                    "KG FILTER3 AMOUNT WRITE KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    KeygroupHeaderOffset::Mod::Filter3,
+                    value
+                );
+            };
 
         programEditor.onEnv2PitchChanged =
             [this](int value)
@@ -501,6 +696,39 @@ MainComponent::MainComponent()
                     currentKeygroup,
                     KeygroupHeaderOffset::Mod::ModVPitch,
                     keygroup.modVPitch
+                );
+            };
+
+        programEditor.onLfo1PitchChanged =
+            [this](int value)
+            {
+                if (currentKeygroup < 0 ||
+                    currentKeygroup >=
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        ))
+                {
+                    DBG("LFO1 PITCH: INVALID KEYGROUP");
+                    return;
+                }
+
+                auto& keygroup =
+                    loadedProgram.keygroups[currentKeygroup];
+
+                keygroup.lfo1Pitch = value;
+
+                DBG(
+                    "KG LFO1 PITCH WRITE KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(keygroup.lfo1Pitch)
+                );
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    currentKeygroup,
+                    KeygroupHeaderOffset::Mod::Lfo1Pitch,
+                    keygroup.lfo1Pitch
                 );
             };
 
@@ -580,6 +808,27 @@ MainComponent::MainComponent()
             }
 
             currentZone = zoneIndex;
+
+            if (currentKeygroup >= 0 &&
+                currentKeygroup <
+                static_cast<int>(loadedProgram.keygroups.size()))
+            {
+                const int modVPitch =
+                    loadedProgram
+                    .keygroups[currentKeygroup]
+                    .modVPitch;
+
+                DBG(
+                    "SELECT KG MODVPITCH KG="
+                    + juce::String(currentKeygroup)
+                    + " VALUE="
+                    + juce::String(modVPitch)
+                );
+
+                programEditor.setModPitchAmount(
+                    modVPitch
+                );
+            }
 
             DBG("MAIN COMPONENT RECEIVED ZONE SELECTION");
 
@@ -1423,6 +1672,21 @@ MainComponent::MainComponent()
                 loadedProgram
                 .keygroups[keygroupIndex]
                 .modVPitch;
+
+            updatedKeygroup.modFilter1 =
+                loadedProgram
+                .keygroups[keygroupIndex]
+                .modFilter1;
+
+            updatedKeygroup.modFilter2 =
+                loadedProgram
+                .keygroups[keygroupIndex]
+                .modFilter2;
+
+            updatedKeygroup.modFilter3 =
+                loadedProgram
+                .keygroups[keygroupIndex]
+                .modFilter3;
 
             loadedProgram.keygroups[keygroupIndex] =
                 updatedKeygroup;
@@ -2792,6 +3056,117 @@ void MainComponent::processIncomingSysEx(
                     + juce::String(signedValue)
                 );
 
+                if (offset == KeygroupHeaderOffset::Mod::Lfo1Pitch
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].lfo1Pitch =
+                        signedValue;
+
+                    DBG(
+                        "UPDATE KG LFO1PITCH KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(signedValue)
+                    );
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, signedValue]()
+                            {
+                                programEditor.setLfo1PitchAmount(
+                                    signedValue
+                                );
+                            }
+                        );
+                    }
+
+                }
+
+                if (offset == KeygroupHeaderOffset::Mod::Filter1
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].modFilter1 =
+                        signedValue;
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, signedValue]()
+                            {
+                                programEditor.setModFilter1Amount(
+                                    signedValue
+                                );
+                            }
+                        );
+                    }
+
+                    DBG(
+                        "UPDATE KG MODFILTER1 KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(signedValue)
+                    );
+                }
+
+                if (offset == KeygroupHeaderOffset::Mod::Filter2
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].modFilter2 =
+                        signedValue;
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, signedValue]()
+                            {
+                                programEditor.setModFilter2Amount(
+                                    signedValue
+                                );
+                            }
+                        );
+                    }
+
+                    DBG(
+                        "UPDATE KG MODFILTER2 KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(signedValue)
+                    );
+                }
+
+                if (offset == KeygroupHeaderOffset::Mod::Filter3
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].modFilter3 =
+                        signedValue;
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, signedValue]()
+                            {
+                                programEditor.setModFilter3Amount(
+                                    signedValue
+                                );
+                            }
+                        );
+
+                    }
+                    DBG(
+                        "UPDATE KG MODFILTER3 KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(signedValue)
+                    );
+                }
+
+
+
                 if (offset == KeygroupHeaderOffset::Mod::ModVPitch
                     && keygroup >= 0
                     && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
@@ -3350,6 +3725,23 @@ void MainComponent::handleKeygroupDataResponse(
             message.getSysExDataSize()
         );
 
+    DBG(
+        "KDATA DECODED SIZE="
+        + juce::String((int)decoded.size())
+    );
+
+    if (decoded.size() > 154)
+    {
+        DBG(
+            "KDATA OFFSET154 RAW="
+            + juce::String((int)decoded[154])
+            + " VALUE="
+            + juce::String(
+                (int)static_cast<int8_t>(decoded[154])
+            )
+        );
+    }
+
     DBG("=== KDATA AFTER HARDWARE KNOB ===");
 
     for (int i = 0; i < (int)decoded.size(); ++i)
@@ -3391,6 +3783,16 @@ void MainComponent::handleKeygroupDataResponse(
         );
 
 
+    //DBG("=== KG RAW DATA ===");
+
+    //for (int i = 0; i < (int)kg.rawData.size(); ++i)
+    //{
+    //    DBG(
+    //        juce::String(i)
+    //        + " = "
+    //        + juce::String((int)kg.rawData[i])
+    //    );
+    //}
 
 
 
@@ -3485,6 +3887,29 @@ void MainComponent::handleKeygroupDataResponse(
         );
     }
 
+    sysExSender.sendKeygroupHeaderByteRequest(
+        loadedProgram.programNumber,
+        loadingKeygroup,
+        KeygroupHeaderOffset::Mod::Lfo1Pitch
+    );
+
+    sysExSender.sendKeygroupHeaderByteRequest(
+        loadedProgram.programNumber,
+        loadingKeygroup,
+        KeygroupHeaderOffset::Mod::Filter1
+    );
+
+    sysExSender.sendKeygroupHeaderByteRequest(
+        loadedProgram.programNumber,
+        loadingKeygroup,
+        KeygroupHeaderOffset::Mod::Filter2
+    );
+
+    sysExSender.sendKeygroupHeaderByteRequest(
+        loadedProgram.programNumber,
+        loadingKeygroup,
+        KeygroupHeaderOffset::Mod::Filter3
+    );
 
 
 
@@ -4187,6 +4612,15 @@ void MainComponent::handleProgramHeaderResponse()
         + juce::String(
             static_cast<int8_t>(
                 decoded[ProgramOffset::Mod::ModVPitch]
+                )
+        )
+    );
+
+    DBG(
+        "PROGRAM L_PTCH OFFSET150 RAW="
+        + juce::String(
+            static_cast<int8_t>(
+                decoded[150]
                 )
         )
     );

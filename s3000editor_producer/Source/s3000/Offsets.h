@@ -192,6 +192,9 @@ namespace KeygroupOffset
     // ===== ModMatrix =====
     namespace Mod
     {
+        //constexpr std::size_t Lfo1Pitch = 150;
+        //constexpr std::size_t ModVPitch = 154;
+
         constexpr std::size_t MOD_BASE = 151;
     }
 }
@@ -306,6 +309,12 @@ namespace KeygroupHeaderOffset
 
     namespace Mod
     {
+        constexpr std::size_t Lfo1Pitch = 150;
+
+        constexpr std::size_t Filter1 = 151;
+        constexpr std::size_t Filter2 = 152;
+        constexpr std::size_t Filter3 = 153;
+
         constexpr std::size_t ModVPitch = 154;
     }
 

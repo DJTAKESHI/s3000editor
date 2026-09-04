@@ -40,6 +40,13 @@ Keygroup KeygroupParser::parse(
 {
     DBG("========== KeygroupParser::parse ENTER ==========");
 
+    DBG(
+        "KG L_PTCH OFFSET150 RAW="
+        + juce::String(
+            static_cast<int8_t>(d[150])
+        )
+    );
+
 
     DBG("parse size = " + juce::String((int)d.size()));
     Keygroup k{};
@@ -228,6 +235,20 @@ Keygroup KeygroupParser::parse(
         static_cast<int8_t>(
             d[KGH::Velocity::E_PTCH]
             );
+
+    //k.lfo1Pitch =
+    //    static_cast<int8_t>(
+    //        d[KeygroupHeaderOffset::Mod::Lfo1Pitch]
+    //        );
+
+    //DBG(
+    //    "PARSE KG LFO1PITCH OFFSET150 RAW="
+    //    + juce::String(
+    //        (int)d[KeygroupHeaderOffset::Mod::Lfo1Pitch]
+    //    )
+    //    + " VALUE="
+    //    + juce::String(k.lfo1Pitch)
+    //);
 
     k.modVPitch =
         static_cast<int8_t>(

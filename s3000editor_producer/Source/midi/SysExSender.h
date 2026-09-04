@@ -14,6 +14,12 @@ public:
         uint8_t value
     );
 
+    void sendProgramHeaderByte(
+        int programIndex,
+        int offset,
+        int value);
+
+
     void sendKeygroupHeaderByte(
         int programIndex,
         int keygroup,
@@ -40,6 +46,11 @@ public:
     void sendKGHeader(
         int programIndex,
         int keygroup);
+    void sendKeygroupHeaderByteRequest(
+        int programIndex,
+        int keygroup,
+        int offset);
+
     
     void sendKData(
         int programIndex,

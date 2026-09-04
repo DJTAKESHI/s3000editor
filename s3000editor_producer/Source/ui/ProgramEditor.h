@@ -15,9 +15,23 @@ public:
     std::function<void(const Program&)>
         onProgramChanged;
 
+    std::function<void(int)> onModFilter1Changed;
+
     std::function<void(int)> onEnv2PitchChanged;
+    std::function<void(int)> onModPitchSourceChanged;
+
+    std::function<void(int)> onLfo1PitchChanged;
+    std::function<void(int)> onModFilter2Changed;
+    std::function<void(int)> onModFilter3Changed;
+
+
 
     void setModPitchAmount(int value);
+    void setLfo1PitchAmount(int value);
+
+    void setModFilter1Amount(int value);
+    void setModFilter2Amount(int value);
+    void setModFilter3Amount(int value);
 
 
 
@@ -233,6 +247,13 @@ private:
     // MODULATION - FILTER / PITCH
     // =========================
 
+    juce::Slider modFilter1AmountSlider;
+    juce::Label modFilter1AmountLabel;
+    juce::Slider modFilter2AmountSlider;
+    juce::Label modFilter2AmountLabel;
+    juce::Slider modFilter3AmountSlider;
+    juce::Label modFilter3AmountLabel;
+
     juce::Label modFilterPitchSectionLabel;
     juce::Rectangle<int> modFilterPitchCardBounds;
 
@@ -249,6 +270,10 @@ private:
     juce::ComboBox modPitchSourceCombo;
     juce::Slider modPitchAmountSlider;
     juce::Label modPitchAmountLabel;
+
+    juce::Label lfo1PitchLabel;
+    juce::Slider lfo1PitchSlider;
+    juce::Label lfo1PitchAmountLabel;
 
     juce::Label velocityLoudnessLabel;
     juce::Slider velocityLoudnessSlider;
