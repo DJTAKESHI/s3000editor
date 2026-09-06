@@ -1000,3 +1000,90 @@ void SysExSender::sendKeygroupByte(
 
     midiOutput->sendMessageNow(message);
 }
+
+void SysExSender::sendKeygroupWord(
+    int programIndex,
+    int keygroupIndex,
+    int byteOffset,
+    uint16_t value
+)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    std::vector<uint8_t> sysex;
+
+    sysex.push_back(0x47);
+    sysex.push_back(0x00);
+    sysex.push_back(0x2A);
+    sysex.push_back(0x48);
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            programIndex & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            (programIndex >> 7) & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            keygroupIndex & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            byteOffset & 0x7F
+            )
+    );
+
+    sysex.push_back(
+        static_cast<uint8_t>(
+            (byteOffset >> 7) & 0x7F
+            )
+    );
+
+    // Data length = 2 bytes
+    sysex.push_back(0x02);
+    sysex.push_back(0x00);
+
+    const uint8_t lowByte =
+        static_cast<uint8_t>(value & 0xFF);
+
+    const uint8_t highByte =
+        static_cast<uint8_t>((value >> 8) & 0xFF);
+
+    sysex.push_back(lowByte & 0x0F);
+    sysex.push_back((lowByte >> 4) & 0x0F);
+
+    sysex.push_back(highByte & 0x0F);
+    sysex.push_back((highByte >> 4) & 0x0F);
+
+    DBG(
+        "SEND KEYGROUP WORD"
+        " PROGRAM="
+        + juce::String(programIndex)
+        + " KG="
+        + juce::String(keygroupIndex)
+        + " OFFSET="
+        + juce::String(byteOffset)
+        + " VALUE="
+        + juce::String(value)
+    );
+
+    const auto message =
+        juce::MidiMessage::createSysExMessage(
+            sysex.data(),
+            sysex.size()
+        );
+
+    midiOutput->sendMessageNow(message);
+}

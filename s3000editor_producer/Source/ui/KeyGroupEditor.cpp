@@ -514,8 +514,19 @@ KeyGroupEditor::KeyGroupEditor()
             int r3, int l3,
             int r4, int l4)
         {
+            const bool r1Changed =
+                currentKeygroup.env2.r1 != r1;
+
             currentKeygroup.env2.r1 = r1;
             currentKeygroup.env2.l1 = l1;
+
+            if (r1Changed && onEnv2R1Changed)
+            {
+                onEnv2R1Changed(
+                    currentKeygroupIndex,
+                    r1
+                );
+            }
 
             currentKeygroup.env2.r2 = r2;
             currentKeygroup.env2.l2 = l2;
@@ -554,13 +565,7 @@ KeyGroupEditor::KeyGroupEditor()
     env2Editor.onEditFinished =
         [this]()
         {
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
+            DBG("ENV2 EDIT FINISHED");
         };
 
 
@@ -659,11 +664,11 @@ KeyGroupEditor::KeyGroupEditor()
             // 数値欄への直接入力時
             if (!resonanceKnob.isMouseButtonDown())
             {
-                if (onKeygroupChanged)
+                if (onResonanceChanged)
                 {
-                    onKeygroupChanged(
+                    onResonanceChanged(
                         currentKeygroupIndex,
-                        currentKeygroup
+                        currentKeygroup.filter.resonance
                     );
                 }
             }
@@ -678,15 +683,14 @@ KeyGroupEditor::KeyGroupEditor()
                 )
             );
 
-            if (onKeygroupChanged)
+            if (onResonanceChanged)
             {
-                onKeygroupChanged(
+                onResonanceChanged(
                     currentKeygroupIndex,
-                    currentKeygroup
+                    currentKeygroup.filter.resonance
                 );
             }
         };
-
 
 
 
@@ -736,15 +740,13 @@ KeyGroupEditor::KeyGroupEditor()
                 + juce::String(value)
             );
 
-            // 数値欄への直接入力など、
-            // マウスドラッグ以外の変更はここで送信
             if (!filterFreqKnob.isMouseButtonDown())
             {
-                if (onKeygroupChanged)
+                if (onFilterFreqChanged)
                 {
-                    onKeygroupChanged(
+                    onFilterFreqChanged(
                         currentKeygroupIndex,
-                        currentKeygroup
+                        value
                     );
                 }
             }
@@ -759,11 +761,11 @@ KeyGroupEditor::KeyGroupEditor()
                 )
             );
 
-            if (onKeygroupChanged)
+            if (onFilterFreqChanged)
             {
-                onKeygroupChanged(
+                onFilterFreqChanged(
                     currentKeygroupIndex,
-                    currentKeygroup
+                    currentKeygroup.filter.freq
                 );
             }
         };
@@ -780,7 +782,7 @@ KeyGroupEditor::KeyGroupEditor()
         };
 
     filterKeyFollowKnob.onValueChange =
-        [this, sendKeygroupChange]()
+        [this]()
         {
             currentKeygroup.filter.keyFollow =
                 juce::roundToInt(
@@ -788,13 +790,34 @@ KeyGroupEditor::KeyGroupEditor()
                 );
 
             if (!filterKeyFollowKnob.isMouseButtonDown())
-                sendKeygroupChange();
+            {
+                if (onFilterKeyFollowChanged)
+                {
+                    onFilterKeyFollowChanged(
+                        currentKeygroupIndex,
+                        currentKeygroup.filter.keyFollow
+                    );
+                }
+            }
         };
 
     filterKeyFollowKnob.onDragEnd =
-        [sendKeygroupChange]()
+        [this]()
         {
-            sendKeygroupChange();
+            DBG(
+                "FILTER KEY FOLLOW CHANGED = "
+                + juce::String(
+                    currentKeygroup.filter.keyFollow
+                )
+            );
+
+            if (onFilterKeyFollowChanged)
+            {
+                onFilterKeyFollowChanged(
+                    currentKeygroupIndex,
+                    currentKeygroup.filter.keyFollow
+                );
+            }
         };
 
     filterKeyFollowKnob.onValueChange = [this]()
@@ -1374,12 +1397,46 @@ KeyGroupEditor::KeyGroupEditor()
                         + juce::String(value)
                     );
 
-                    if (onKeygroupChanged)
+                    if (member == &Envelope2::r1)
                     {
-                        onKeygroupChanged(
-                            currentKeygroupIndex,
-                            currentKeygroup
-                        );
+                        if (onEnv2R1Changed)
+                        {
+                            onEnv2R1Changed(
+                                currentKeygroupIndex,
+                                value
+                            );
+                        }
+                    }
+                    else if (member == &Envelope2::l1)
+                    {
+                        if (onEnv2L1Changed)
+                        {
+                            onEnv2L1Changed(
+                                currentKeygroupIndex,
+                                value
+                            );
+                        }
+                    }
+                    else if (member == &Envelope2::r2)
+                    {
+                        if (onEnv2R2Changed)
+                        {
+                            onEnv2R2Changed(
+                                currentKeygroupIndex,
+                                value
+                            );
+                        }
+                    }
+
+                    else
+                    {
+                        if (onKeygroupChanged)
+                        {
+                            onKeygroupChanged(
+                                currentKeygroupIndex,
+                                currentKeygroup
+                            );
+                        }
                     }
                 };
         };
@@ -2364,4 +2421,28 @@ void KeyGroupEditor::paint(
     drawSectionLine(env2SectionLabel);
     drawSectionLine(modulationSectionLabel);
     drawSectionLine(keyXFadeSectionLabel);
+}
+
+void KeyGroupEditor::setResonance(int value)
+{
+    resonanceKnob.setValue(
+        value,
+        juce::dontSendNotification
+    );
+}
+
+void KeyGroupEditor::setFilterFreq(int value)
+{
+    filterFreqKnob.setValue(
+        value,
+        juce::dontSendNotification
+    );
+}
+
+void KeyGroupEditor::setFilterKeyFollow(int value)
+{
+    filterKeyFollowKnob.setValue(
+        value,
+        juce::dontSendNotification
+    );
 }

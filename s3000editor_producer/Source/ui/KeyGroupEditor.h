@@ -24,6 +24,38 @@ public:
 
     void paint(juce::Graphics& g) override;
 
+    void setResonance(int value);
+
+    std::function<void(
+        int,
+        int
+        )> onResonanceChanged;
+
+    void setFilterFreq(int value);
+
+    void setFilterKeyFollow(int value);
+
+    std::function<void(
+        int,
+        int
+        )> onFilterKeyFollowChanged;
+
+    std::function<void(
+        int,
+        int
+        )> onFilterFreqChanged;
+
+
+    std::function<void(
+        int,
+        int
+        )> onEnv2R1Changed;
+
+    std::function<void(int, int)> onEnv2L1Changed;
+
+    std::function<void(int, int)> onEnv2R2Changed;
+
+
 private:
     juce::Label titleLabel;
 
@@ -147,6 +179,8 @@ private:
 
     EnvelopeEditor env1Editor;
     Envelope2Editor env2Editor;
+
+   
 
 
 };

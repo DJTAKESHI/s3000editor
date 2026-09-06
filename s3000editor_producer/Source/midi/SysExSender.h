@@ -79,6 +79,13 @@ public:
 
     void sendDeleteProgram(int programNumber);
 
+    void sendKeygroupWord(
+        int programIndex,
+        int keygroupIndex,
+        int byteOffset,
+        uint16_t value
+    );
+
 
     
     

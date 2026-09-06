@@ -33,6 +33,8 @@ public:
 
     std::function<void()> onEditFinished;
 
+    
+
 private:
     int attackValue = 0;
     int decayValue = 0;

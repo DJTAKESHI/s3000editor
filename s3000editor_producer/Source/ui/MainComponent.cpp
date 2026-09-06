@@ -1638,6 +1638,180 @@ MainComponent::MainComponent()
     //        addKeygroup();
     //    };
 
+    keyGroupEditor.onFilterFreqChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            loadedProgram
+                .keygroups[keygroupIndex]
+                .filter.freq = value;
+
+            DBG(
+                "FILTER FREQ PARTIAL WRITE"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::FILFRQ,
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onFilterKeyFollowChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            loadedProgram
+                .keygroups[keygroupIndex]
+                .filter.keyFollow = value;
+
+            DBG(
+                "FILTER KEY FOLLOW PARTIAL WRITE"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::K_FREQ,
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2R1Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            loadedProgram
+                .keygroups[keygroupIndex]
+                .env2.r1 = value;
+
+            DBG(
+                "ENV2 R1 PARTIAL WRITE"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                20,
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2L1Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.l1 = value;
+
+            DBG(
+                "ENV2 L1 PARTIAL WRITE"
+                " KG=" + juce::String(keygroupIndex)
+                + " VALUE=" + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                156,
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2R2Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.r2 = value;
+
+            DBG(
+                "ENV2 R2 PARTIAL WRITE"
+                " KG=" + juce::String(keygroupIndex)
+                + " VALUE=" + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                157,
+                static_cast<uint8_t>(value)
+            );
+        };
+
+
+
+    keyGroupEditor.onResonanceChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    ))
+            {
+                return;
+            }
+
+            loadedProgram
+                .keygroups[keygroupIndex]
+                .filter.resonance = value;
+
+            DBG(
+                "RESONANCE PARTIAL WRITE"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupWord(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::FILQ,
+                static_cast<uint16_t>(value)
+            );
+        };
+
 
 
     keyGroupEditor.onKeygroupChanged =
@@ -1829,14 +2003,14 @@ MainComponent::MainComponent()
                 encoded
             );
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                KeygroupHeaderOffset::Filter::FILQ,
-                static_cast<uint8_t>(
-                    storedKeygroup.filter.resonance
-                    )
-            );
+            //sysExSender.sendKeygroupWord(
+            //    currentProgramIndex,
+            //    keygroupIndex,
+            //    KeygroupHeaderOffset::Filter::FILQ,
+            //    static_cast<uint16_t>(
+            //        storedKeygroup.filter.resonance
+            //        )
+            //);
 
         };
 
@@ -3178,6 +3352,60 @@ void MainComponent::processIncomingSysEx(
 
                 }
 
+                if (offset == KeygroupHeaderOffset::Filter::K_FREQ
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].filter.keyFollow =
+                        static_cast<int>(rawValue);
+
+                    DBG(
+                        "UPDATE KG FILTER KEY FOLLOW KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String((int)rawValue)
+                    );
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setFilterKeyFollow(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+
+                if (offset == KeygroupHeaderOffset::Filter::FILFRQ
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].filter.freq =
+                        static_cast<int>(rawValue);
+
+                    DBG(
+                        "UPDATE KG FILTER FREQ KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String((int)rawValue)
+                    );
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setFilterFreq(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+
                 if (offset == KeygroupHeaderOffset::Mod::Filter1
                     && keygroup >= 0
                     && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
@@ -3291,6 +3519,72 @@ void MainComponent::processIncomingSysEx(
 
                 break;
             }
+
+            if (size == 15)
+            {
+                const int programNumber =
+                    (data[4] & 0x7F)
+                    | ((data[5] & 0x7F) << 7);
+
+                const int keygroup =
+                    data[6] & 0x7F;
+
+                const int offset =
+                    (data[7] & 0x7F)
+                    | ((data[8] & 0x7F) << 7);
+
+                const int length =
+                    (data[9] & 0x7F)
+                    | ((data[10] & 0x7F) << 7);
+
+                const uint8_t byte0 =
+                    (data[11] & 0x0F)
+                    | ((data[12] & 0x0F) << 4);
+
+                const uint8_t byte1 =
+                    (data[13] & 0x0F)
+                    | ((data[14] & 0x0F) << 4);
+
+                const int value =
+                    static_cast<int>(byte0)
+                    | (static_cast<int>(byte1) << 8);
+
+                DBG(
+                    "SHORT 0x2A SIZE15"
+                    + juce::String(" PROGRAM=") + juce::String(programNumber)
+                    + " KG=" + juce::String(keygroup)
+                    + " OFFSET=" + juce::String(offset)
+                    + " LENGTH=" + juce::String(length)
+                    + " VALUE=" + juce::String(value)
+                );
+
+                if (offset == KeygroupHeaderOffset::Filter::FILQ
+                    && keygroup >= 0
+                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                {
+                    loadedProgram.keygroups[keygroup].filter.resonance = value;
+
+                    DBG(
+                        "UPDATE KG RESONANCE KG="
+                        + juce::String(keygroup)
+                        + " VALUE="
+                        + juce::String(value)
+                    );
+
+                    if (keygroup == currentKeygroup)
+                    {
+                        juce::MessageManager::callAsync(
+                            [this, value]()
+                            {
+                                keyGroupEditor.setResonance(value);
+                            }
+                        );
+                    }
+
+                    break;
+                }
+            }
+
 
             handleKeygroupHeaderResponse();
             break;
