@@ -93,6 +93,8 @@ private:
     juce::TextButton captureAButton{ "capture A" };
     juce::TextButton captureBButton{ "capture B" };
     juce::TextButton compareButton{ "compare" };
+    
+    juce::TextButton mockEnv2R1Button { "Mock ENV2 R1" };
 
     void timerCallback() override;
 
@@ -182,6 +184,14 @@ private:
 
     std::vector<ProgramEntry> programList;
     //std::map<uint16_t, SampleHeader> sampleHeaders;
+    
+    void injectTestKeygroupHeaderByte(
+        int programNumber,
+        int keygroupIndex,
+        int offset,
+        uint8_t value
+    );
+    
 
 
 

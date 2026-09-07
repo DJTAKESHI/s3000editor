@@ -82,6 +82,30 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(auditionButton);
     auditionButton.setAlwaysOnTop(true);
+    addAndMakeVisible(mockEnv2R1Button);
+    
+    mockEnv2R1Button.onClick =
+        [this]()
+        {
+            if (loadedProgram.keygroups.empty())
+            {
+                loadedProgram.keygroups.resize(1);
+
+                keyGroupEditor.setKeygroup(
+                    loadedProgram.keygroups[0],
+                    0
+                );
+
+                DBG("CREATED MOCK KEYGROUP 0");
+            }
+
+            injectTestKeygroupHeaderByte(
+                0,
+                0,
+                157,
+                60
+            );
+        };
 
     auditionButton.onClick = [this]()
         {
@@ -2668,6 +2692,13 @@ MainComponent::MainComponent()
                 encodedProgram
             );
         };
+    
+    injectTestKeygroupHeaderByte(
+        0,   // program
+        0,   // keygroup
+        20,  // ENV2 R1
+        50
+    );
 
 
 
@@ -2725,6 +2756,13 @@ void MainComponent::resized()
     deviceStatusLabel.setBounds(
         topBar.removeFromRight(250)
         .reduced(10, 15)
+    );
+    
+    mockEnv2R1Button.setBounds(
+        getWidth() - 160,
+        10,
+        150,
+        30
     );
 
     // =========================
@@ -3378,6 +3416,79 @@ void MainComponent::processIncomingSysEx(
                         );
                     }
                 }
+                
+                else if (offset == 20)
+                {
+                    DBG("ENV2 R1 RECEIVED = " + juce::String(rawValue));
+                    
+                    DBG(
+                        "ENV2 R1 RECEIVE CHECK"
+                        " KG=" + juce::String(keygroup)
+                        + " KEYGROUP COUNT="
+                        + juce::String(
+                            static_cast<int>(loadedProgram.keygroups.size())
+                        )
+                    );
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.r1 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, keygroup, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2R1(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                
+                else if (offset == 156)
+                {
+                    DBG("ENV2 L1 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.l1 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2L1(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                
+                else if (offset == 157)
+                {
+                    DBG("ENV2 R2 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.r2 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2R2(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                
 
                 if (offset == KeygroupHeaderOffset::Filter::FILFRQ
                     && keygroup >= 0
@@ -6222,6 +6333,53 @@ void MainComponent::handleNoteOff(
         midiNoteNumber,
         16
     );
+}
+
+
+void MainComponent::injectTestKeygroupHeaderByte(
+    int programNumber,
+    int keygroupIndex,
+    int offset,
+    uint8_t value)
+{
+    DBG(
+        "INJECT TEST KG HEADER BYTE"
+        " PROGRAM=" + juce::String(programNumber)
+        + " KG=" + juce::String(keygroupIndex)
+        + " OFFSET=" + juce::String(offset)
+        + " VALUE=" + juce::String((int)value)
+    );
+    
+    
+    uint8_t data[] =
+    {
+        0x47,
+        0x00,
+        0x2A,
+        0x48,
+
+        static_cast<uint8_t>(programNumber & 0x7F),
+        static_cast<uint8_t>((programNumber >> 7) & 0x7F),
+
+        static_cast<uint8_t>(keygroupIndex & 0x7F),
+
+        static_cast<uint8_t>(offset & 0x7F),
+        static_cast<uint8_t>((offset >> 7) & 0x7F),
+
+        0x01,
+        0x00,
+
+        static_cast<uint8_t>(value & 0x0F),
+        static_cast<uint8_t>((value >> 4) & 0x0F)
+    };
+
+    auto message =
+        juce::MidiMessage::createSysExMessage(
+            data,
+            sizeof(data)
+        );
+
+    processIncomingSysEx(message);
 }
 
 

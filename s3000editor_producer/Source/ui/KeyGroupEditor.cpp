@@ -1575,6 +1575,75 @@ KeyGroupEditor::KeyGroupEditor()
         };
 
 }
+void KeyGroupEditor::setEnv2R2(int value)
+{
+    currentKeygroup.env2.r2 = value;
+
+    env2R2Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 R2 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2L1(int value)
+{
+    currentKeygroup.env2.l1 = value;
+
+    env2L1Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 L1 = " + juce::String(value));
+}
+
+
+void KeyGroupEditor::setEnv2R1(int value)
+{
+    currentKeygroup.env2.r1 = value;
+
+    env2R1Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 R1 = " + juce::String(value));
+}
 
 
 void KeyGroupEditor::setKeygroup(

@@ -32,6 +32,9 @@ public:
         )> onResonanceChanged;
 
     void setFilterFreq(int value);
+    
+    void setEnv2R1(int value);
+    void setEnv2L1(int value);
 
     void setFilterKeyFollow(int value);
 
@@ -54,6 +57,8 @@ public:
     std::function<void(int, int)> onEnv2L1Changed;
 
     std::function<void(int, int)> onEnv2R2Changed;
+    
+    void setEnv2R2(int value);
 
 
 private:
