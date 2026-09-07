@@ -517,6 +517,28 @@ KeyGroupEditor::KeyGroupEditor()
             const bool r1Changed =
                 currentKeygroup.env2.r1 != r1;
 
+            const bool l1Changed =
+                currentKeygroup.env2.l1 != l1;
+
+            const bool r2Changed =
+                currentKeygroup.env2.r2 != r2;
+
+            const bool l2Changed =
+                currentKeygroup.env2.l2 != l2;
+
+            const bool r3Changed =
+                currentKeygroup.env2.r3 != r3;
+
+            const bool l3Changed =
+                currentKeygroup.env2.l3 != l3;
+
+            const bool r4Changed =
+                currentKeygroup.env2.r4 != r4;
+
+            const bool l4Changed =
+                currentKeygroup.env2.l4 != l4;
+
+
             currentKeygroup.env2.r1 = r1;
             currentKeygroup.env2.l1 = l1;
 
@@ -527,6 +549,63 @@ KeyGroupEditor::KeyGroupEditor()
                     r1
                 );
             }
+
+            if (l1Changed && onEnv2L1Changed)
+            {
+                onEnv2L1Changed(
+                    currentKeygroupIndex,
+                    l1
+                );
+            }
+
+            if (r2Changed && onEnv2R2Changed)
+            {
+                onEnv2R2Changed(
+                    currentKeygroupIndex,
+                    r2
+                );
+            }
+
+            if (l2Changed && onEnv2L2Changed)
+            {
+                onEnv2L2Changed(
+                    currentKeygroupIndex,
+                    l2
+                );
+            }
+
+            if (r3Changed && onEnv2R3Changed)
+            {
+                onEnv2R3Changed(
+                    currentKeygroupIndex,
+                    r3
+                );
+            }
+
+            if (l3Changed && onEnv2L3Changed)
+            {
+                onEnv2L3Changed(
+                    currentKeygroupIndex,
+                    l3
+                );
+            }
+
+            if (r4Changed && onEnv2R4Changed)
+            {
+                onEnv2R4Changed(
+                    currentKeygroupIndex,
+                    r4
+                );
+            }
+
+            if (l4Changed && onEnv2L4Changed)
+            {
+                onEnv2L4Changed(
+                    currentKeygroupIndex,
+                    l4
+                );
+            }
+
 
             currentKeygroup.env2.r2 = r2;
             currentKeygroup.env2.l2 = l2;
@@ -1428,6 +1507,43 @@ KeyGroupEditor::KeyGroupEditor()
                         }
                     }
 
+                    else if (member == &Envelope2::l2)
+                    {
+                        if (onEnv2L2Changed)
+                            onEnv2L2Changed(
+                                currentKeygroupIndex,
+                                value
+                            );
+
+                        return;
+                    }
+
+                    else if (member == &Envelope2::r3)
+                    {
+                        if (onEnv2R3Changed)
+                            onEnv2R3Changed(currentKeygroupIndex, value);
+                        return;
+                    }
+                    else if (member == &Envelope2::l3)
+                    {
+                        if (onEnv2L3Changed)
+                            onEnv2L3Changed(currentKeygroupIndex, value);
+                        return;
+                    }
+                    else if (member == &Envelope2::r4)
+                    {
+                        if (onEnv2R4Changed)
+                            onEnv2R4Changed(currentKeygroupIndex, value);
+                        return;
+                    }
+                    else if (member == &Envelope2::l4)
+                    {
+                        if (onEnv2L4Changed)
+                            onEnv2L4Changed(currentKeygroupIndex, value);
+                        return;
+                    }
+
+
                     else
                     {
                         if (onKeygroupChanged)
@@ -1643,6 +1759,121 @@ void KeyGroupEditor::setEnv2R1(int value)
     );
 
     DBG("UI ENV2 R1 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2L2(int value)
+{
+    currentKeygroup.env2.l2 = value;
+
+    env2L2Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 L2 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2R3(int value)
+{
+    currentKeygroup.env2.r3 = value;
+
+    env2R3Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 R3 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2L3(int value)
+{
+    currentKeygroup.env2.l3 = value;
+
+    env2L3Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 L3 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2R4(int value)
+{
+    currentKeygroup.env2.r4 = value;
+
+    env2R4Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 R4 = " + juce::String(value));
+}
+
+void KeyGroupEditor::setEnv2L4(int value)
+{
+    currentKeygroup.env2.l4 = value;
+
+    env2L4Editor.setText(
+        juce::String(value),
+        false
+    );
+
+    env2Editor.setEnvelope(
+        currentKeygroup.env2.r1,
+        currentKeygroup.env2.l1,
+        currentKeygroup.env2.r2,
+        currentKeygroup.env2.l2,
+        currentKeygroup.env2.r3,
+        currentKeygroup.env2.l3,
+        currentKeygroup.env2.r4,
+        currentKeygroup.env2.l4
+    );
+
+    DBG("UI ENV2 L4 = " + juce::String(value));
 }
 
 

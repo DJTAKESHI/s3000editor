@@ -58,7 +58,8 @@ public:
 
 private:
 
-    const Keygroup& keygroup;
+    //const Keygroup& keygroup;
+    Keygroup keygroup;
 
     int index;
 

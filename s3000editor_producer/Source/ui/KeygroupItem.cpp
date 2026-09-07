@@ -131,6 +131,12 @@ void KeygroupItem::paintItem(
         juce::Colours::white
     );
 
+    DBG(
+        "KEYGROUP ITEM PAINT"
+        " INDEX=" + juce::String(index)
+        + " LOW=" + juce::String(keygroup.lowNote)
+        + " HIGH=" + juce::String(keygroup.highNote)
+    );
 
     g.drawText(
         "Keygroup "

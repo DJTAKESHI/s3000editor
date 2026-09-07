@@ -1750,7 +1750,7 @@ MainComponent::MainComponent()
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
                 keygroupIndex,
-                20,
+                static_cast<int>(KeygroupHeaderOffset::Env2::R1),
                 static_cast<uint8_t>(value)
             );
         };
@@ -1774,7 +1774,7 @@ MainComponent::MainComponent()
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
                 keygroupIndex,
-                156,
+                static_cast<int>(KeygroupHeaderOffset::Env2::L1),
                 static_cast<uint8_t>(value)
             );
         };
@@ -1798,11 +1798,131 @@ MainComponent::MainComponent()
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
                 keygroupIndex,
-                157,
+                static_cast<int>(KeygroupHeaderOffset::Env2::R2),
                 static_cast<uint8_t>(value)
             );
         };
 
+    keyGroupEditor.onEnv2L2Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.l2 = value;
+
+            DBG(
+                "ENV2 L2 PARTIAL WRITE KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                static_cast<int>(KeygroupHeaderOffset::Env2::L2),
+                static_cast<uint8_t>(value)
+            );
+        };
+
+
+    keyGroupEditor.onEnv2R3Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.r3 = value;
+
+            DBG(
+                "ENV2 R3 PARTIAL WRITE KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                static_cast<int>(KeygroupHeaderOffset::Env2::R3),
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2L3Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.l3 = value;
+
+            DBG(
+                "ENV2 L3 PARTIAL WRITE"
+                " KG=" + juce::String(keygroupIndex)
+                + " VALUE=" + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                static_cast<int>(KeygroupHeaderOffset::Env2::L3),
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2R4Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.r4 = value;
+
+            DBG(
+                "ENV2 R4 PARTIAL WRITE"
+                " KG=" + juce::String(keygroupIndex)
+                + " VALUE=" + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                static_cast<int>(KeygroupHeaderOffset::Env2::R4),
+                static_cast<uint8_t>(value)
+            );
+        };
+
+    keyGroupEditor.onEnv2L4Changed =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            loadedProgram.keygroups[keygroupIndex].env2.l4 = value;
+
+            DBG(
+                "ENV2 L4 PARTIAL WRITE"
+                " KG=" + juce::String(keygroupIndex)
+                + " VALUE=" + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                static_cast<int>(KeygroupHeaderOffset::Env2::L4),
+                static_cast<uint8_t>(value)
+            );
+        };
 
 
     keyGroupEditor.onResonanceChanged =
@@ -3417,10 +3537,10 @@ void MainComponent::processIncomingSysEx(
                     }
                 }
                 
-                else if (offset == 20)
+                else if (offset == KeygroupHeaderOffset::Env2::R1)
                 {
                     DBG("ENV2 R1 RECEIVED = " + juce::String(rawValue));
-                    
+
                     DBG(
                         "ENV2 R1 RECEIVE CHECK"
                         " KG=" + juce::String(keygroup)
@@ -3437,7 +3557,7 @@ void MainComponent::processIncomingSysEx(
                             static_cast<int>(rawValue);
 
                         juce::MessageManager::callAsync(
-                            [this, keygroup, rawValue]()
+                            [this, rawValue]()
                             {
                                 keyGroupEditor.setEnv2R1(
                                     static_cast<int>(rawValue)
@@ -3446,8 +3566,7 @@ void MainComponent::processIncomingSysEx(
                         );
                     }
                 }
-                
-                else if (offset == 156)
+                else if (offset == KeygroupHeaderOffset::Env2::L1)
                 {
                     DBG("ENV2 L1 RECEIVED = " + juce::String(rawValue));
 
@@ -3467,8 +3586,7 @@ void MainComponent::processIncomingSysEx(
                         );
                     }
                 }
-                
-                else if (offset == 157)
+                else if (offset == KeygroupHeaderOffset::Env2::R2)
                 {
                     DBG("ENV2 R2 RECEIVED = " + juce::String(rawValue));
 
@@ -3482,6 +3600,106 @@ void MainComponent::processIncomingSysEx(
                             [this, rawValue]()
                             {
                                 keyGroupEditor.setEnv2R2(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                else if (offset == KeygroupHeaderOffset::Env2::L2)
+                {
+                    DBG("ENV2 L2 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.l2 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2L2(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                else if (offset == KeygroupHeaderOffset::Env2::R3)
+                {
+                    DBG("ENV2 R3 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.r3 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2R3(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                else if (offset == KeygroupHeaderOffset::Env2::L3)
+                {
+                    DBG("ENV2 L3 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.l3 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2L3(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                else if (offset == KeygroupHeaderOffset::Env2::R4)
+                {
+                    DBG("ENV2 R4 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.r4 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2R4(
+                                    static_cast<int>(rawValue)
+                                );
+                            }
+                        );
+                    }
+                }
+                else if (offset == KeygroupHeaderOffset::Env2::L4)
+                {
+                    DBG("ENV2 L4 RECEIVED = " + juce::String(rawValue));
+
+                    if (keygroup >= 0 &&
+                        keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    {
+                        loadedProgram.keygroups[keygroup].env2.l4 =
+                            static_cast<int>(rawValue);
+
+                        juce::MessageManager::callAsync(
+                            [this, rawValue]()
+                            {
+                                keyGroupEditor.setEnv2L4(
                                     static_cast<int>(rawValue)
                                 );
                             }

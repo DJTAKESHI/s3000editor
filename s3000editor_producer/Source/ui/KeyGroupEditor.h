@@ -57,8 +57,23 @@ public:
     std::function<void(int, int)> onEnv2L1Changed;
 
     std::function<void(int, int)> onEnv2R2Changed;
+
+    std::function<void(int, int)> onEnv2L2Changed;
+
+    std::function<void(int, int)> onEnv2R3Changed;
+
+    std::function<void(int, int)> onEnv2L3Changed;
+
+    std::function<void(int, int)> onEnv2R4Changed;
+
+    std::function<void(int, int)> onEnv2L4Changed;
     
     void setEnv2R2(int value);
+    void setEnv2L2(int value);
+    void setEnv2R3(int value);
+    void setEnv2L3(int value);
+    void setEnv2R4(int value);
+    void setEnv2L4(int value);
 
 
 private:
