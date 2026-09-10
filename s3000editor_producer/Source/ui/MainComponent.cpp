@@ -996,6 +996,19 @@ MainComponent::MainComponent()
             int high
             )
         {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
+
+            if (zoneIndex < 0 ||
+                zoneIndex >= 4)
+            {
+                return;
+            }
+
             auto& kg =
                 loadedProgram.keygroups[
                     currentKeygroup
@@ -1003,6 +1016,12 @@ MainComponent::MainComponent()
 
             auto& zone =
                 kg.zones[zoneIndex];
+
+            const bool lowChanged =
+                zone.lowVel != low;
+
+            const bool highChanged =
+                zone.highVel != high;
 
             zone.lowVel =
                 static_cast<uint8_t>(low);
@@ -1017,20 +1036,143 @@ MainComponent::MainComponent()
                 zone
             );
 
-            auto encoded =
-                KeygroupEncoder::encode(
-                    kg
-                );
+            // LOVEL1 = 46
+            // HIVEL1 = 47
+            // Zone stride = 24
 
-            if (!encoded.empty())
+            if (lowChanged)
             {
-                sysExSender.sendKeygroupData(
-                    loadedProgram.programNumber,
-                    currentKeygroup,
-                    encoded
+                const int offset =
+                    46 + zoneIndex * 24;
+
+                DBG(
+                    "ZONE MAP LOW VELOCITY PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " ZONE="
+                    + juce::String(zoneIndex)
+                    + " OFFSET="
+                    + juce::String(offset)
+                    + " VALUE="
+                    + juce::String(low)
                 );
 
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    offset,
+                    static_cast<uint8_t>(low)
+                );
+            }
 
+            if (highChanged)
+            {
+                const int offset =
+                    47 + zoneIndex * 24;
+
+                DBG(
+                    "ZONE MAP HIGH VELOCITY PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " ZONE="
+                    + juce::String(zoneIndex)
+                    + " OFFSET="
+                    + juce::String(offset)
+                    + " VALUE="
+                    + juce::String(high)
+                );
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    offset,
+                    static_cast<uint8_t>(high)
+                );
+            }
+        };
+
+    velocityZoneEditor.onVelocityRangeChanged =
+        [this](int low, int high)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
+
+            if (currentZone < 0 ||
+                currentZone >= 4)
+            {
+                return;
+            }
+
+            auto& zone =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone];
+
+            const bool lowChanged =
+                zone.lowVel != low;
+
+            const bool highChanged =
+                zone.highVel != high;
+
+            zone.lowVel = low;
+            zone.highVel = high;
+
+            velocityZoneEditor.setZones(
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .zones
+            );
+
+            // Zone1: LOVEL1=46, HIVEL1=47
+            // Each following zone is +24 bytes.
+            if (lowChanged)
+            {
+                const int offset =
+                    46 + currentZone * 24;
+
+                DBG(
+                    "LOW VELOCITY PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " ZONE="
+                    + juce::String(currentZone)
+                    + " OFFSET="
+                    + juce::String(offset)
+                    + " VALUE="
+                    + juce::String(low)
+                );
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    offset,
+                    static_cast<uint8_t>(low)
+                );
+            }
+
+            if (highChanged)
+            {
+                const int offset =
+                    47 + currentZone * 24;
+
+                DBG(
+                    "HIGH VELOCITY PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " ZONE="
+                    + juce::String(currentZone)
+                    + " OFFSET="
+                    + juce::String(offset)
+                    + " VALUE="
+                    + juce::String(high)
+                );
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    offset,
+                    static_cast<uint8_t>(high)
+                );
             }
         };
 
@@ -1251,8 +1393,13 @@ MainComponent::MainComponent()
 
             editorTabs.setCurrentTabIndex(0);
 
+            //keyGroupEditor.setKeygroup(
+            //    keygroup,
+            //    keygroupIndex
+            //);
+
             keyGroupEditor.setKeygroup(
-                keygroup,
+                loadedProgram.keygroups[keygroupIndex],
                 keygroupIndex
             );
 
@@ -1260,8 +1407,12 @@ MainComponent::MainComponent()
             // 4 Zone Overview�X�V
             // ========================================
 
+            //velocityZoneEditor.setZones(
+            //    keygroup.zones
+            //);
+
             velocityZoneEditor.setZones(
-                keygroup.zones
+                loadedProgram.keygroups[keygroupIndex].zones
             );
 
             velocityZoneEditor.setSelectedZone(
@@ -1273,7 +1424,8 @@ MainComponent::MainComponent()
             // ========================================
 
             velocityZoneEditor.setZone(
-                keygroup.zones[currentZone]
+                loadedProgram.keygroups[keygroupIndex]
+                .zones[currentZone]
             );
         };
 
@@ -1665,10 +1817,49 @@ MainComponent::MainComponent()
     keyGroupEditor.onFilterFreqChanged =
         [this](int keygroupIndex, int value)
         {
+            DBG(
+                "FILTER EDIT MODE ALL = "
+                + juce::String(
+                    keyGroupEditor.isFilterEditAll()
+                    ? "YES"
+                    : "NO"
+                )
+            );
+
+            if (keyGroupEditor.isFilterEditAll())
+            {
+                for (int kg = 0;
+                    kg < static_cast<int>(
+                        loadedProgram.keygroups.size());
+                        ++kg)
+                {
+                    loadedProgram
+                        .keygroups[kg]
+                        .filter.freq = value;
+
+                    DBG(
+                        "FILTER FREQ ALL WRITE KG="
+                        + juce::String(kg)
+                        + " VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupByte(
+                        currentProgramIndex,
+                        kg,
+                        KeygroupHeaderOffset::Filter::FILFRQ,
+                        static_cast<uint8_t>(value)
+                    );
+
+                    juce::Thread::sleep(20);
+                }
+
+                return;
+            }
+
             if (keygroupIndex < 0 ||
                 keygroupIndex >= static_cast<int>(
-                    loadedProgram.keygroups.size()
-                    ))
+                    loadedProgram.keygroups.size()))
             {
                 return;
             }
@@ -1678,8 +1869,7 @@ MainComponent::MainComponent()
                 .filter.freq = value;
 
             DBG(
-                "FILTER FREQ PARTIAL WRITE"
-                " KG="
+                "FILTER FREQ ONE WRITE KG="
                 + juce::String(keygroupIndex)
                 + " VALUE="
                 + juce::String(value)
@@ -1956,6 +2146,81 @@ MainComponent::MainComponent()
             );
         };
 
+    keyGroupEditor.onKeyRangeChanged =
+        [this](int low, int high)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
+
+            auto& kg =
+                loadedProgram.keygroups[currentKeygroup];
+
+            const bool lowChanged =
+                kg.lowNote != low;
+
+            const bool highChanged =
+                kg.highNote != high;
+
+            kg.lowNote = low;
+            kg.highNote = high;
+
+            DBG(
+                "KEY RANGE CHANGED KG="
+                + juce::String(currentKeygroup)
+                + " LOW="
+                + juce::String(low)
+                + " HIGH="
+                + juce::String(high)
+            );
+
+            keygroupMap.setProgram(
+                loadedProgram
+            );
+
+            programTree.updateKeygroup(
+                currentKeygroup,
+                kg
+            );
+
+            if (lowChanged)
+            {
+                DBG(
+                    "LOW NOTE PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " OFFSET=3 VALUE="
+                    + juce::String(low)
+                );
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    3,
+                    static_cast<uint8_t>(low)
+                );
+            }
+
+            if (highChanged)
+            {
+                DBG(
+                    "HIGH NOTE PARTIAL SEND KG="
+                    + juce::String(currentKeygroup)
+                    + " OFFSET=4 VALUE="
+                    + juce::String(high)
+                );
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    currentKeygroup,
+                    4,
+                    static_cast<uint8_t>(high)
+                );
+            }
+        };
+
 
 
     keyGroupEditor.onKeygroupChanged =
@@ -2206,6 +2471,242 @@ MainComponent::MainComponent()
 
 
 
+
+    velocityZoneEditor.onSemitoneChanged =
+        [this](int semitone)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
+
+            if (currentZone < 0 ||
+                currentZone >= 4)
+            {
+                return;
+            }
+
+            auto& zone =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone];
+
+            zone.semitone = semitone;
+
+            const int tuneOffset =
+                48 + currentZone * 24;
+
+            const int16_t fixedValue =
+                static_cast<int16_t>(
+                    semitone * 256
+                    + zone.fineTuneRaw
+                    );
+
+            DBG(
+                "SEMITONE PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(tuneOffset)
+                + " SEM="
+                + juce::String(semitone)
+                + " RAW="
+                + juce::String(
+                    static_cast<int>(fixedValue)
+                )
+            );
+
+            sysExSender.sendKeygroupWord(
+                currentProgramIndex,
+                currentKeygroup,
+                tuneOffset,
+                static_cast<uint16_t>(fixedValue)
+            );
+        };
+
+    velocityZoneEditor.onFineTuneChanged =
+        [this](int fineTuneRaw)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
+
+            if (currentZone < 0 ||
+                currentZone >= 4)
+            {
+                return;
+            }
+
+            auto& zone =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone];
+
+            zone.fineTuneRaw = fineTuneRaw;
+
+            const int tuneOffset =
+                48 + currentZone * 24;
+
+            // VTUNO = semitone + binary fraction
+            const int16_t fixedValue =
+                static_cast<int16_t>(
+                    zone.semitone * 256
+                    + zone.fineTuneRaw
+                    );
+
+            DBG(
+                "FINE TUNE PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(tuneOffset)
+                + " SEM="
+                + juce::String(zone.semitone)
+                + " FINE RAW="
+                + juce::String(zone.fineTuneRaw)
+                + " VALUE="
+                + juce::String(
+                    static_cast<int>(fixedValue)
+                )
+            );
+
+            sysExSender.sendKeygroupWord(
+                currentProgramIndex,
+                currentKeygroup,
+                tuneOffset,
+                static_cast<uint16_t>(fixedValue)
+            );
+        };
+
+    velocityZoneEditor.onLoudnessChanged =
+        [this](int value)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            if (currentZone < 0 || currentZone >= 4)
+                return;
+
+            loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone]
+                .loudness = value;
+
+            const int offset =
+                50 + currentZone * 24;
+
+            DBG(
+                "LOUDNESS PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(offset)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                currentKeygroup,
+                offset,
+                static_cast<uint8_t>(
+                    static_cast<int8_t>(value)
+                    )
+            );
+        };
+
+
+    velocityZoneEditor.onFilterFreqChanged =
+        [this](int value)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            if (currentZone < 0 || currentZone >= 4)
+                return;
+
+            loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone]
+                .filterFreq = value;
+
+            const int offset =
+                51 + currentZone * 24;
+
+            DBG(
+                "FILTER FREQ PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(offset)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                currentKeygroup,
+                offset,
+                static_cast<uint8_t>(
+                    static_cast<int8_t>(value)
+                    )
+            );
+        };
+
+
+    velocityZoneEditor.onPanChanged =
+        [this](int value)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            if (currentZone < 0 || currentZone >= 4)
+                return;
+
+            loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone]
+                .pan = value;
+
+            const int offset =
+                52 + currentZone * 24;
+
+            DBG(
+                "PAN PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(offset)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                currentKeygroup,
+                offset,
+                static_cast<uint8_t>(
+                    static_cast<int8_t>(value)
+                    )
+            );
+        };
+
     velocityZoneEditor.onZoneChanged =
         [this](const VelocityZone& zone)
         {
@@ -2307,20 +2808,20 @@ MainComponent::MainComponent()
 // 0 = TRACK, 1 = CONST
 // ========================================
 
-            const int constantPitchOffset =
-                132 + currentZone;
+            /*const int constantPitchOffset =
+                132 + currentZone;*/
 
-            const uint8_t constantPitchValue =
-                kg.zones[currentZone].constantPitch
-                ? 1
-                : 0;
+            //const uint8_t constantPitchValue =
+            //    kg.zones[currentZone].constantPitch
+            //    ? 1
+            //    : 0;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                currentKeygroup,
-                constantPitchOffset,
-                constantPitchValue
-            );
+            //sysExSender.sendKeygroupByte(
+            //    currentProgramIndex,
+            //    currentKeygroup,
+            //    constantPitchOffset,
+            //    constantPitchValue
+            //);
 
 
 
@@ -2335,6 +2836,21 @@ MainComponent::MainComponent()
 
                 if (it != sampleHeaders.end())
                 {
+                    DBG(
+                        "SAMPLE HEADER CACHE HIT ID="
+                        + juce::String(zone.sampleId)
+                        + " NAME=["
+                        + it->second.name.trim()
+                        + "]"
+                    );
+
+                    DBG(
+                        "SAMPLE SLOCAT="
+                        + juce::String((juce::int64)it->second.location)
+                        + " SLNGTH="
+                        + juce::String((juce::int64)it->second.length)
+                    );
+
                     sampleHeaderEditor.setSampleHeader(
                         it->second
                     );
@@ -2342,15 +2858,11 @@ MainComponent::MainComponent()
                 else
                 {
                     DBG(
-                        "REQUEST SAMPLE HEADER ID="
+                        "SAMPLE HEADER CACHE MISS ID="
                         + juce::String(zone.sampleId)
-                    );
 
-                    pendingSampleRequests.insert(
-                        zone.sampleId
                     );
-
-                    sysExSender.sendSampleHeader(
+                    sendSampleHeader(
                         zone.sampleId
                     );
                 }
@@ -2358,17 +2870,58 @@ MainComponent::MainComponent()
 
         };;
 
+    velocityZoneEditor.onTrackingChanged =
+        [this](bool constantPitch)
+        {
+            if (currentKeygroup < 0 ||
+                currentKeygroup >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+            {
+                return;
+            }
 
+            if (currentZone < 0 ||
+                currentZone >= 4)
+            {
+                return;
+            }
 
+            auto& zone =
+                loadedProgram
+                .keygroups[currentKeygroup]
+                .zones[currentZone];
 
+            zone.constantPitch =
+                constantPitch;
 
+            const int constantPitchOffset =
+                132 + currentZone;
 
+            const uint8_t constantPitchValue =
+                constantPitch
+                ? 1
+                : 0;
 
+            DBG(
+                "TRACKING PARTIAL SEND KG="
+                + juce::String(currentKeygroup)
+                + " ZONE="
+                + juce::String(currentZone)
+                + " OFFSET="
+                + juce::String(constantPitchOffset)
+                + " VALUE="
+                + juce::String(
+                    constantPitchValue
+                )
+            );
 
-
-
-
-
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                currentKeygroup,
+                constantPitchOffset,
+                constantPitchValue
+            );
+        };
 
 
     juce::File a = juce::File::getSpecialLocation(juce::File::userDesktopDirectory).getChildFile("dump_A.bin");
@@ -2596,6 +3149,8 @@ MainComponent::MainComponent()
     keyboardState.addListener(this);
     addAndMakeVisible(keyboardComponent);
 
+    keyboardComponent.setWantsKeyboardFocus(true);
+
     addAndMakeVisible(keyboardToggle);
 
     keyboardToggle.setToggleState(
@@ -2612,9 +3167,10 @@ MainComponent::MainComponent()
 
             keyboardVelocityLabel.setVisible(showKeyboard);
             keyboardVelocitySlider.setVisible(showKeyboard);
+            keyboardOctaveCombo.setVisible(showKeyboard);
 
-            //keyboardOctaveLabel.setVisible(showKeyboard);
-            //keyboardOctaveCombo.setVisible(showKeyboard);
+            if (showKeyboard)
+                keyboardComponent.grabKeyboardFocus();
 
             resized();
             repaint();
@@ -2645,31 +3201,33 @@ MainComponent::MainComponent()
     //    juce::dontSendNotification
     //);
 
-    //addAndMakeVisible(keyboardOctaveCombo);
+    addAndMakeVisible(keyboardOctaveCombo);
 
-    //keyboardOctaveCombo.addItem("C1", 1);
-    //keyboardOctaveCombo.addItem("C2", 2);
-    //keyboardOctaveCombo.addItem("C3", 3);
-    //keyboardOctaveCombo.addItem("C4", 4);
-    //keyboardOctaveCombo.addItem("C5", 5);
+    keyboardOctaveCombo.addItem("C1", 1);
+    keyboardOctaveCombo.addItem("C2", 2);
+    keyboardOctaveCombo.addItem("C3", 3);
+    keyboardOctaveCombo.addItem("C4", 4);
+    keyboardOctaveCombo.addItem("C5", 5);
 
-    //keyboardOctaveCombo.setSelectedId(
-    //    3,
-    //    juce::dontSendNotification
-    //);
+    keyboardOctaveCombo.setSelectedId(
+        3,
+        juce::dontSendNotification
+    );
 
-    //keyboardOctaveCombo.onChange = [this]()
-    //    {
-    //        const int octave =
-    //            keyboardOctaveCombo.getSelectedId();
+    keyboardOctaveCombo.onChange = [this]()
+        {
+            const int octave =
+                keyboardOctaveCombo.getSelectedId();
 
-    //        const int noteNumber =
-    //            octave * 12;
+            keyboardComponent.setKeyPressBaseOctave(
+                octave
+            );
 
-    //        keyboardComponent.setLowestVisibleKey(
-    //            noteNumber
-    //        );
-    //    };
+            DBG(
+                "KEYBOARD BASE OCTAVE = "
+                + juce::String(octave)
+            );
+        };
 
     addAndMakeVisible(deleteProgramButton);
     addAndMakeVisible(addProgramButton);
@@ -2820,6 +3378,9 @@ MainComponent::MainComponent()
         50
     );
 
+    setWantsKeyboardFocus(true);
+    addKeyListener(this);
+
 
 
     deviceStatusLabel.toFront(false);
@@ -2918,9 +3479,9 @@ void MainComponent::resized()
         //    keyboardControls.removeFromLeft(55)
         //);
 
-        //keyboardOctaveCombo.setBounds(
-        //    keyboardControls.removeFromLeft(80)
-       /* );*/
+        keyboardOctaveCombo.setBounds(
+            keyboardControls.removeFromLeft(80)
+       );
 
         keyboardComponent.setBounds(
             keyboardSection.reduced(20, 5)
@@ -2943,7 +3504,7 @@ void MainComponent::resized()
         keyboardVelocityLabel.setBounds({});
         keyboardVelocitySlider.setBounds({});
         //keyboardOctaveLabel.setBounds({});
-        //keyboardOctaveCombo.setBounds({});
+        keyboardOctaveCombo.setBounds({});
     }
 
 
@@ -3508,6 +4069,207 @@ void MainComponent::processIncomingSysEx(
                         );
                     }
 
+                }
+
+                // ========================================
+// Velocity Zone Output
+// VLOUD / VFREQ / VPANO
+// Zone stride = 24 bytes
+// ========================================
+
+                for (int zoneIndex = 0; zoneIndex < 4; ++zoneIndex)
+                {
+
+                    const int lowVelOffset =
+                        46 + zoneIndex * 24;
+
+                    const int highVelOffset =
+                        47 + zoneIndex * 24;
+
+                    const int loudnessOffset =
+                        50 + zoneIndex * 24;
+
+                    const int filterFreqOffset =
+                        51 + zoneIndex * 24;
+
+                    const int panOffset =
+                        52 + zoneIndex * 24;
+
+                    if (keygroup < 0 ||
+                        keygroup >= static_cast<int>(
+                            loadedProgram.keygroups.size()))
+                    {
+                        break;
+                    }
+
+                    auto& zone =
+                        loadedProgram
+                        .keygroups[keygroup]
+                        .zones[zoneIndex];
+
+                    if (offset == lowVelOffset)
+                    {
+                        zone.lowVel = rawValue;
+
+                        DBG(
+                            "UPDATE ZONE LOW VELOCITY KG="
+                            + juce::String(keygroup)
+                            + " ZONE="
+                            + juce::String(zoneIndex)
+                            + " VALUE="
+                            + juce::String(rawValue)
+                        );
+
+                        if (keygroup == currentKeygroup)
+                        {
+                            juce::MessageManager::callAsync(
+                                [this, keygroup, zoneIndex, rawValue]()
+                                {
+                                    // Zone 1-4 map 全体を更新
+                                    velocityZoneEditor.setZones(
+                                        loadedProgram
+                                        .keygroups[keygroup]
+                                        .zones
+                                    );
+
+                                    // 現在選択中Zoneなら上側Editorも更新
+                                    if (zoneIndex == currentZone)
+                                    {
+                                        velocityZoneEditor.setLowVelocity(
+                                            rawValue
+                                        );
+                                    }
+                                }
+                            );
+                        }
+
+                        break;
+                    }
+
+                    if (offset == highVelOffset)
+                    {
+                        zone.highVel = rawValue;
+
+                        DBG(
+                            "UPDATE ZONE HIGH VELOCITY KG="
+                            + juce::String(keygroup)
+                            + " ZONE="
+                            + juce::String(zoneIndex)
+                            + " VALUE="
+                            + juce::String(rawValue)
+                        );
+
+                        if (keygroup == currentKeygroup)
+                        {
+                            juce::MessageManager::callAsync(
+                                [this, keygroup, zoneIndex, rawValue]()
+                                {
+                                    velocityZoneEditor.setZones(
+                                        loadedProgram
+                                        .keygroups[keygroup]
+                                        .zones
+                                    );
+
+                                    if (zoneIndex == currentZone)
+                                    {
+                                        velocityZoneEditor.setHighVelocity(
+                                            rawValue
+                                        );
+                                    }
+                                }
+                            );
+                        }
+
+                        break;
+                    }
+
+
+                    if (offset == loudnessOffset)
+                    {
+                        zone.loudness = signedValue;
+
+                        DBG(
+                            "UPDATE ZONE LOUDNESS KG="
+                            + juce::String(keygroup)
+                            + " ZONE="
+                            + juce::String(zoneIndex)
+                            + " VALUE="
+                            + juce::String(signedValue)
+                        );
+
+                        if (keygroup == currentKeygroup &&
+                            zoneIndex == currentZone)
+                        {
+                            juce::MessageManager::callAsync(
+                                [this, signedValue]()
+                                {
+                                    velocityZoneEditor.setLoudness(
+                                        signedValue
+                                    );
+                                }
+                            );
+                        }
+
+                        break;
+                    }
+
+                    if (offset == filterFreqOffset)
+                    {
+                        zone.filterFreq = signedValue;
+
+                        DBG(
+                            "UPDATE ZONE FILTER FREQ KG="
+                            + juce::String(keygroup)
+                            + " ZONE="
+                            + juce::String(zoneIndex)
+                            + " VALUE="
+                            + juce::String(signedValue)
+                        );
+
+                        if (keygroup == currentKeygroup &&
+                            zoneIndex == currentZone)
+                        {
+                            juce::MessageManager::callAsync(
+                                [this, signedValue]()
+                                {
+                                    velocityZoneEditor.setFilterFreq(
+                                        signedValue
+                                    );
+                                }
+                            );
+                        }
+
+                        break;
+                    }
+
+                    if (offset == panOffset)
+                    {
+                        zone.pan = signedValue;
+
+                        DBG(
+                            "UPDATE ZONE PAN KG="
+                            + juce::String(keygroup)
+                            + " ZONE="
+                            + juce::String(zoneIndex)
+                            + " VALUE="
+                            + juce::String(signedValue)
+                        );
+
+                        if (keygroup == currentKeygroup &&
+                            zoneIndex == currentZone)
+                        {
+                            juce::MessageManager::callAsync(
+                                [this, signedValue]()
+                                {
+                                    velocityZoneEditor.setPan(
+                                        signedValue
+                                    );
+                                }
+                            );
+                        }
+
+                        break;
+                    }
                 }
 
                 if (offset == KeygroupHeaderOffset::Filter::K_FREQ
@@ -4161,31 +4923,36 @@ void MainComponent::handleSampleHeaderResponse()
     // ==============================
 
 
-    // �܂�ID���m��Ƃ���parse
-    SampleHeader sh =
-        SampleHeaderParser::parse(
-            decoded,
-            -1
-        );
-
-    // ���ۂɕԂ��Ă���Sample������ID������
-    const int resolvedSampleId =
-        findSampleId(
-            sh.name.trim()
-        );
-
-
-
-    if (resolvedSampleId < 0)
+    if (activeSampleHeaderRequestId < 0)
     {
         DBG(
-            "FAILED TO RESOLVE SAMPLE HEADER ID"
+            "SAMPLE HEADER RECEIVED "
+            "BUT NO ACTIVE SAMPLE REQUEST"
         );
 
         return;
     }
 
-    sh.id = resolvedSampleId;
+    const int sampleId =
+        activeSampleHeaderRequestId;
+
+    SampleHeader sh =
+        SampleHeaderParser::parse(
+            decoded,
+            sampleId
+        );
+
+    sh.id = sampleId;
+
+\
+
+    DBG(
+        "SAMPLE HEADER RECEIVED ID="
+        + juce::String(sampleId)
+        + " NAME=["
+        + sh.name.trim()
+        + "]"
+    );
 
 
 
@@ -4244,14 +5011,13 @@ void MainComponent::handleSampleHeaderResponse()
         );
     }
 
-    // ==============================
-    // Sample Header��E
-    // ==============================
+    pendingSampleRequests.erase(
+        sampleId
+    );
 
+    activeSampleHeaderRequestId = -1;
 
-    // ==============================
-    // �SSample Header��M�����H
-    // ==============================
+    trySendNextSampleHeader();
 
     if (pendingSampleRequests.empty())
     {
@@ -4321,6 +5087,13 @@ void MainComponent::handleSampleHeaderResponse()
                 (int)pendingSampleRequests.size()
             )
         );
+        for (int id : pendingSampleRequests)
+        {
+            DBG(
+                "  PENDING SAMPLE ID="
+                + juce::String(id)
+            );
+        }
     }
 
     // ==============================
@@ -5131,6 +5904,15 @@ void MainComponent::handleCommandReply(
                         keygroupMapViewport.getWidth() - 16
                     ),
                     contentHeight
+                );
+
+                keygroupMap.setProgram(
+                    loadedProgram
+                );
+
+                programTree.setProgram(
+                    loadedProgram,
+                    sampleHeaders
                 );
 
 
@@ -5954,21 +6736,110 @@ void MainComponent::compareDumps(const juce::File& fileA, const juce::File& file
 
 void MainComponent::sendSampleHeader(int sampleId)
 {
-    // ���łɑ҂��Ă���Ȃ�d��request���Ȃ�
-    if (pendingSampleRequests.find(sampleId)
-        != pendingSampleRequests.end())
+    DBG(
+        "sendSampleHeader CALLED ID="
+        + juce::String(sampleId)
+    );
+
+    if (sampleHeaders.find(sampleId)
+        != sampleHeaders.end())
     {
         DBG(
-            "SAMPLE HEADER ALREADY PENDING ID="
+            "SAMPLE HEADER ALREADY LOADED ID="
             + juce::String(sampleId)
         );
 
         return;
     }
 
+    if (activeSampleHeaderRequestId == sampleId)
+    {
+        DBG(
+            "SAMPLE HEADER ALREADY ACTIVE ID="
+            + juce::String(sampleId)
+        );
+
+        return;
+    }
+
+    if (pendingSampleRequests.find(sampleId)
+        != pendingSampleRequests.end())
+    {
+        DBG(
+            "SAMPLE HEADER ALREADY QUEUED ID="
+            + juce::String(sampleId)
+            + " ACTIVE="
+            + juce::String(activeSampleHeaderRequestId)
+            + " QUEUE SIZE="
+            + juce::String(
+                (int)pendingSampleRequestOrder.size()
+            )
+        );
+
+        for (int id : pendingSampleRequestOrder)
+        {
+            DBG(
+                "  QUEUED ID="
+                + juce::String(id)
+            );
+        }
+
+
+        return;
+    }
+
     pendingSampleRequests.insert(sampleId);
 
-    sysExSender.sendSampleHeader(sampleId);
+    pendingSampleRequestOrder.push_back(
+        sampleId
+    );
+
+    trySendNextSampleHeader();
+}
+
+void MainComponent::trySendNextSampleHeader()
+{
+    DBG(
+        "trySendNextSampleHeader ACTIVE="
+        + juce::String(activeSampleHeaderRequestId)
+        + " QUEUE SIZE="
+        + juce::String(
+            (int)pendingSampleRequestOrder.size()
+        )
+    );
+
+    if (activeSampleHeaderRequestId >= 0)
+    {
+        DBG(
+            "TRY SEND BLOCKED BY ACTIVE ID="
+            + juce::String(activeSampleHeaderRequestId)
+        );
+
+        return;
+    }
+
+    if (pendingSampleRequestOrder.empty())
+    {
+        DBG("TRY SEND: QUEUE EMPTY");
+        return;
+    }
+
+    const int sampleId =
+        pendingSampleRequestOrder.front();
+
+    pendingSampleRequestOrder.pop_front();
+
+    activeSampleHeaderRequestId =
+        sampleId;
+
+    DBG(
+        "REQUEST SAMPLE HEADER ID="
+        + juce::String(sampleId)
+    );
+
+    sysExSender.sendSampleHeader(
+        sampleId
+    );
 }
 
 
@@ -6209,6 +7080,13 @@ void MainComponent::loadProgram(
 
     if (programIndex < 0)
         return;
+
+    // ==============================
+    // Sample Header request state reset
+    // ==============================
+    pendingSampleRequests.clear();
+    pendingSampleRequestOrder.clear();
+    activeSampleHeaderRequestId = -1;
 
     currentProgram = programIndex;
 
@@ -6598,6 +7476,20 @@ void MainComponent::injectTestKeygroupHeaderByte(
         );
 
     processIncomingSysEx(message);
+}
+
+bool MainComponent::keyPressed(
+    const juce::KeyPress& key,
+    juce::Component*)
+{
+    return keyboardComponent.keyPressed(key);
+}
+
+bool MainComponent::keyStateChanged(
+    bool isKeyDown,
+    juce::Component*)
+{
+    return keyboardComponent.keyStateChanged(isKeyDown);
 }
 
 

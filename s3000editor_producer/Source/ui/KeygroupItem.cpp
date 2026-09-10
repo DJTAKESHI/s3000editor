@@ -115,7 +115,6 @@ KeygroupItem::KeygroupItem(
                 }
             };
 
-
         addSubItem(zoneItem);
     }
 }
@@ -131,12 +130,7 @@ void KeygroupItem::paintItem(
         juce::Colours::white
     );
 
-    DBG(
-        "KEYGROUP ITEM PAINT"
-        " INDEX=" + juce::String(index)
-        + " LOW=" + juce::String(keygroup.lowNote)
-        + " HIGH=" + juce::String(keygroup.highNote)
-    );
+
 
     g.drawText(
         "Keygroup "
@@ -195,4 +189,13 @@ void KeygroupItem::updateZone(
     }
 
     zoneItem->setZone(zone);
+}
+
+void KeygroupItem::updateKeygroup(
+    const Keygroup& keygroupData
+)
+{
+    keygroup = keygroupData;
+
+    repaintItem();
 }

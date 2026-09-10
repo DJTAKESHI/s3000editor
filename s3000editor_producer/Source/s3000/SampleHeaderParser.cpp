@@ -223,7 +223,10 @@ SampleHeader SampleHeaderParser::parse(
 
     s.location =readUInt32(d, SampleHeaderOffset::SLOCAT);
 
+    DBG("SAMPLE SLOCAT = " + juce::String((juce::int64)s.location));
+
     s.length =readUInt32(d, SampleHeaderOffset::SLNGTH);
+    DBG("SAMPLE SLNGTH = " + juce::String((juce::int64)s.length));
 
     s.start =readUInt32(d, SampleHeaderOffset::SSTART);
 

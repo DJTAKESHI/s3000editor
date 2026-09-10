@@ -106,6 +106,62 @@ VelocityZoneEditor::VelocityZoneEditor()
         2
     );
 
+    semitoneSlider.setRange(-50, 50, 1);
+    semitoneSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    semitoneSlider.setTextBoxStyle(
+        juce::Slider::TextBoxRight,
+        false,
+        50,
+        20
+    );
+
+    semitoneSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                juce::roundToInt(
+                    semitoneSlider.getValue()
+                );
+
+            currentZone.semitone = value;
+
+            if (onSemitoneChanged)
+                onSemitoneChanged(value);
+        };
+
+
+    fineTuneSlider.setRange(-50, 50, 1);
+    fineTuneSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    fineTuneSlider.setTextBoxStyle(
+        juce::Slider::TextBoxRight,
+        false,
+        50,
+        20
+    );
+
+    fineTuneSlider.onDragEnd =
+        [this]()
+        {
+            const int cents =
+                juce::roundToInt(
+                    fineTuneSlider.getValue()
+                );
+
+            currentZone.fineTuneRaw =
+                juce::roundToInt(
+                    cents * 256.0 / 100.0
+                );
+
+            if (onFineTuneChanged)
+                onFineTuneChanged(
+                    currentZone.fineTuneRaw
+                );
+        };
+
     pitchTrackingCombo.onChange =
         [this]()
         {
@@ -131,10 +187,10 @@ VelocityZoneEditor::VelocityZoneEditor()
                 )
             );
 
-            if (onZoneChanged)
+            if (onTrackingChanged)
             {
-                onZoneChanged(
-                    currentZone
+                onTrackingChanged(
+                    currentZone.constantPitch
                 );
             }
         };
@@ -152,31 +208,29 @@ VelocityZoneEditor::VelocityZoneEditor()
     );
 
     addAndMakeVisible(semitoneLabel);
-    addAndMakeVisible(semitoneEditor);
+    //addAndMakeVisible(semitoneEditor);
+    addAndMakeVisible(semitoneSlider);
 
     addAndMakeVisible(fineTuneLabel);
-    addAndMakeVisible(fineTuneEditor);
+    //addAndMakeVisible(fineTuneEditor);
+    addAndMakeVisible(fineTuneSlider);
 
 
 
     addAndMakeVisible(loudnessLabel);
-    addAndMakeVisible(loudnessEditor);
+    addAndMakeVisible(loudnessSlider);
 
     addAndMakeVisible(panLabel);
-    addAndMakeVisible(panEditor);
+    addAndMakeVisible(panSlider);
 
     addAndMakeVisible(velocityRangeBar);
 
     velocityRangeBar.onRangeChanged =
         [this](int low, int high)
         {
-            currentZone.lowVel =
-                low;
+            currentZone.lowVel = low;
+            currentZone.highVel = high;
 
-            currentZone.highVel =
-                high;
-
-            // 数値表示も追従
             lowVelEditor.setText(
                 juce::String(low),
                 juce::dontSendNotification
@@ -187,10 +241,11 @@ VelocityZoneEditor::VelocityZoneEditor()
                 juce::dontSendNotification
             );
 
-            if (onZoneChanged)
+            if (onVelocityRangeChanged)
             {
-                onZoneChanged(
-                    currentZone
+                onVelocityRangeChanged(
+                    low,
+                    high
                 );
             }
         };
@@ -221,8 +276,13 @@ VelocityZoneEditor::VelocityZoneEditor()
                 currentZone.highVel
             );
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
+            if (onVelocityRangeChanged)
+            {
+                onVelocityRangeChanged(
+                    currentZone.lowVel,
+                    currentZone.highVel
+                );
+            }
         };
 
 
@@ -248,10 +308,16 @@ VelocityZoneEditor::VelocityZoneEditor()
                 currentZone.highVel
             );
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
+            if (onVelocityRangeChanged)
+            {
+                onVelocityRangeChanged(
+                    currentZone.lowVel,
+                    currentZone.highVel
+                );
+            }
         };
     
+
 
     //sampleNameEditor.setReadOnly(true);
     //sampleNameEditor.onFocusLost = [this]()
@@ -365,100 +431,64 @@ VelocityZoneEditor::VelocityZoneEditor()
             }
         };
 
-    semitoneEditor.onFocusLost = [this]()
-        {
-            const int value =
-                semitoneEditor.getText().getIntValue();
+    //semitoneEditor.onFocusLost = [this]()
+    //    {
+    //        const int value =
+    //            semitoneEditor.getText().getIntValue();
 
-            // ひとまずsigned byteより安全な範囲
-            if (value < -50 || value > 50)
-            {
-                semitoneEditor.setText(
-                    juce::String(currentZone.semitone),
-                    false
-                );
-                return;
-            }
+    //        // ひとまずsigned byteより安全な範囲
+    //        if (value < -50 || value > 50)
+    //        {
+    //            semitoneEditor.setText(
+    //                juce::String(currentZone.semitone),
+    //                false
+    //            );
+    //            return;
+    //        }
 
-            currentZone.semitone = value;
+    //        currentZone.semitone = value;
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
-        };
+    //        if (onSemitoneChanged)
+    //            onSemitoneChanged(currentZone.semitone);
+    //    };
 
-    fineTuneEditor.onFocusLost = [this]()
-        {
-            const int cents =
-                fineTuneEditor.getText().getIntValue();
+    //fineTuneEditor.onFocusLost = [this]()
+    //    {
+    //        const int cents =
+    //            fineTuneEditor.getText().getIntValue();
 
-            if (cents < -50 || cents > 50)
-            {
-                const int currentCents =
-                    juce::roundToInt(
-                        currentZone.fineTuneRaw
-                        * 100.0
-                        / 256.0
-                    );
+    //        if (cents < -50 || cents > 50)
+    //        {
+    //            const int currentCents =
+    //                juce::roundToInt(
+    //                    currentZone.fineTuneRaw
+    //                    * 100.0
+    //                    / 256.0
+    //                );
 
-                fineTuneEditor.setText(
-                    juce::String(currentCents),
-                    false
-                );
+    //            fineTuneEditor.setText(
+    //                juce::String(currentCents),
+    //                false
+    //            );
 
-                return;
-            }
+    //            return;
+    //        }
 
-            currentZone.fineTuneRaw =
-                juce::roundToInt(
-                    cents * 256.0 / 100.0
-                );
+    //        currentZone.fineTuneRaw =
+    //            juce::roundToInt(
+    //                cents * 256.0 / 100.0
+    //            );
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
-        };
-
-
-
-    loudnessEditor.onFocusLost = [this]()
-        {
-            const int value =
-                loudnessEditor.getText().getIntValue();
-
-            if (value < -128 || value > 127)
-            {
-                loudnessEditor.setText(
-                    juce::String(currentZone.loudness),
-                    false
-                );
-                return;
-            }
-
-            currentZone.loudness = value;
-
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
-        };
+    //        if (onFineTuneChanged)
+    //            onFineTuneChanged(currentZone.fineTuneRaw);
+    //    };
 
 
-    panEditor.onFocusLost = [this]()
-        {
-            const int value =
-                panEditor.getText().getIntValue();
 
-            if (value < -128 || value > 127)
-            {
-                panEditor.setText(
-                    juce::String(currentZone.pan),
-                    false
-                );
-                return;
-            }
 
-            currentZone.pan = value;
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
-        };
+
+
 
     playModeLabel.setText(
         "Play Mode",
@@ -466,22 +496,73 @@ VelocityZoneEditor::VelocityZoneEditor()
     );
 
 
-    filterFreqEditor.onFocusLost = [this]()
+    auto setupZoneSlider =
+        [](juce::Slider& slider)
+        {
+            slider.setRange(-50, 50, 1);
+
+            slider.setSliderStyle(
+                juce::Slider::LinearHorizontal
+            );
+
+            slider.setTextBoxStyle(
+                juce::Slider::TextBoxRight,
+                false,
+                50,
+                20
+            );
+        };
+
+    setupZoneSlider(loudnessSlider);
+    setupZoneSlider(panSlider);
+    setupZoneSlider(filterFreqSlider);
+
+
+    loudnessSlider.onDragEnd =
+        [this]()
         {
             const int value =
-                filterFreqEditor.getText().getIntValue();
+                juce::roundToInt(
+                    loudnessSlider.getValue()
+                );
 
-            if (value < -50 || value > 50)
-                return;
+            currentZone.loudness = value;
 
-            if (value == currentZone.filterFreq)
-                return;
+            if (onLoudnessChanged)
+                onLoudnessChanged(value);
+        };
+
+
+    panSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                juce::roundToInt(
+                    panSlider.getValue()
+                );
+
+            currentZone.pan = value;
+
+            if (onPanChanged)
+                onPanChanged(value);
+        };
+
+
+    filterFreqSlider.onDragEnd =
+        [this]()
+        {
+            const int value =
+                juce::roundToInt(
+                    filterFreqSlider.getValue()
+                );
 
             currentZone.filterFreq = value;
 
-            if (onZoneChanged)
-                onZoneChanged(currentZone);
+            if (onFilterFreqChanged)
+                onFilterFreqChanged(value);
         };
+
+    
 
     //lowVelXFadeEditor.onFocusLost = [this]()
     //    {
@@ -600,7 +681,7 @@ VelocityZoneEditor::VelocityZoneEditor()
     //);
 
     addAndMakeVisible(filterFreqLabel);
-    addAndMakeVisible(filterFreqEditor);
+    addAndMakeVisible(filterFreqSlider);
 
     //addAndMakeVisible(lowVelXFadeLabel);
     //addAndMakeVisible(lowVelXFadeEditor);
@@ -609,6 +690,38 @@ VelocityZoneEditor::VelocityZoneEditor()
     //addAndMakeVisible(highVelXFadeEditor);
 
 
+}
+
+void VelocityZoneEditor::setLowVelocity(
+    int value)
+{
+    currentZone.lowVel = value;
+
+    lowVelEditor.setText(
+        juce::String(value),
+        juce::dontSendNotification
+    );
+
+    velocityRangeBar.setRange(
+        currentZone.lowVel,
+        currentZone.highVel
+    );
+}
+
+void VelocityZoneEditor::setHighVelocity(
+    int value)
+{
+    currentZone.highVel = value;
+
+    highVelEditor.setText(
+        juce::String(value),
+        juce::dontSendNotification
+    );
+
+    velocityRangeBar.setRange(
+        currentZone.lowVel,
+        currentZone.highVel
+    );
 }
 
 void VelocityZoneEditor::paint(
@@ -781,10 +894,16 @@ void VelocityZoneEditor::setZone(
         false
     );*/
 
-    semitoneEditor.setText(
-        juce::String(zone.semitone),
-        false
+    //semitoneEditor.setText(
+    //    juce::String(zone.semitone),
+    //    false
+    //);
+
+    semitoneSlider.setValue(
+        zone.semitone,
+        juce::dontSendNotification
     );
+
 
     const int cents =
         juce::roundToInt(
@@ -793,20 +912,29 @@ void VelocityZoneEditor::setZone(
             / 256.0
         );
 
-    fineTuneEditor.setText(
-        juce::String(cents),
-        false
+    fineTuneSlider.setValue(
+        cents,
+        juce::dontSendNotification
+    );
+    //fineTuneEditor.setText(
+    //    juce::String(cents),
+    //    false
+    //);
+
+
+    loudnessSlider.setValue(
+        zone.loudness,
+        juce::dontSendNotification
     );
 
-
-    loudnessEditor.setText(
-        juce::String(zone.loudness),
-        false
+    panSlider.setValue(
+        zone.pan,
+        juce::dontSendNotification
     );
 
-    panEditor.setText(
-        juce::String(zone.pan),
-        false
+    filterFreqSlider.setValue(
+        zone.filterFreq,
+        juce::dontSendNotification
     );
 
     playModeCombo.setSelectedId(
@@ -814,10 +942,7 @@ void VelocityZoneEditor::setZone(
         juce::dontSendNotification
     );
 
-    filterFreqEditor.setText(
-        juce::String(zone.filterFreq),
-        false
-    );
+
 
     //velocityRangeBar.setRange(
     //    zone.lowVel,
@@ -1051,13 +1176,13 @@ void VelocityZoneEditor::resized()
     addRow(
         pitchArea,
         semitoneLabel,
-        semitoneEditor
+        semitoneSlider
     );
 
     addRow(
         pitchArea,
         fineTuneLabel,
-        fineTuneEditor
+        fineTuneSlider
     );
 
     addRow(
@@ -1115,19 +1240,19 @@ void VelocityZoneEditor::resized()
     addRow(
         outputArea,
         loudnessLabel,
-        loudnessEditor
+        loudnessSlider
     );
 
     addRow(
         outputArea,
         panLabel,
-        panEditor
+        panSlider
     );
 
     addRow(
         outputArea,
         filterFreqLabel,
-        filterFreqEditor
+        filterFreqSlider
     );
 
     addRow(
@@ -1136,6 +1261,38 @@ void VelocityZoneEditor::resized()
         playModeCombo
     );
 }
+
+void VelocityZoneEditor::setLoudness(int value)
+{
+    currentZone.loudness = value;
+
+    loudnessSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+}
+
+void VelocityZoneEditor::setPan(int value)
+{
+    currentZone.pan = value;
+
+    panSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+}
+
+void VelocityZoneEditor::setFilterFreq(int value)
+{
+    currentZone.filterFreq = value;
+
+    filterFreqSlider.setValue(
+        value,
+        juce::dontSendNotification
+    );
+}
+
+
 void VelocityZoneEditor::setResidentSamples(
     const std::map<int, juce::String>& samples)
 {

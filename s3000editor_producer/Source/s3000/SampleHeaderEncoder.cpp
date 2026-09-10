@@ -444,7 +444,6 @@ SampleHeaderEncoder::makeNameSysEx(
     return data;
 }
 
-
 std::vector<uint8_t>
 SampleHeaderEncoder::makeSysEx(
     const SampleHeader& header)

@@ -46,6 +46,11 @@ public:
         const VelocityZone& zone
     );
 
+    void updateKeygroup(
+        int keygroupIndex,
+        const Keygroup& keygroup
+    );
+
 
 
 private:

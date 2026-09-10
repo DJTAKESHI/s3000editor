@@ -5,7 +5,8 @@
 #include "EnvelopeEditor.h"
 #include "Envelope2Editor.h"
 
-class KeyGroupEditor : public juce::Component
+class KeyGroupEditor : public juce::Component,
+    private juce::Timer
 {
 public:
     KeyGroupEditor();
@@ -38,6 +39,10 @@ public:
 
     void setFilterKeyFollow(int value);
 
+    std::function<void(int)> onHighNoteChanged;
+
+    std::function<void(int)> onLowNoteChanged;
+
     std::function<void(
         int,
         int
@@ -48,11 +53,20 @@ public:
         int
         )> onFilterFreqChanged;
 
+    juce::ComboBox filterEditModeCombo;
+
+    bool isFilterEditAll() const
+    {
+        return filterEditModeCombo.getSelectedId() == 2;
+    }
+
 
     std::function<void(
         int,
         int
         )> onEnv2R1Changed;
+
+    std::function<void(int low, int high)> onKeyRangeChanged;
 
     std::function<void(int, int)> onEnv2L1Changed;
 
@@ -74,6 +88,18 @@ public:
     void setEnv2L3(int value);
     void setEnv2R4(int value);
     void setEnv2L4(int value);
+
+    int lastSentFilterFreq = -1;
+
+    //std::function<void(int keygroupIndex, int value)>
+    //    onFilterKeyFollowChanged;
+
+    int pendingFilterKeyFollow = -1;
+    int lastSentFilterKeyFollow = -1;
+
+    int pendingResonance = -1;
+    int lastSentResonance = -1;
+
 
 
 private:
@@ -199,6 +225,11 @@ private:
 
     EnvelopeEditor env1Editor;
     Envelope2Editor env2Editor;
+
+    int pendingFilterFreq = -1;
+    //int lastSentFilterFreq = -1;
+
+    void timerCallback() override;
 
    
 

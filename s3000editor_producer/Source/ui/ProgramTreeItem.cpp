@@ -190,3 +190,31 @@ void ProgramTreeItem::updateZone(
         zone
     );
 }
+
+void ProgramTreeItem::updateKeygroup(
+    int keygroupIndex,
+    const Keygroup& keygroup
+)
+{
+    if (keygroupIndex < 0
+        || keygroupIndex >= getNumSubItems())
+    {
+        DBG("UPDATE KEYGROUP: INVALID KEYGROUP INDEX");
+        return;
+    }
+
+    auto* keygroupItem =
+        dynamic_cast<KeygroupItem*>(
+            getSubItem(keygroupIndex)
+            );
+
+    if (keygroupItem == nullptr)
+    {
+        DBG("UPDATE KEYGROUP: KEYGROUP ITEM NOT FOUND");
+        return;
+    }
+
+    keygroupItem->updateKeygroup(
+        keygroup
+    );
+}

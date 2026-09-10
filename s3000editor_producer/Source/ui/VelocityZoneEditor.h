@@ -31,6 +31,23 @@ public:
         int high
         )> onZoneRangeChanged;
 
+    std::function<void(bool)> onTrackingChanged;
+
+    std::function<void(int)> onSemitoneChanged;
+    std::function<void(int)> onFineTuneChanged;
+
+    std::function<void(int)> onLoudnessChanged;
+    std::function<void(int)> onPanChanged;
+    std::function<void(int)> onFilterFreqChanged;
+    std::function<void(int, int)> onVelocityRangeChanged;
+
+    void setLoudness(int value);
+    void setPan(int value);
+    void setFilterFreq(int value);
+
+    void setLowVelocity(int value);
+    void setHighVelocity(int value);
+
 
 
     void resized() override;
@@ -65,16 +82,18 @@ private:
     juce::TextEditor highVelEditor;
 
     juce::Label semitoneLabel;
-    juce::TextEditor semitoneEditor;
+    //juce::TextEditor semitoneEditor;
+    juce::Slider semitoneSlider;
 
     juce::Label fineTuneLabel;
-    juce::TextEditor fineTuneEditor;
+    //juce::TextEditor fineTuneEditor;
+    juce::Slider fineTuneSlider;
 
     juce::Label loudnessLabel;
-    juce::TextEditor loudnessEditor;
+    juce::Slider loudnessSlider;
 
     juce::Label panLabel;
-    juce::TextEditor panEditor;
+    juce::Slider panSlider;
 
     juce::Label playModeLabel;
     juce::ComboBox playModeCombo;
@@ -83,7 +102,7 @@ private:
     juce::ComboBox pitchTrackingCombo;
 
     juce::Label filterFreqLabel;
-    juce::TextEditor filterFreqEditor;
+    juce::Slider filterFreqSlider;
 
     juce::Label sampleSectionLabel;
     juce::Label velocitySectionLabel;
@@ -94,6 +113,8 @@ private:
     juce::Rectangle<int> velocityCardBounds;
     juce::Rectangle<int> pitchCardBounds;
     juce::Rectangle<int> outputCardBounds;
+
+
 
     //juce::Label lowVelXFadeLabel;
     //juce::TextEditor lowVelXFadeEditor;

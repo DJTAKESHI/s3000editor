@@ -180,6 +180,21 @@ void VelocityRangeBar::mouseDrag(
 
     repaint();
 
+    //if (onRangeChanged)
+    //{
+    //    onRangeChanged(
+    //        lowVelocity,
+    //        highVelocity
+    //    );
+    //}
+}
+
+void VelocityRangeBar::mouseUp(
+    const juce::MouseEvent&)
+{
+    draggingLow = false;
+    draggingHigh = false;
+
     if (onRangeChanged)
     {
         onRangeChanged(
@@ -189,9 +204,3 @@ void VelocityRangeBar::mouseDrag(
     }
 }
 
-void VelocityRangeBar::mouseUp(
-    const juce::MouseEvent&)
-{
-    draggingLow = false;
-    draggingHigh = false;
-}

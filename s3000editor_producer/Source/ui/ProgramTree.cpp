@@ -185,3 +185,20 @@ void ProgramTree::updateZone(
         zone
     );
 }
+
+void ProgramTree::updateKeygroup(
+    int keygroupIndex,
+    const Keygroup& keygroup
+)
+{
+    if (rootItem == nullptr)
+    {
+        DBG("UPDATE KEYGROUP: ROOT ITEM IS NULL");
+        return;
+    }
+
+    rootItem->updateKeygroup(
+        keygroupIndex,
+        keygroup
+    );
+}

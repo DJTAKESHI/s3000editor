@@ -11,6 +11,8 @@
 #include "../midi/SysExSender.h"
 #include "../midi/MidiManager.h"
 #include "KeygroupMap.h"
+#include <deque>
+#include <set>
 
 
 
@@ -72,7 +74,8 @@ class MainComponent : public juce::Component,
     public juce::MidiInputCallback,
     public juce::ListBoxModel,
     public juce::MidiKeyboardStateListener,
-    private juce::Timer
+    private juce::Timer,
+    public juce::KeyListener
 {
 public:
     //==============================================================================
@@ -86,6 +89,17 @@ public:
 
     void handleIncomingMidiMessage(juce::MidiInput* source,
         const juce::MidiMessage& message) override;
+
+    bool keyPressed(
+        const juce::KeyPress& key,
+        juce::Component* originatingComponent
+    ) override;
+
+    bool keyStateChanged(
+        bool isKeyDown,
+        juce::Component* originatingComponent
+    ) override;
+
 
 private:
     //==============================================================================
@@ -157,7 +171,15 @@ private:
     void parsePLIST(const std::vector<uint8_t>& d);
     void sendRSLIST();
     //std::queue<int> pendingSampleRequests;
+
+
     std::set<int> pendingSampleRequests;
+    std::deque<int> pendingSampleRequestOrder;
+
+    int activeSampleHeaderRequestId = -1;
+
+    void trySendNextSampleHeader();
+
 
     void dumpKeygroup(const std::vector<uint8_t>& decoded);
     Keygroup parseKeygroupStruct(const std::vector<uint8_t>& d);
