@@ -7,7 +7,7 @@ void SysExSender::setMidiOutput(juce::MidiOutput* output)
     midiOutput = output;
 }
 
-void SysExSender::sendRPLIST()
+void SysExSender::sendRPLIST() // request list of resident program names
 {
     if (midiOutput == nullptr)
     {
@@ -17,10 +17,10 @@ void SysExSender::sendRPLIST()
 
     uint8_t data[]
     {
-        0x47,
-        0x00,
-        0x02,
-        0x48
+        0x47, //Akai Manufacturer code
+        0x00, // exclusive channel
+        0x02, //Function code of RPlist
+        0x48 //S1000 Model identity
     };
 
     auto msg =
@@ -38,14 +38,6 @@ void SysExSender::sendProgramData(
     int programIndex,
     const std::vector<uint8_t>& data)
 {
-    DBG(
-        ">>> SEND PROGRAM DATA"
-        " program=" + juce::String(programIndex)
-        + " MODSPITCH_RAW="
-        + juce::String((int)data[ProgramOffset::Mod::ModSPitch])
-        + " MODVPITCH_RAW="
-        + juce::String((int)data[ProgramOffset::Mod::ModVPitch])
-    );
 
     if (!midiOutput)
     {
@@ -73,9 +65,6 @@ void SysExSender::sendProgramData(
             )
     );
 
-
-
-
     // Program Common Data
     // 1 byte -> low nibble / high nibble
     for (const auto byte : data)
@@ -99,14 +88,6 @@ void SysExSender::sendProgramData(
             static_cast<int>(sysex.size())
         );
 
-    DBG(
-        "SEND PDATA PROGRAM="
-        + juce::String(programIndex)
-        + " RAW SIZE="
-        + juce::String((int)data.size())
-        + " SYSEX SIZE="
-        + juce::String((int)sysex.size())
-    );
 
     midiOutput->sendMessageNow(msg);
 
@@ -116,10 +97,6 @@ void SysExSender::sendProgramData(
 
 void SysExSender::sendProgramHeader(int programIndex)
 {
-    DBG(
-        ">>> SEND PROGRAM HEADER REQUEST program="
-        + juce::String(programIndex)
-    );
 
     if (!midiOutput)
     {
@@ -132,7 +109,7 @@ void SysExSender::sendProgramHeader(int programIndex)
     {
         0x47,
         0x00,
-        0x27,
+        0x27, //Request for Program Header bytes
         0x48,
 
         static_cast<uint8_t>(
@@ -181,7 +158,7 @@ void SysExSender::sendDeleteKeygroup(
     // Akai header
     sysex.push_back(0x47);
     sysex.push_back(0x00);
-    sysex.push_back(0x13); // DELK
+    sysex.push_back(0x13); // The function of deleting Keygroup
     sysex.push_back(0x48);
 
     // Program number
@@ -204,13 +181,6 @@ void SysExSender::sendDeleteKeygroup(
             )
     );
 
-    DBG(
-        "DELETE KEYGROUP PROGRAM="
-        + juce::String(programIndex)
-        + " KG="
-        + juce::String(keygroupIndex)
-    );
-
     auto message =
         juce::MidiMessage::createSysExMessage(
             sysex.data(),
@@ -229,9 +199,6 @@ void SysExSender::sendKGHeader(
     int programIndex,
     int keygroup)
 {
-    DBG("sendKGHeader called");
-    DBG("program = " + juce::String(programIndex));
-    DBG("keygroup = " + juce::String(keygroup));
 
     if (!midiOutput)
     {
@@ -241,10 +208,10 @@ void SysExSender::sendKGHeader(
 
     uint8_t data[]
     {
-        0x47, // Akai
-        0x00, // MIDI exclusive channel
+        0x47, 
+        0x00, 
         0x29, // Request Keygroup Header bytes
-        0x48, // S1000 identity
+        0x48, 
 
         static_cast<uint8_t>(programIndex & 0x7F),
         static_cast<uint8_t>((programIndex >> 7) & 0x7F),
@@ -406,126 +373,6 @@ void SysExSender::sendKeygroupHeaderByte(
     );
 }
 
-//void SysExSender::sendKeygroupData(
-//    int programIndex,
-//    int keygroupIndex,
-//    const std::vector<uint8_t>& data
-//)
-//{
-//    if (!midiOutput)
-//    {
-//        DBG("NO MIDI OUTPUT");
-//        return;
-//    }
-//
-//    if (data.empty())
-//    {
-//        DBG("KEYGROUP DATA IS EMPTY");
-//        return;
-//    }
-//
-//    std::vector<uint8_t> sysex;
-//
-//    // Akai manufacturer
-//    sysex.push_back(0x47);
-//
-//    // MIDI exclusive channel
-//    sysex.push_back(0x00);
-//
-//    // S3000 Keygroup Header Data
-//    sysex.push_back(0x2A);
-//
-//    // S1000/S3000 model identity
-//    sysex.push_back(0x48);
-//
-//    // Program number: 14-bit
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            programIndex & 0x7F
-//            )
-//    );
-//
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            (programIndex >> 7) & 0x7F
-//            )
-//    );
-//
-//    // Keygroup number
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            keygroupIndex & 0x7F
-//            )
-//    );
-//
-//    // Byte offset into Keygroup Header: 0
-//    constexpr int byteOffset = 0;
-//
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            byteOffset & 0x7F
-//            )
-//    );
-//
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            (byteOffset >> 7) & 0x7F
-//            )
-//    );
-//
-//    // Number of decoded bytes: normally 192
-//    const int byteCount =
-//        static_cast<int>(data.size());
-//
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            byteCount & 0x7F
-//            )
-//    );
-//
-//    sysex.push_back(
-//        static_cast<uint8_t>(
-//            (byteCount >> 7) & 0x7F
-//            )
-//    );
-//
-//    // Nibble encoding
-//    for (const uint8_t value : data)
-//    {
-//        sysex.push_back(
-//            value & 0x0F
-//        );
-//
-//        sysex.push_back(
-//            (value >> 4) & 0x0F
-//        );
-//    }
-//
-//    DBG(
-//        "SEND EXTENDED KDATA"
-//        " PROGRAM="
-//        + juce::String(programIndex)
-//        + " KG="
-//        + juce::String(keygroupIndex)
-//        + " SIZE="
-//        + juce::String(byteCount)
-//        + " FILQ="
-//        + juce::String(
-//            data[
-//                KeygroupHeaderOffset::Filter::FILQ
-//            ]
-//        )
-//    );
-//
-//    const auto message =
-//        juce::MidiMessage::createSysExMessage(
-//            sysex.data(),
-//            sysex.size()
-//        );
-//
-//    midiOutput->sendMessageNow(message);
-//}
-
 void SysExSender::sendProgramHeaderByte(
     int programIndex,
     int offset,
@@ -552,7 +399,7 @@ void SysExSender::sendProgramHeaderByte(
         static_cast<uint8_t>(programIndex & 0x7F),
         static_cast<uint8_t>((programIndex >> 7) & 0x7F),
 
-        0x00, // Reserved Å© Ç±ÇÍÇ™ïKóv
+        0x00, // Reserved 
 
         static_cast<uint8_t>(offset & 0x7F),
         static_cast<uint8_t>((offset >> 7) & 0x7F),
@@ -572,13 +419,22 @@ void SysExSender::sendProgramHeaderByte(
 
     midiOutput->sendMessageNow(msg);
 
-    DBG(
-        "SEND PROGRAM HEADER BYTE OFFSET="
-        + juce::String(offset)
-        + " VALUE="
-        + juce::String(value)
+}
+
+void SysExSender::sendMidiMessage(
+    const juce::MidiMessage& message)
+{
+    if (!midiOutput)
+    {
+        DBG("NO MIDI OUTPUT");
+        return;
+    }
+
+    midiOutput->sendMessageNow(
+        message
     );
 }
+
 
 void SysExSender::sendKeygroupHeaderByteRequest(
     int programIndex,
@@ -618,12 +474,7 @@ void SysExSender::sendKeygroupHeaderByteRequest(
 
     midiOutput->sendMessageNow(msg);
 
-    DBG(
-        "REQUEST KG HEADER BYTE KG="
-        + juce::String(keygroup)
-        + " OFFSET="
-        + juce::String(offset)
-    );
+
 }
 
 
@@ -632,12 +483,7 @@ void SysExSender::sendKeygroupData(
     int keygroupIndex,
     const std::vector<uint8_t>& data)
 {
-    DBG(
-        "SEND KEYGROUP DATA program="
-        + juce::String(programIndex)
-        + " keygroup="
-        + juce::String(keygroupIndex)
-    );
+
 
     if (!midiOutput)
     {
@@ -692,10 +538,6 @@ void SysExSender::sendKeygroupData(
             sysex.size()
         );
 
-    DBG(
-        "KEYGROUP SYSEX OPCODE="
-        + juce::String::toHexString((int)sysex[2])
-    );
 
     midiOutput->sendMessageNow(message);
 
@@ -755,6 +597,10 @@ void SysExSender::sendRSLIST()
  
 }
 
+
+// Request miscellaneout data (RMDATA) from the S3000XL.
+// The reply (MData, function code 0x11) is used as a heartbeat
+// to monitor the sampler's curretnly selected program
 void SysExSender::sendHeartbeat()
 {
     if (!midiOutput)
@@ -767,7 +613,7 @@ void SysExSender::sendHeartbeat()
     {
         0x47,   // Akai Manufacturer
         0x00,   // Exclusive channel
-        0x10,   // RMDATA
+        0x10,   // RMDATA: Request Miscellaneous Data
         0x48    // Model identity
     };
 
@@ -782,37 +628,13 @@ void SysExSender::sendHeartbeat()
 
 }
 
-//void SysExSender::sendNoteOn(
-//    int noteNumber,
-//    int velocity,
-//    int midiChannel)
-//{
-//    if (midiOutput == nullptr)
-//        return;
-//
-//    noteNumber = juce::jlimit(0, 127, noteNumber);
-//    velocity = juce::jlimit(1, 127, velocity);
-//    midiChannel = juce::jlimit(1, 16, midiChannel);
-//
-//    auto message =
-//        juce::MidiMessage::noteOn(
-//            midiChannel,
-//            noteNumber,
-//            (juce::uint8)velocity
-//        );
-//
-//    midiOutput->sendMessageNow(message);
-//}
+
 
 void SysExSender::sendNoteOn(
     int noteNumber,
     int velocity,
     int midiChannel)
 {
-    DBG("sendNoteOn CALLED");
-    DBG("channel = " + juce::String(midiChannel));
-    DBG("note = " + juce::String(noteNumber));
-    DBG("velocity = " + juce::String(velocity));
 
     if (midiOutput == nullptr)
     {
@@ -831,8 +653,6 @@ void SysExSender::sendNoteOn(
             (juce::uint8)velocity
         );
 
-    DBG("RAW STATUS = 0x"
-        + juce::String::toHexString((int)message.getRawData()[0]));
 
     midiOutput->sendMessageNow(message);
 
@@ -912,7 +732,9 @@ void SysExSender::sendDeleteProgram(
     midiOutput->sendMessageNow(message);
 }
 
-
+// Partial write to a keygroup header
+// Writes a single byte at the specified offset instead of
+// sending the entire Keygroup Header.
 void SysExSender::sendKeygroupByte(
     int programIndex,
     int keygroupIndex,
@@ -980,18 +802,6 @@ void SysExSender::sendKeygroupByte(
         (value >> 4) & 0x0F
     );
 
-    DBG(
-        "SEND KEYGROUP BYTE"
-        " PROGRAM="
-        + juce::String(programIndex)
-        + " KG="
-        + juce::String(keygroupIndex)
-        + " OFFSET="
-        + juce::String(byteOffset)
-        + " VALUE="
-        + juce::String(value)
-    );
-
     const auto message =
         juce::MidiMessage::createSysExMessage(
             sysex.data(),
@@ -1001,6 +811,9 @@ void SysExSender::sendKeygroupByte(
     midiOutput->sendMessageNow(message);
 }
 
+
+// Partial write to a Keygroup Header.
+// Writes a 16-bit (2-byte) value starting at the specified offset.
 void SysExSender::sendKeygroupWord(
     int programIndex,
     int keygroupIndex,
@@ -1066,18 +879,6 @@ void SysExSender::sendKeygroupWord(
 
     sysex.push_back(highByte & 0x0F);
     sysex.push_back((highByte >> 4) & 0x0F);
-
-    DBG(
-        "SEND KEYGROUP WORD"
-        " PROGRAM="
-        + juce::String(programIndex)
-        + " KG="
-        + juce::String(keygroupIndex)
-        + " OFFSET="
-        + juce::String(byteOffset)
-        + " VALUE="
-        + juce::String(value)
-    );
 
     const auto message =
         juce::MidiMessage::createSysExMessage(

@@ -86,7 +86,9 @@ void VelocityRangeBar::paint(
     );
 
     g.setColour(
-        juce::Colours::cornflowerblue
+        juce::Colour::fromRGB(
+            190, 45, 38
+        )
     );
 
     g.fillRoundedRectangle(

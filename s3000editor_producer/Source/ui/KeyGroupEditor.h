@@ -53,11 +53,12 @@ public:
         int
         )> onFilterFreqChanged;
 
-    juce::ComboBox filterEditModeCombo;
+    //juce::ComboBox filterEditModeCombo;
+    juce::ToggleButton filterEditAllToggle{ "ALL KGs" };
 
     bool isFilterEditAll() const
     {
-        return filterEditModeCombo.getSelectedId() == 2;
+        return filterEditAllToggle.getToggleState();
     }
 
 
@@ -99,10 +100,41 @@ public:
 
     int pendingResonance = -1;
     int lastSentResonance = -1;
+    void suspendFilterRealtime();
+
+    bool isEnv2EditAll() const
+    {
+        DBG(
+            "isEnv2EditAll() STATE="
+            + juce::String(
+                env2EditAllToggle.getToggleState() ? 1 : 0
+            )
+        );
+
+        return env2EditAllToggle.getToggleState();
+    }
+
+    std::function<void(int, int)> onEnv1AttackChanged;
+    std::function<void(int, int)> onEnv1DecayChanged;
+    std::function<void(int, int)> onEnv1SustainChanged;
+    std::function<void(int, int)> onEnv1ReleaseChanged;
+
+
+
+    bool isEnv1EditAll() const
+    {
+        return env1EditAllToggle.getToggleState();
+    }
+
+    std::function<void()> onRequestKeyboardFocus;
+
 
 
 
 private:
+    juce::ToggleButton env1EditAllToggle{ "ALL KGs" };
+    juce::ToggleButton env2EditAllToggle{ "ALL KGs" };
+
     juce::Label titleLabel;
 
     juce::Label lowNoteLabel;

@@ -21,35 +21,12 @@ KeygroupItem::KeygroupItem(
             );
 
 
-        // ========================================
-        // š Sample Header‚ª–³‚­‚Ä‚à“Í‚­Zone‘I‘ð
-        // ========================================
-
         zoneItem->onZoneSelected =
             [this](
                 int zoneIndex,
                 const VelocityZone& zone
                 )
             {
-                DBG(
-                    "KEYGROUP RECEIVED BASIC ZONE SELECTION"
-                );
-
-                DBG(
-                    "KEYGROUP INDEX = "
-                    + juce::String(index)
-                );
-
-                DBG(
-                    "ZONE INDEX = "
-                    + juce::String(zoneIndex)
-                );
-
-                DBG(
-                    "ZONE SAMPLE = ["
-                    + zone.sampleName
-                    + "]"
-                );
 
                 if (onBasicZoneSelected)
                 {
@@ -62,9 +39,7 @@ KeygroupItem::KeygroupItem(
             };
 
 
-        // ========================================
-        // Sample Header‚Ü‚ÅŒ©‚Â‚©‚Á‚½ê‡
-        // ========================================
+
 
         zoneItem->onSelected =
             [this](
@@ -73,36 +48,7 @@ KeygroupItem::KeygroupItem(
                 const SampleHeader& sampleHeader
                 )
             {
-                DBG(
-                    "KEYGROUP RECEIVED ZONE SELECTION"
-                );
 
-                DBG(
-                    "KEYGROUP INDEX = "
-                    + juce::String(index)
-                );
-
-                DBG(
-                    "ZONE INDEX = "
-                    + juce::String(zoneIndex)
-                );
-
-                DBG(
-                    "ZONE SAMPLE = ["
-                    + zone.sampleName
-                    + "]"
-                );
-
-                DBG(
-                    "SAMPLE ID = "
-                    + juce::String(zone.sampleId)
-                );
-
-                DBG(
-                    "SAMPLE HEADER = ["
-                    + sampleHeader.name
-                    + "]"
-                );
 
                 if (onZoneSelected)
                 {

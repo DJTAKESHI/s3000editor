@@ -322,6 +322,35 @@ ProgramEncoder::encode(
 			program.softFilter
 			);
 
+		// =========================
+	// Portamento
+	// =========================
+
+		data[
+			ProgramOffset::Portamento::Time
+		] =
+			static_cast<uint8_t>(
+				juce::jlimit(
+					0,
+					99,
+					program.portamentoTime
+				)
+				);
+
+			data[
+				ProgramOffset::Portamento::Type
+			] =
+				static_cast<uint8_t>(
+					program.portamentoType
+					);
+
+				data[
+					ProgramOffset::Portamento::Enable
+				] =
+					static_cast<uint8_t>(
+						program.portamentoEnabled ? 1 : 0
+						);
+
 	data[
 		ProgramOffset::Pitch::PressurePitch
 	] =
@@ -386,24 +415,6 @@ ProgramEncoder::encode(
 			);
 
 
-
-	DBG(
-		"ENCODE PROGRAM TUNE = "
-		+ juce::String(tune, 2)
-	);
-
-	DBG(
-		juce::String::formatted(
-			"ENCODE PTUNO RAW = %02X %02X",
-			(unsigned)data[
-				ProgramOffset::Pitch::ProgramTune
-			],
-			(unsigned)data[
-				ProgramOffset::Pitch::ProgramTune + 1
-			]
-		)
-	);
-
 	// =========================
 // MODULATION SOURCES
 // =========================
@@ -448,16 +459,6 @@ ProgramEncoder::encode(
 	data[ProgramOffset::Mod::ModSPitch] =
 		static_cast<uint8_t>(program.modSPitch);
 
-	DBG(
-		"ENCODE MODSPITCH OFFSET="
-		+ juce::String((int)ProgramOffset::Mod::ModSPitch)
-		+ " RAW="
-		+ juce::String(
-			(int)data[
-				ProgramOffset::Mod::ModSPitch
-			]
-		)
-	);
 
 	data[ProgramOffset::Mod::ModSAmp3] =
 		static_cast<uint8_t>(program.modSAmp3);

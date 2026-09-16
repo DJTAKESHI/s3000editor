@@ -95,15 +95,8 @@ void ProgramParser::parseHeader(
     const std::vector<uint8_t>& d,
     Program& p)
 {
-    DBG("========== ProgramParser::parseHeader CALLED ==========");
-    DBG("PROGRAM HEADER DATA SIZE = " + juce::String((int)d.size()));
 
-    DBG(
-        "REQUIRED LAST OFFSET = "
-        + juce::String((int)P::Keygroups::NumKeygroups)
-    );
 
-    // ç≈í·Ç≈Ç‡ GROUPS(offset 42) Ç‹Ç≈ïKóv
     if (d.size() <= P::Keygroups::NumKeygroups)
     {
         DBG("PROGRAM HEADER TOO SMALL");
@@ -129,11 +122,7 @@ void ProgramParser::parseHeader(
     while (!p.name.empty() && p.name.back() == ' ')
         p.name.pop_back();
 
-    DBG(
-        "PROGRAM NAME = ["
-        + juce::String(p.name)
-        + "]"
-    );
+
 
 
     // ===== General =====
@@ -234,14 +223,7 @@ void ProgramParser::parseHeader(
 // Pitch
 // ==============================
 
-    DBG(
-        juce::String::formatted(
-            "BEND UP RAW = %02X",
-            (unsigned)d[
-                P::Pitch::BendUp
-            ]
-        )
-    );
+
 
     p.bendUp =
         d[P::Pitch::BendUp];
@@ -252,19 +234,7 @@ void ProgramParser::parseHeader(
             P::Pitch::PressurePitch
         );
 
-    DBG(
-        "PRESSURE -> PITCH = "
-        + juce::String(p.pressurePitch)
-    );
 
-    DBG(
-        juce::String::formatted(
-            "PRESSURE PITCH RAW = %02X",
-            (unsigned)d[
-                P::Pitch::PressurePitch
-            ]
-        )
-    );
 
     // ==============================
 // Temperament
@@ -304,16 +274,29 @@ void ProgramParser::parseHeader(
     p.softFilter =
         d[P::SoftPedal::SoftFilter];
 
+    // ==============================
+// Portamento
+// ==============================
+
+    p.portamentoTime =
+        d[P::Portamento::Time];
+
+    p.portamentoType =
+        d[P::Portamento::Type];
+
+    p.portamentoEnabled =
+        d[P::Portamento::Enable] != 0;
+
+
+
+
     p.tune =
         readTune(
             d,
             P::Pitch::ProgramTune
         );
 
-    DBG(
-        "PROGRAM TUNE = "
-        + juce::String(p.tune, 2)
-    );
+
 
 
     p.individualOutputLevel =
@@ -322,55 +305,17 @@ void ProgramParser::parseHeader(
     p.legato =
         d[P::Voice::Legato] != 0;
 
-    DBG(
-        "LEGATO = "
-        + juce::String(
-            p.legato ? "ON" : "OFF"
-        )
-    );
 
-    DBG(
-        juce::String::formatted(
-            "LEGATO RAW = %02X",
-            (unsigned)d[
-                P::Voice::Legato
-            ]
-        )
-    );
 
     p.bendDown =
         d[P::Pitch::BendDown];
 
-    DBG(
-        "BEND DOWN = "
-        + juce::String(p.bendDown)
-    );
 
-    DBG(
-        juce::String::formatted(
-            "BEND DOWN RAW = %02X",
-            (unsigned)d[
-                P::Pitch::BendDown
-            ]
-        )
-    );
 
     p.bendMode =
         d[P::Pitch::BendMode];
 
-    DBG(
-        "BEND MODE = "
-        + juce::String(p.bendMode)
-    );
 
-    DBG(
-        juce::String::formatted(
-            "BEND MODE RAW = %02X",
-            (unsigned)d[
-                P::Pitch::BendMode
-            ]
-        )
-    );
 
     p.transpose =
         readS8(
@@ -378,19 +323,7 @@ void ProgramParser::parseHeader(
             P::Pitch::Transpose
         );
 
-    DBG(
-        "TRANSPOSE = "
-        + juce::String(p.transpose)
-    );
 
-    DBG(
-        juce::String::formatted(
-            "TRANSPOSE RAW = %02X",
-            (unsigned)d[
-                P::Pitch::Transpose
-            ]
-        )
-    );
 
     p.modSPan1 = d[P::Mod::ModSPan1];
     p.modSPan2 = d[P::Mod::ModSPan2];
@@ -409,6 +342,9 @@ void ProgramParser::parseHeader(
 
     p.modSPitch = d[P::Mod::ModSPitch];
     p.modSAmp3 = d[P::Mod::ModSAmp3];
+
+
+
 
     // ==============================
 // Modulation Amounts
@@ -477,175 +413,7 @@ void ProgramParser::parseHeader(
             );
     }
 
-    DBG(
-        "PARSE MODSPITCH OFFSET87 RAW="
-        + juce::String(
-            (int)d[P::Mod::ModSPitch]
-        )
-        + " VALUE="
-        + juce::String(p.modSPitch)
-
-    );
-
-    DBG(
-        "PARSE MODVPITCH OFFSET154 RAW="
-        + juce::String(
-            (int)d[P::Mod::ModVPitch]
-        )
-        + " VALUE="
-        + juce::String(p.modVPitch)
-    );
-
-    DBG(
-        "MODVPITCH OFFSET="
-        + juce::String((int)P::Mod::ModVPitch)
-        + " DATA SIZE="
-        + juce::String((int)d.size())
-    );
-
-    DBG(
-        "LFO1 WAVE RAW = "
-        + juce::String(p.lfo1Wave)
-    );
-
-    p.velocityLoudness =
-        readS8(
-            d,
-            P::Output::VelocityLoudness
-        );
-
-    DBG(
-        "VELOCITY -> LOUDNESS = "
-        + juce::String(p.velocityLoudness)
-    );
-
-
-
-
-
-    // ===== Debug =====
-
-    DBG("=== PROGRAM HEADER ===");
-
-    DBG(
-        "PROGRAM NUMBER = "
-        + juce::String(p.programNumber)
-    );
-
-    DBG(
-        "MIDI CHANNEL = "
-        + juce::String(p.midiChannel)
-    );
-
-    DBG(
-        "POLYPHONY RAW = "
-        + juce::String(p.polyphony)
-    );
-
-    DBG(
-        "PRIORITY = "
-        + juce::String(p.priority)
-    );
-
-    DBG(
-        "PLAY LOW = "
-        + juce::String(p.playLow)
-    );
-
-    DBG(
-        "PLAY HIGH = "
-        + juce::String(p.playHigh)
-    );
-
-    DBG(
-        "GROUPS = "
-        + juce::String(p.groups)
-    );
-
-    DBG(
-        "OUTPUT = "
-        + juce::String(p.output)
-    );
-
-    DBG(
-        "STEREO LEVEL = "
-        + juce::String(p.stereoLevel)
-    );
-
-    DBG(
-        "PAN = "
-        + juce::String(p.pan)
-    );
-
-    DBG(
-        "LOUDNESS = "
-        + juce::String(p.loudness)
-    );
-    DBG(
-        "LFO2 RATE = "
-        + juce::String(p.lfo2Rate)
-    );
-
-    DBG(
-        "LFO2 DEPTH = "
-        + juce::String(p.lfo2Depth)
-    );
-
-    DBG(
-        "LFO2 DELAY = "
-        + juce::String(p.lfo2Delay)
-    );
-
-    DBG(
-        "LFO1 RATE = "
-        + juce::String(p.lfo1Rate)
-    );
-
-    DBG(
-        "LFO1 DEPTH = "
-        + juce::String(p.lfo1Depth)
-    );
-
-    DBG(
-        "LFO1 DELAY = "
-        + juce::String(p.lfo1Delay)
-    );
-
-    DBG(
-        "MODWHEEL -> LFO1 DEPTH = "
-        + juce::String(p.modWheelDepth)
-    );
-
-    DBG(
-        "PRESSURE -> LFO1 DEPTH = "
-        + juce::String(p.pressureDepth)
-    );
-
-    DBG(
-        "VELOCITY -> LFO1 DEPTH = "
-        + juce::String(p.velocityDepth)
-    );
-
-    DBG(
-        "BEND UP = "
-        + juce::String(p.bendUp)
-    );
-
-    DBG(
-        "PRESSURE -> PITCH = "
-        + juce::String(p.pressurePitch)
-    );
-
-    p.keygroupCrossfade =
-        d[P::Keygroups::KeygroupCrossfade] != 0;
-
-    DBG(
-        "KEYGROUP CROSSFADE = "
-        + juce::String(
-            p.keygroupCrossfade ? "ON" : "OFF"
-        )
-    );
-
+    
 
     static const char* noteNames[12] =
     {
@@ -664,120 +432,7 @@ void ProgramParser::parseHeader(
         );
     }
 
-    DBG(
-        "LFO1 DESYNC = "
-        + juce::String(
-            p.lfo1Desync ? "ON" : "OFF"
-        )
-    );
-
-    DBG(
-        "VOICE STEAL = "
-        + juce::String(
-            p.voiceAssign == 0
-            ? "OLDEST"
-            : "QUIETEST"
-        )
-    );
-
-    DBG(
-        "SOFT PEDAL LOUDNESS = "
-        + juce::String(p.softLoudness)
-    );
-
-    DBG(
-        "SOFT PEDAL ATTACK = "
-        + juce::String(p.softAttack)
-    );
-
-    DBG(
-        "SOFT PEDAL FILTER = "
-        + juce::String(p.softFilter)
-    );
-
-    DBG(
-        "PROGRAM TUNE = "
-        + juce::String(p.tune, 2)
-    );
-
-    DBG(
-        juce::String::formatted(
-            "PTUNO RAW = %02X %02X",
-            (unsigned)d[P::Pitch::ProgramTune],
-            (unsigned)d[P::Pitch::ProgramTune + 1]
-        )
-    );
-
-
-    DBG(
-        "INDIVIDUAL OUTPUT LEVEL = "
-        + juce::String(p.individualOutputLevel)
-    );
-
-    DBG(
-        "LEGATO = "
-        + juce::String(p.legato ? "ON" : "OFF")
-    );
-
-    DBG(
-        "BEND DOWN = "
-        + juce::String(p.bendDown)
-    );
-
-    DBG(
-        "BEND MODE = "
-        + juce::String(p.bendMode)
-    );
-
-    DBG(
-        "TRANSPOSE = "
-        + juce::String(p.transpose)
-    );
-
-    DBG("=== MODULATION RAW VALUES ===");
-
-    DBG("MOD S PAN1 = " + juce::String(p.modSPan1));
-    DBG("MOD S PAN2 = " + juce::String(p.modSPan2));
-    DBG("MOD S PAN3 = " + juce::String(p.modSPan3));
-
-    DBG("MOD S AMP1 = " + juce::String(p.modSAmp1));
-    DBG("MOD S AMP2 = " + juce::String(p.modSAmp2));
-
-    DBG("MOD S LFO1 RATE = "
-        + juce::String(p.modSLfo1Rate));
-
-    DBG("MOD S LFO1 DEPTH = "
-        + juce::String(p.modSLfo1Depth));
-
-    DBG("MOD S LFO1 DELAY = "
-        + juce::String(p.modSLfo1Delay));
-
-    DBG("MOD S FILTER1 = " + juce::String(p.modSFilter1));
-    DBG("MOD S FILTER2 = " + juce::String(p.modSFilter2));
-    DBG("MOD S FILTER3 = " + juce::String(p.modSFilter3));
-
-    DBG("MOD S PITCH = " + juce::String(p.modSPitch));
-    DBG("MOD S AMP3 = " + juce::String(p.modSAmp3));
-
-
-    DBG("MOD V PAN1 = " + juce::String(p.modVPan1));
-    DBG("MOD V PAN2 = " + juce::String(p.modVPan2));
-    DBG("MOD V PAN3 = " + juce::String(p.modVPan3));
-
-    DBG("MOD V AMP1 = " + juce::String(p.modVAmp1));
-    DBG("MOD V AMP2 = " + juce::String(p.modVAmp2));
-
-    DBG("MOD V LFO1 RATE = "
-        + juce::String(p.modVLfo1Rate));
-
-    DBG("MOD V LFO1 DEPTH = "
-        + juce::String(p.modVLfo1Depth));
-
-    DBG("MOD V LFO1 DELAY = "
-        + juce::String(p.modVLfo1Delay));
-
-    DBG("LFO1 WAVE = " + juce::String(p.lfo1Wave));
-    DBG("LFO2 WAVE = " + juce::String(p.lfo2Wave));
+    
 
 
 }
@@ -825,8 +480,6 @@ void ProgramParser::parseKeygroups(const std::vector<uint8_t>& d, Program& p, co
 			)
 		);
 
-		DBG(
-			"Parsed Keygroup " + juce::String(i)
-		);
+
 	}
 }

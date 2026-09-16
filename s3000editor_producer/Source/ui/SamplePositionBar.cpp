@@ -41,46 +41,12 @@ float SamplePositionBar::positionToX(
 void SamplePositionBar::mouseDown(
     const juce::MouseEvent& event)
 {
-    const float mouseX = event.position.x;
+    juce::ignoreUnused(event);
 
-    const float startX =
-        positionToX(startPosition);
-
-    const float endX =
-        positionToX(endPosition);
-
-    const float loopStartX =
-        positionToX(loopStartPosition);
-
-    const float loopEndX =
-        positionToX(loopEndPosition);
-
-    const float dStart =
-        std::abs(mouseX - startX);
-
-    const float dEnd =
-        std::abs(mouseX - endX);
-
-    const float dLoopStart =
-        std::abs(mouseX - loopStartX);
-
-    const float dLoopEnd =
-        std::abs(mouseX - loopEndX);
-
-    const float nearest =
-        juce::jmin(
-            juce::jmin(dStart, dEnd),
-            juce::jmin(dLoopStart, dLoopEnd)
-        );
-
-    if (nearest == dStart)
-        draggingStart = true;
-    else if (nearest == dEnd)
-        draggingEnd = true;
-    else if (nearest == dLoopStart)
-        draggingLoopStart = true;
-    else
-        draggingLoopEnd = true;
+    draggingStart = false;
+    draggingEnd = false;
+    draggingLoopStart = false;
+    draggingLoopEnd = false;
 }
 
 void SamplePositionBar::mouseDrag(
@@ -380,65 +346,65 @@ void SamplePositionBar::paint(
     // START / END MARKERS
     // ========================================
 
-    g.setColour(
-        juce::Colours::white
-    );
+    //g.setColour(
+    //    juce::Colours::white
+    //);
 
-    g.fillRect(
-        startX - 1.0f,
-        timeline.getY() - 5.0f,
-        2.0f,
-        timeline.getHeight() + 10.0f
-    );
+    //g.fillRect(
+    //    startX - 1.0f,
+    //    timeline.getY() - 5.0f,
+    //    2.0f,
+    //    timeline.getHeight() + 10.0f
+    //);
 
-    g.fillRect(
-        endX - 1.0f,
-        timeline.getY() - 5.0f,
-        2.0f,
-        timeline.getHeight() + 10.0f
-    );
+    //g.fillRect(
+    //    endX - 1.0f,
+    //    timeline.getY() - 5.0f,
+    //    2.0f,
+    //    timeline.getHeight() + 10.0f
+    //);
 
-    // START triangle
-    {
-        juce::Path marker;
+    //// START triangle
+    //{
+    //    juce::Path marker;
 
-        marker.addTriangle(
-            startX - 5.0f,
-            timeline.getY() - 8.0f,
+    //    marker.addTriangle(
+    //        startX - 5.0f,
+    //        timeline.getY() - 8.0f,
 
-            startX + 5.0f,
-            timeline.getY() - 8.0f,
+    //        startX + 5.0f,
+    //        timeline.getY() - 8.0f,
 
-            startX,
-            timeline.getY() - 2.0f
-        );
+    //        startX,
+    //        timeline.getY() - 2.0f
+    //    );
 
-        g.fillPath(marker);
-    }
+    //    g.fillPath(marker);
+    //}
 
-    // END triangle
-    {
-        juce::Path marker;
+    //// END triangle
+    //{
+    //    juce::Path marker;
 
-        marker.addTriangle(
-            endX - 5.0f,
-            timeline.getY() - 8.0f,
+    //    marker.addTriangle(
+    //        endX - 5.0f,
+    //        timeline.getY() - 8.0f,
 
-            endX + 5.0f,
-            timeline.getY() - 8.0f,
+    //        endX + 5.0f,
+    //        timeline.getY() - 8.0f,
 
-            endX,
-            timeline.getY() - 2.0f
-        );
+    //        endX,
+    //        timeline.getY() - 2.0f
+    //    );
 
-        g.fillPath(marker);
-    }
+    //    g.fillPath(marker);
+    //}
 
     // ========================================
     // LOOP MARKERS
     // ========================================
 
-    if (loopEndPosition > loopStartPosition)
+    /*if (loopEndPosition > loopStartPosition)
     {
         g.setColour(
             juce::Colours::orange
@@ -457,7 +423,7 @@ void SamplePositionBar::paint(
             2.0f,
             timeline.getHeight() - 4.0f
         );
-    }
+    }*/
 
     // ========================================
     // BOTTOM LABELS

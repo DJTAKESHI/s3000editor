@@ -104,10 +104,7 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
     // Bandwidth
     // ==============================
 
-    DBG(
-        "ENCODE BANDWIDTH = "
-        + juce::String(s.bandwidth)
-    );
+
 
     d[SampleHeaderOffset::SBANDW] =
         static_cast<uint8_t>(s.bandwidth);
@@ -158,10 +155,7 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
     // Play Type
     // ==============================
 
-    DBG(
-        "ENCODE PLAYBACK TYPE = "
-        + juce::String(s.playType)
-    );
+
 
 
     d[SampleHeaderOffset::SPTYPE] =
@@ -194,35 +188,15 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
             static_cast<int8_t>(semitone)
             );
 
-    DBG(
-        juce::String::formatted(
-            "ENCODE STUNO = %02X %02X",
-            (unsigned int)d[SampleHeaderOffset::STUNO],
-            (unsigned int)d[SampleHeaderOffset::STUNO + 1]
-        )
-    );
 
-    DBG(
-        "ENCODE TUNE VALUE = "
-        + juce::String(s.tune, 2)
-    );
+
 
     d[SampleHeaderOffset::SHLTO] =
         static_cast<uint8_t>(
             s.holdLoopTune
             );
 
-    DBG(
-        "ENCODE SHLTO = 0x"
-        + juce::String::toHexString(
-            d[SampleHeaderOffset::SHLTO]
-        )
-    );
 
-    DBG(
-        "ENCODE HOLD LOOP TUNE = "
-        + juce::String((int)s.holdLoopTune)
-    );
 
     writeUInt32(
         d,
@@ -236,10 +210,7 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
         static_cast<uint32_t>(s.length)
     );
 
-    DBG(
-        "ENCODE START = "
-        + juce::String((juce::int64)s.start)
-    );
+
 
     writeUInt32(
         d,
@@ -291,22 +262,10 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
             s.loops[i].dwell
         );
 
-        DBG(
-            "ENCODE LOOP "
-            + juce::String(i + 1)
-            + " POSITION="
-            + juce::String((juce::int64)s.loops[i].position)
-            + " LENGTH="
-            + juce::String(s.loops[i].length, 3)
-            + " DWELL="
-            + juce::String(s.loops[i].dwell)
-        );
+
     }
 
-    DBG(
-        "ENCODE SAMPLE RATE = "
-        + juce::String(s.sampleRate)
-    );
+
 
     writeUInt16(
         d,
@@ -338,10 +297,7 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
 // Sample Rate
 // ==============================
 
-    DBG(
-        "ENCODE SAMPLE RATE = "
-        + juce::String(s.sampleRate)
-    );
+
 
     writeUInt16(
         d,
@@ -355,6 +311,9 @@ SampleHeaderEncoder::encode(const SampleHeader& s)
     return d;
 }
 
+// Converts raw 8-bit data into Akai SysEx nibble format.
+// Each byte is split into low and high 4-bit nibbles,
+// doubling the number of data bytes.
 std::vector<uint8_t> SampleHeaderEncoder::encodeNibbleData(
     const std::vector<uint8_t>& decoded)
 {
@@ -377,6 +336,10 @@ std::vector<uint8_t> SampleHeaderEncoder::encodeNibbleData(
     return encoded;
 }
 
+
+// Partial write for the Sample Header name.
+// Encodes the 12-character sample name into Akai character codes,
+// nibble-encodes the data, and writes 12 bytes starting at SHNAME (offset 3).
 std::vector<uint8_t>
 SampleHeaderEncoder::makeNameSysEx(
     const SampleHeader& header)
@@ -434,12 +397,7 @@ SampleHeaderEncoder::makeNameSysEx(
         encodedData.begin(),
         encodedData.end()
     );
-    DBG("SAMPLE NAME WRITE OFFSET = 3");
-    DBG("SAMPLE NAME WRITE LENGTH = 12");
-    DBG(
-        "SAMPLE NAME SYSEX SIZE = "
-        + juce::String((int)data.size())
-    );
+
 
     return data;
 }

@@ -35,8 +35,9 @@ void VelocityZoneMap::paint(
         if (i == selectedZone)
         {
             g.setColour(
-                juce::Colours::white
-                .withAlpha(0.12f)
+                juce::Colour::fromRGB(
+                    190, 45, 38
+                ).withAlpha(0.10f)
             );
 
             g.fillRoundedRectangle(
@@ -55,7 +56,9 @@ void VelocityZoneMap::paint(
         // =========================
 
         g.setColour(
-            juce::Colours::white
+            juce::Colour::fromRGB(
+                55, 55, 52
+            )
         );
 
         g.drawText(
@@ -77,16 +80,6 @@ void VelocityZoneMap::paint(
                 rowHeight - 10.0f
             );
 
-        DBG(
-            "ZONE MAP GEOMETRY "
-            + juce::String(i)
-            + " COMPONENT WIDTH="
-            + juce::String(getWidth())
-            + " BAR X="
-            + juce::String(barArea.getX())
-            + " BAR WIDTH="
-            + juce::String(barArea.getWidth())
-        );
 
         // Background
         g.setColour(
@@ -104,16 +97,7 @@ void VelocityZoneMap::paint(
         const auto& zone =
             zones[i];
 
-        DBG(
-            "ZONE MAP "
-            + juce::String(i)
-            + " SAMPLE=["
-            + zone.sampleName
-            + "] LOW="
-            + juce::String(zone.lowVel)
-            + " HIGH="
-            + juce::String(zone.highVel)
-        );
+
 
         const bool hasSample =
             !zone.sampleName.trim().isEmpty();
@@ -164,22 +148,12 @@ void VelocityZoneMap::paint(
             barArea.getHeight()
         );
 
-        DBG(
-            "ZONE MAP ACTIVE "
-            + juce::String(i)
-            + " X="
-            + juce::String(active.getX())
-            + " Y="
-            + juce::String(active.getY())
-            + " W="
-            + juce::String(active.getWidth())
-            + " H="
-            + juce::String(active.getHeight())
-        );
 
 
         g.setColour(
-            juce::Colours::cornflowerblue
+            juce::Colour::fromRGB(
+                190, 45, 38
+            )
         );
 
         g.fillRoundedRectangle(
@@ -200,7 +174,9 @@ void VelocityZoneMap::paint(
             barArea.getRight() + 8.0f;
 
         g.setColour(
-            juce::Colours::white
+            juce::Colour::fromRGB(
+                55, 55, 52
+            )
         );
 
         // Velocity Range

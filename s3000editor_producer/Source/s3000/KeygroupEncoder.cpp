@@ -36,10 +36,6 @@ std::vector<uint8_t> KeygroupEncoder::encode(
     const Keygroup& keygroup
 )
 {
-
-
-
-    // ���@�����M��������192 bytes���R�s�[
     auto data = keygroup.rawData;
 
     if (data.size() < 192)
@@ -47,9 +43,6 @@ std::vector<uint8_t> KeygroupEncoder::encode(
         DBG("KEYGROUP ENCODE ERROR: rawData too small");
         return {};
     }
-
-
-
 
     // ===== Keygroup Common =====
     data[KeygroupHeaderOffset::Common::LONOTE] =
@@ -208,15 +201,6 @@ std::vector<uint8_t> KeygroupEncoder::encode(
                 keygroup.modVPitch
                 )
             );
-
-    DBG(
-        "ENCODE KG MODVPITCH OFFSET154 RAW="
-        + juce::String(
-            (int)data[
-                KeygroupHeaderOffset::Mod::ModVPitch
-            ]
-        )
-    );
 
 
     // ===== Velocity Zones =====

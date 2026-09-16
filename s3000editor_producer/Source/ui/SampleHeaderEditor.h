@@ -70,6 +70,7 @@ private:
 
     juce::Label sampleRateLabel;
     juce::TextEditor sampleRateEditor;
+    //juce::Slider sampleRateSlider;
 
     juce::Label holdLoopTuneLabel;
     juce::TextEditor holdLoopTuneEditor;

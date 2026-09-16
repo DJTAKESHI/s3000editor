@@ -58,7 +58,7 @@ ProgramEditor::ProgramEditor()
 
             label.setColour(
                 juce::Label::textColourId,
-                juce::Colours::lightgrey
+                juce::Colour::fromRGB(55, 55, 52)
             );
 
             label.setFont(
@@ -178,6 +178,8 @@ ProgramEditor::ProgramEditor()
 
     addAndMakeVisible(programNameLabel);
     addAndMakeVisible(programNameEditor);
+
+    programNameEditor.setWantsKeyboardFocus(false);
 
     programNameEditor.onReturnKey =
         [this]()
@@ -1470,6 +1472,43 @@ ProgramEditor::ProgramEditor()
 
     addAndMakeVisible(lfo2WaveCombo);
 
+    portamentoEnableToggle.onClick =
+        [this]()
+        {
+            if (onPortamentoEnableChanged)
+            {
+                onPortamentoEnableChanged(
+                    portamentoEnableToggle.getToggleState()
+                );
+            }
+        };
+
+    portamentoTypeCombo.onChange =
+        [this]()
+        {
+            if (onPortamentoTypeChanged)
+            {
+                const int value =
+                    portamentoTypeCombo.getSelectedId() - 1;
+
+                onPortamentoTypeChanged(value);
+            }
+        };
+
+    portamentoValueSlider.onValueChange =
+        [this]()
+        {
+            if (onPortamentoValueChanged)
+            {
+                onPortamentoValueChanged(
+                    static_cast<int>(
+                        portamentoValueSlider.getValue()
+                        )
+                );
+            }
+        };
+
+
     lfo2WaveCombo.onChange =
         [this]()
         {
@@ -1543,26 +1582,26 @@ ProgramEditor::ProgramEditor()
                 };
         };
 
-    setupSoftPedalSlider(
-        softLoudnessLabel,
-        softLoudnessSlider,
-        softLoudnessValueLabel,
-        "Loudness"
-    );
+    //setupSoftPedalSlider(
+    //    softLoudnessLabel,
+    //    softLoudnessSlider,
+    //    softLoudnessValueLabel,
+    //    "Loudness"
+    //);
 
-    setupSoftPedalSlider(
-        softAttackLabel,
-        softAttackSlider,
-        softAttackValueLabel,
-        "Attack"
-    );
+    //setupSoftPedalSlider(
+    //    softAttackLabel,
+    //    softAttackSlider,
+    //    softAttackValueLabel,
+    //    "Attack"
+    //);
 
-    setupSoftPedalSlider(
-        softFilterLabel,
-        softFilterSlider,
-        softFilterValueLabel,
-        "Filter"
-    );
+    //setupSoftPedalSlider(
+    //    softFilterLabel,
+    //    softFilterSlider,
+    //    softFilterValueLabel,
+    //    "Filter"
+    //);
 
     softLoudnessSlider.onDragEnd =
         [this]()
@@ -1802,6 +1841,60 @@ ProgramEditor::ProgramEditor()
         lfo1PitchAmountLabel
     );
 
+    //env2EnvelopePitchLabel.setText(
+    //    "Env2 -> Pitch",
+    //    juce::dontSendNotification
+    //);
+    //addAndMakeVisible(env2EnvelopePitchLabel);
+
+    //env2EnvelopePitchSlider.setRange(-50, 50, 1);
+    //env2EnvelopePitchSlider.setSliderStyle(
+    //    juce::Slider::LinearHorizontal
+    //);
+    //env2EnvelopePitchSlider.setTextBoxStyle(
+    //    juce::Slider::NoTextBox,
+    //    false,
+    //    0,
+    //    0
+    //);
+    //env2EnvelopePitchSlider.setDoubleClickReturnValue(
+    //    true,
+    //    0.0
+    //);
+    //addAndMakeVisible(env2EnvelopePitchSlider);
+
+    //env2EnvelopePitchAmountLabel.setJustificationType(
+    //    juce::Justification::centred
+    //);
+    //addAndMakeVisible(env2EnvelopePitchAmountLabel);
+
+    //env2EnvelopePitchAmountLabel.setText(
+    //    "0",
+    //    juce::dontSendNotification
+    //);
+
+
+    //env2EnvelopePitchSlider.onValueChange =
+    //    [this]()
+    //    {
+    //        env2EnvelopePitchAmountLabel.setText(
+    //            juce::String(
+    //                (int)env2EnvelopePitchSlider.getValue()
+    //            ),
+    //            juce::dontSendNotification
+    //        );
+    //    };
+
+    //env2EnvelopePitchSlider.onDragEnd =
+    //    [this]()
+    //    {
+    //        const int value =
+    //            (int)env2EnvelopePitchSlider.getValue();
+
+    //        if (onEnv2EnvelopePitchChanged)
+    //            onEnv2EnvelopePitchChanged(value);
+    //    };
+
     setupModAmountSlider(
         modPitchAmountSlider,
         modPitchAmountLabel
@@ -1855,6 +1948,33 @@ ProgramEditor::ProgramEditor()
         modFilter3AmountSlider,
         modFilter3AmountLabel
     );
+
+    modFilter1AmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modFilter2AmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modFilter3AmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    modPitchAmountSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
+    lfo1PitchSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+
+    );
+
 
     modPan1SourceCombo.onChange = [this]()
         {
@@ -2102,15 +2222,17 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
-    modFilter1AmountSlider.onDragEnd =
+    modFilter1AmountSlider.onValueChange =
         [this]()
         {
             const int value =
                 (int)modFilter1AmountSlider.getValue();
 
-            DBG(
-                "FILTER1 AMOUNT EDIT FINISHED="
-                + juce::String(value)
+            modFilter1AmountLabel.setText(
+                value > 0
+                ? "+" + juce::String(value)
+                : juce::String(value),
+                juce::dontSendNotification
             );
 
             if (onModFilter1Changed)
@@ -2176,6 +2298,13 @@ ProgramEditor::ProgramEditor()
             if (onLfo1PitchChanged)
                 onLfo1PitchChanged(value);
         };
+
+
+    lfo1PitchSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
 
     velocityLoudnessLabel.setText(
         "Vel -> Loud",
@@ -2373,6 +2502,34 @@ ProgramEditor::ProgramEditor()
             if (onProgramChanged)
                 onProgramChanged(currentProgram);
         };
+    
+
+    addAndMakeVisible(modulationEditAllToggle);
+
+    modulationEditAllToggle.setToggleState(
+        false,
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(portamentoSectionLabel);
+
+    addAndMakeVisible(portamentoEnableToggle);
+
+    addAndMakeVisible(portamentoTypeCombo);
+    portamentoTypeCombo.addItem("RATE", 1);
+    portamentoTypeCombo.addItem("TIME", 2);
+
+    addAndMakeVisible(portamentoValueSlider);
+    portamentoValueSlider.setRange(0, 99, 1);
+    portamentoValueSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
+    portamentoValueSlider.setTextBoxStyle(
+        juce::Slider::TextBoxRight,
+        false,
+        50,
+        20
+    );
 
 
 
@@ -2453,6 +2610,13 @@ void ProgramEditor::setLfo1PitchAmount(int value)
 void ProgramEditor::paint(
     juce::Graphics& g)
 {
+    // S3000XL-style panel background
+    g.fillAll(
+        juce::Colour::fromRGB(
+            198, 197, 191
+        )
+    );
+
     auto drawCard =
         [&g](
             const juce::Rectangle<int>& bounds)
@@ -2485,6 +2649,9 @@ void ProgramEditor::paint(
     drawCard(lfo1CardBounds);
     drawCard(lfo2CardBounds);
     drawCard(softPedalCardBounds);
+
+    drawCard(portamentoCardBounds);
+
     drawCard(modPanCardBounds);
     drawCard(modAmpCardBounds);
     drawCard(modLfo1CardBounds);
@@ -3157,6 +3324,21 @@ void ProgramEditor::setProgram(
         : juce::String(program.modVPitch),
         juce::dontSendNotification
     );
+
+    portamentoEnableToggle.setToggleState(
+        program.portamentoEnabled,
+        juce::dontSendNotification
+    );
+
+    portamentoTypeCombo.setSelectedId(
+        program.portamentoType == 0 ? 1 : 2,
+        juce::dontSendNotification
+    );
+
+    portamentoValueSlider.setValue(
+        program.portamentoTime,
+        juce::dontSendNotification
+    );
 }
 
 void ProgramEditor::resized()
@@ -3561,7 +3743,7 @@ void ProgramEditor::resized()
 // SOFT PEDAL
 // =========================
 
-    left.removeFromTop(10);
+    /*left.removeFromTop(10);
 
     softPedalCardBounds =
         left.removeFromTop(130);
@@ -3623,6 +3805,50 @@ void ProgramEditor::resized()
             row.reduced(2)
         );
     }
+
+    left.removeFromTop(10);*/
+
+    // =========================
+// PORTAMENTO
+// =========================
+
+    left.removeFromTop(10);
+
+    portamentoCardBounds =
+        left.removeFromTop(120);
+
+    auto portamento =
+        portamentoCardBounds.reduced(10);
+
+    portamentoSectionLabel.setBounds(
+        portamento.removeFromTop(24)
+    );
+
+    // ON / OFF
+    {
+        auto row =
+            portamento.removeFromTop(rowHeight);
+
+        portamentoEnableToggle.setBounds(
+            row.removeFromLeft(100)
+        );
+    }
+
+    // TYPE + VALUE
+    {
+        auto row =
+            portamento.removeFromTop(rowHeight);
+
+        portamentoTypeCombo.setBounds(
+            row.removeFromLeft(120).reduced(2)
+        );
+
+        portamentoValueSlider.setBounds(
+            row.reduced(2)
+        );
+    }
+
+
 
     left.removeFromTop(10);
 
@@ -3990,9 +4216,18 @@ void ProgramEditor::resized()
     auto modFilterPitch =
         modFilterPitchCardBounds.reduced(10);
 
-    modFilterPitchSectionLabel.setBounds(
-        modFilterPitch.removeFromTop(24)
-    );
+    {
+        auto header =
+            modFilterPitch.removeFromTop(24);
+
+        modulationEditAllToggle.setBounds(
+            header.removeFromRight(70)
+        );
+
+        modFilterPitchSectionLabel.setBounds(
+            header
+        );
+    }
 
     auto layoutModSourceRow =
         [&](juce::Rectangle<int>& section,
@@ -4059,6 +4294,7 @@ void ProgramEditor::resized()
             row.reduced(4, 7)
         );
     }
+
 
 
 

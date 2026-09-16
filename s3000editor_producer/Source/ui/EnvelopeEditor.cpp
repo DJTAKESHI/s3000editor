@@ -12,15 +12,10 @@ void EnvelopeEditor::setEnvelope(
 {
     attackValue = juce::jlimit(0, 100, attack);
     decayValue = juce::jlimit(0, 100, decay);
-    sustainValue = juce::jlimit(0, 100, sustain);
+    sustainValue = juce::jlimit(0, 99, sustain);
     releaseValue = juce::jlimit(0, 100, release);
 
-    DBG(
-        "ENV1 A=" + juce::String(attackValue)
-        + " D=" + juce::String(decayValue)
-        + " S=" + juce::String(sustainValue)
-        + " R=" + juce::String(releaseValue)
-    );
+
 
     repaint();
 }
@@ -293,11 +288,6 @@ void EnvelopeEditor::mouseDown(
     {
         dragPoint = DragPoint::sustain;
     }
-    else if (mouse.getDistanceFrom(
-        getReleasePoint()) <= hitRadius)
-    {
-        dragPoint = DragPoint::release;
-    }
 }
 
 void EnvelopeEditor::mouseDrag(
@@ -354,6 +344,24 @@ void EnvelopeEditor::mouseDrag(
                     / maxWidth * 100.0f
                 )
             );
+
+        const float y =
+            juce::jlimit(
+                bounds.getY(),
+                bounds.getBottom(),
+                event.position.y
+            );
+
+        sustainValue =
+            juce::jlimit(
+                0,
+                99,
+                juce::roundToInt(
+                    (bounds.getBottom() - y)
+                    / bounds.getHeight()
+                    * 99.0f
+                )
+            );
     }
     else if (dragPoint == DragPoint::sustain)
     {
@@ -367,22 +375,23 @@ void EnvelopeEditor::mouseDrag(
         sustainValue =
             juce::jlimit(
                 0,
-                100,
+                99,
                 juce::roundToInt(
                     (bounds.getBottom() - y)
                     / bounds.getHeight()
-                    * 100.0f
+                    * 99.0f
                 )
             );
-    }
-    else if (dragPoint == DragPoint::release)
-    {
+
         const float maxWidth =
             bounds.getWidth() * 0.25f;
 
+        const float minX =
+            bounds.getRight() - maxWidth;
+
         const float x =
             juce::jlimit(
-                bounds.getRight() - maxWidth,
+                minX,
                 bounds.getRight(),
                 event.position.x
             );
@@ -397,6 +406,7 @@ void EnvelopeEditor::mouseDrag(
                 )
             );
     }
+
 
     notifyEnvelopeChanged();
     repaint();

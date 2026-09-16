@@ -5,7 +5,7 @@
 #include "../s3000/ProgramParser.h"
 #include "../s3000/KeygroupParser.h"
 #include "../s3000/SampleHeaderParser.h"
-#include "../s3000/KeygroupHeaderParser.h"
+//#include "../s3000/KeygroupHeaderParser.h"
 #include "../s3000/S3000Types.h"
 #include "../s3000/SampleHeaderEncoder.h"
 #include "../s3000/KeygroupEncoder.h"
@@ -25,87 +25,49 @@ char decodeAkaiChar(uint8_t v)
     return '?';
 }
 
-std::optional<int> findPanOffset(const std::vector<uint8_t>& a,
-    const std::vector<uint8_t>& b,
-    const std::vector<uint8_t>& c)
-{
-    size_t size = juce::jmin( a.size(),
-        juce::jmin(b.size(),c.size()) );
-
-    int bestIndex = -1;
-    int bestScore = 0;
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        int da = (int)a[i];
-        int db = (int)b[i];
-        int dc = (int)c[i];
-
-
-        int score = std::abs(da - db) + std::abs(dc - db);
-
-        if (da == db && db == dc)
-        {
-            continue;
-        }
-
-        if (score > bestScore)
-        {
-            bestScore = score;
-            bestIndex = (int)i;
-        }
-    }
-
-    if (bestScore < 5)
-    {
-        return std::nullopt;
-    }
-
-    return bestIndex;
-
-}
+//
 
 //==============================================================================
 MainComponent::MainComponent()
 {
+    setLookAndFeel(&s3000LookAndFeel);
+
     setSize(900, 800);
 
     addAndMakeVisible(listBox);
     listBox.setModel(this);
 
     addAndMakeVisible(programTree);
-    //addAndMakeVisible(sampleHeaderEditor);
-    //
-    //addAndMakeVisible(sampleHeaderViewport);
 
     addAndMakeVisible(editorTabs);
+    addAndMakeVisible(menuBar);
 
     addAndMakeVisible(auditionButton);
     auditionButton.setAlwaysOnTop(true);
-    addAndMakeVisible(mockEnv2R1Button);
-    
-    mockEnv2R1Button.onClick =
-        [this]()
-        {
-            if (loadedProgram.keygroups.empty())
-            {
-                loadedProgram.keygroups.resize(1);
+    //addAndMakeVisible(mockEnv2R1Button);
+    //
+    //mockEnv2R1Button.onClick =
+    //    [this]()
+    //    {
+    //        if (loadedProgram.keygroups.empty())
+    //        {
+    //            loadedProgram.keygroups.resize(1);
 
-                keyGroupEditor.setKeygroup(
-                    loadedProgram.keygroups[0],
-                    0
-                );
+    //            keyGroupEditor.setKeygroup(
+    //                loadedProgram.keygroups[0],
+    //                0
+    //            );
 
-                DBG("CREATED MOCK KEYGROUP 0");
-            }
+    //            DBG("CREATED MOCK KEYGROUP 0");
+    //        }
 
-            injectTestKeygroupHeaderByte(
-                0,
-                0,
-                157,
-                60
-            );
-        };
+    //        injectTestKeygroupHeaderByte(
+    //            0,
+    //            0,
+    //            157,
+    //            60
+    //        );
+    //    };
 
     auditionButton.onClick = [this]()
         {
@@ -129,7 +91,7 @@ MainComponent::MainComponent()
             );
         };
 
-    //addAndMakeVisible(keygroupMap);
+   
 
     keygroupMap.onKeygroupSelected =
         [this](int index)
@@ -151,12 +113,6 @@ MainComponent::MainComponent()
                 .keygroups[currentKeygroup]
                 .modVPitch;
 
-            DBG(
-                "MAP SELECT KG MODVPITCH KG="
-                + juce::String(currentKeygroup)
-                + " VALUE="
-                + juce::String(modVPitch)
-            );
 
             const int modFilter1 =
                 loadedProgram
@@ -196,12 +152,7 @@ MainComponent::MainComponent()
                 .keygroups[currentKeygroup]
                 .lfo1Pitch;
 
-            DBG(
-                "MAP SELECT KG LFO1PITCH KG="
-                + juce::String(currentKeygroup)
-                + " VALUE="
-                + juce::String(lfo1Pitch)
-            );
+
 
             programEditor.setLfo1PitchAmount(
                 lfo1Pitch
@@ -211,33 +162,19 @@ MainComponent::MainComponent()
             const auto& kg =
                 loadedProgram.keygroups[index];
 
-            DBG(
-                "SELECTED KG "
-                + juce::String(index)
-                + " ZONE0 SAMPLE=["
-                + kg.zones[0].sampleName
-                + "] LOW="
-                + juce::String(kg.zones[0].lowVel)
-                + " HIGH="
-                + juce::String(kg.zones[0].highVel)
-            );
 
             keyGroupEditor.setKeygroup(
                 kg,
                 index
             );
 
-            // ========================================
-            // 4 Zone�S����Overview��
-            // ========================================
+ 
 
             velocityZoneEditor.setZones(
                 kg.zones
             );
 
-            // ========================================
-            // Zone 1���ڍ�Editor��
-            // ========================================
+
 
             if (!kg.zones.empty())
             {
@@ -262,10 +199,7 @@ MainComponent::MainComponent()
                 }
             }
 
-            DBG(
-                "KEYGROUP MAP SELECTED INDEX="
-                + juce::String(index)
-            );
+
         };
 
     addAndMakeVisible(keygroupMapViewport);
@@ -336,19 +270,17 @@ MainComponent::MainComponent()
     );
 
     editorTabs.addTab(
-        "Sample Header",
+        "Sample",
         juce::Colours::darkgrey,
         &sampleHeaderViewport,
         false
     );
 
+    editorTabs.setCurrentTabIndex(0);
+
     programEditor.onModFilter1SourceChanged =
         [this](int value)
         {
-            DBG(
-                "PROGRAM MOD FILTER1 SOURCE WRITE VALUE="
-                + juce::String(value)
-            );
 
             sysExSender.sendProgramHeaderByte(
                 loadedProgram.programNumber,
@@ -362,10 +294,6 @@ MainComponent::MainComponent()
     programEditor.onModFilter2SourceChanged =
         [this](int value)
         {
-            DBG(
-                "PROGRAM MOD FILTER2 SOURCE WRITE VALUE="
-                + juce::String(value)
-            );
 
             sysExSender.sendProgramHeaderByte(
                 loadedProgram.programNumber,
@@ -379,10 +307,6 @@ MainComponent::MainComponent()
     programEditor.onModFilter3SourceChanged =
         [this](int value)
         {
-            DBG(
-                "PROGRAM MOD FILTER3 SOURCE WRITE VALUE="
-                + juce::String(value)
-            );
 
             sysExSender.sendProgramHeaderByte(
                 loadedProgram.programNumber,
@@ -393,18 +317,55 @@ MainComponent::MainComponent()
             loadedProgram.modSFilter3 = value;
         };
 
-    
+    programEditor.onPortamentoEnableChanged =
+        [this](bool enabled)
+        {
+            const int value =
+                enabled ? 1 : 0;
+
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Portamento::Enable,
+                value
+            );
+
+            loadedProgram.portamentoEnabled =
+                enabled;
+        };
+
+    programEditor.onPortamentoTypeChanged =
+        [this](int value)
+        {
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Portamento::Type,
+                value
+            );
+
+            loadedProgram.portamentoType =
+                value;
+        };
+
+    programEditor.onPortamentoValueChanged =
+        [this](int value)
+        {
+
+            sysExSender.sendProgramHeaderByte(
+                loadedProgram.programNumber,
+                ProgramOffset::Portamento::Time,
+                value
+            );
+
+            loadedProgram.portamentoTime =
+                value;
+        };
+
     programEditor.onProgramChanged =
         [this](
             const Program& program)
         {
-
-            DBG(
-                "PROGRAM CHANGE MODSPITCH="
-                + juce::String(program.modSPitch)
-                + " MODVPITCH="
-                + juce::String(program.modVPitch)
-            );
 
             const bool nameChanged =
                 program.name != loadedProgram.name;
@@ -425,10 +386,6 @@ MainComponent::MainComponent()
                         .trim()
                         .equalsIgnoreCase(newName))
                     {
-                        DBG(
-                            "PROGRAM RENAME REJECTED: DUPLICATE NAME = "
-                            + newName
-                        );
 
                         programEditor.setProgram(
                             loadedProgram
@@ -439,70 +396,23 @@ MainComponent::MainComponent()
                 }
             }
             
+            Program programToSend =
+                program;
+
+            programToSend.portamentoTime =
+                loadedProgram.portamentoTime;
+
+            programToSend.portamentoType =
+                loadedProgram.portamentoType;
+
+            programToSend.portamentoEnabled =
+                loadedProgram.portamentoEnabled;
+
             auto encodedProgram =
                 ProgramEncoder::encode(
-                    program
+                    programToSend
                 );
 
-            static std::vector<uint8_t> previousSentProgram;
-
-            if (!previousSentProgram.empty()
-                && previousSentProgram.size() == encodedProgram.size())
-            {
-                DBG("=== PDATA DIFF BEFORE SEND ===");
-
-                for (size_t i = 0; i < encodedProgram.size(); ++i)
-                {
-                    if (encodedProgram[i] != previousSentProgram[i])
-                    {
-                        DBG(
-                            "OFFSET "
-                            + juce::String((int)i)
-                            + ": "
-                            + juce::String((int)previousSentProgram[i])
-                            + " -> "
-                            + juce::String((int)encodedProgram[i])
-                        );
-                    }
-                }
-            }
-
-            previousSentProgram = encodedProgram;
-
-
-            DBG(
-                "MAIN MODSPITCH="
-                + juce::String(program.modSPitch)
-            );
-
-            DBG(
-                "ENCODED MODSPITCH OFFSET="
-                + juce::String((int)ProgramOffset::Mod::ModSPitch)
-                + " RAW="
-                + juce::String(
-                    (int)encodedProgram[
-                        ProgramOffset::Mod::ModSPitch
-                    ]
-                )
-            );
-
-
-
-            DBG(
-                "MAIN MODVPITCH="
-                + juce::String(program.modVPitch)
-            );
-
-            DBG(
-                "ENCODED MODVPITCH OFFSET="
-                + juce::String((int)ProgramOffset::Mod::ModVPitch)
-                + " RAW="
-                + juce::String(
-                    (int)encodedProgram[
-                        ProgramOffset::Mod::ModVPitch
-                    ]
-                )
-            );
 
 
             if (encodedProgram.empty())
@@ -513,45 +423,6 @@ MainComponent::MainComponent()
 
                 return;
             }
-
-            DBG(
-                "OUTPUT RAW = "
-                + juce::String(
-                    program.output
-                )
-            );
-
-            DBG(
-                "=== PROGRAM EDITOR WRITE ==="
-            );
-
-            DBG(
-                "PLAY LOW = "
-                + juce::String(
-                    program.playLow
-                )
-            );
-
-            DBG(
-                "PLAY HIGH = "
-                + juce::String(
-                    program.playHigh
-                )
-            );
-
-            DBG(
-                "PAN = "
-                + juce::String(program.pan)
-            );
-
-            DBG(
-                "OUT LEVEL = "
-                + juce::String(
-                    program.individualOutputLevel
-                )
-            );
-
-            DBG("PROGRAM WRITE: EXPECT REFRESH-ONLY RESPONSE");
 
             programRefreshOnly = true;
 
@@ -620,12 +491,6 @@ MainComponent::MainComponent()
         programEditor.onModPitchSourceChanged =
             [this](int value)
             {
-                DBG(
-                    "PROGRAM MOD PITCH SOURCE WRITE VALUE="
-                    + juce::String(value)
-                );
-
-                DBG("SOURCE STEP 1");
 
                 sysExSender.sendProgramHeaderByte(
                     loadedProgram.programNumber,
@@ -633,13 +498,8 @@ MainComponent::MainComponent()
                     value
                 );
 
-                DBG("SOURCE STEP 2");
-
                 loadedProgram.modSPitch = value;
 
-                DBG("SOURCE STEP 3");
-
-                
 
             };
 
@@ -649,32 +509,70 @@ MainComponent::MainComponent()
                 if (currentKeygroup < 0 ||
                     currentKeygroup >=
                     static_cast<int>(
-                        loadedProgram.keygroups.size()
-                        ))
+                        loadedProgram.keygroups.size()))
                 {
-                    DBG("FILTER1 AMOUNT: INVALID KEYGROUP");
                     return;
                 }
 
-                auto& keygroup =
-                    loadedProgram.keygroups[currentKeygroup];
+                // -------------------------
+                // Local model は即座に更新
+                // -------------------------
 
-                keygroup.modFilter1 = value;
+                if (programEditor.isModulationEditAll())
+                {
+                    for (auto& keygroup :
+                        loadedProgram.keygroups)
+                    {
+                        keygroup.modFilter1 = value;
+                    }
+                }
+                else
+                {
+                    loadedProgram
+                        .keygroups[currentKeygroup]
+                        .modFilter1 = value;
+                }
 
-                DBG(
-                    "KG FILTER1 AMOUNT WRITE KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(value)
-                );
+                // -------------------------
+                // SysEx送信中なら最新値だけ保持
+                // -------------------------
+
+                if (waitingForFilterReply)
+                {
+                    pendingModFilter1Value = value;
+
+                    DBG(
+                        "MOD FILTER1 PENDING VALUE="
+                        + juce::String(value)
+                    );
+
+                    return;
+                }
+
+                waitingForFilterReply = true;
+
+                const int targetKeygroup =
+                    programEditor.isModulationEditAll()
+                    ? 0x7f
+                    : currentKeygroup;
+
+                if (waitingForFilterReply)
+                {
+                    pendingModFilter1Value = value;
+                    pendingModFilter1Keygroup = targetKeygroup;
+
+
+                    return;
+                }
+
+                waitingForFilterReply = true;
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
-                    currentKeygroup,
+                    targetKeygroup,
                     KeygroupHeaderOffset::Mod::Filter1,
                     value
                 );
-
             };
 
         programEditor.onModFilter2Changed =
@@ -683,10 +581,32 @@ MainComponent::MainComponent()
                 if (currentKeygroup < 0 ||
                     currentKeygroup >=
                     static_cast<int>(
-                        loadedProgram.keygroups.size()
-                        ))
+                        loadedProgram.keygroups.size()))
                 {
                     DBG("FILTER2 AMOUNT: INVALID KEYGROUP");
+                    return;
+                }
+
+                if (programEditor.isModulationEditAll())
+                {
+                    for (auto& keygroup :
+                        loadedProgram.keygroups)
+                    {
+                        keygroup.modFilter2 = value;
+                    }
+
+                    DBG(
+                        "KG FILTER2 AMOUNT ALL WRITE VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupHeaderByte(
+                        loadedProgram.programNumber,
+                        0x7f,
+                        KeygroupHeaderOffset::Mod::Filter2,
+                        value
+                    );
+
                     return;
                 }
 
@@ -695,12 +615,6 @@ MainComponent::MainComponent()
 
                 keygroup.modFilter2 = value;
 
-                DBG(
-                    "KG FILTER2 AMOUNT WRITE KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(value)
-                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
@@ -716,10 +630,32 @@ MainComponent::MainComponent()
                 if (currentKeygroup < 0 ||
                     currentKeygroup >=
                     static_cast<int>(
-                        loadedProgram.keygroups.size()
-                        ))
+                        loadedProgram.keygroups.size()))
                 {
                     DBG("FILTER3 AMOUNT: INVALID KEYGROUP");
+                    return;
+                }
+
+                if (programEditor.isModulationEditAll())
+                {
+                    for (auto& keygroup :
+                        loadedProgram.keygroups)
+                    {
+                        keygroup.modFilter3 = value;
+                    }
+
+                    DBG(
+                        "KG FILTER3 AMOUNT ALL WRITE VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupHeaderByte(
+                        loadedProgram.programNumber,
+                        0x7f,
+                        KeygroupHeaderOffset::Mod::Filter3,
+                        value
+                    );
+
                     return;
                 }
 
@@ -728,12 +664,6 @@ MainComponent::MainComponent()
 
                 keygroup.modFilter3 = value;
 
-                DBG(
-                    "KG FILTER3 AMOUNT WRITE KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(value)
-                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
@@ -748,9 +678,29 @@ MainComponent::MainComponent()
             {
                 if (currentKeygroup < 0 ||
                     currentKeygroup >=
-                    static_cast<int>(loadedProgram.keygroups.size()))
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()))
                 {
                     DBG("ENV2 PITCH: INVALID KEYGROUP");
+                    return;
+                }
+
+                if (programEditor.isModulationEditAll())
+                {
+                    for (auto& keygroup :
+                        loadedProgram.keygroups)
+                    {
+                        keygroup.modVPitch = value;
+                    }
+
+
+                    sysExSender.sendKeygroupHeaderByte(
+                        loadedProgram.programNumber,
+                        0x7f,
+                        KeygroupHeaderOffset::Mod::ModVPitch,
+                        value
+                    );
+
                     return;
                 }
 
@@ -759,20 +709,16 @@ MainComponent::MainComponent()
 
                 keygroup.modVPitch = value;
 
-                DBG(
-                    "KG ENV2 PITCH WRITE KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(keygroup.modVPitch)
-                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
                     currentKeygroup,
                     KeygroupHeaderOffset::Mod::ModVPitch,
-                    keygroup.modVPitch
+                    value
                 );
             };
+
+
 
         programEditor.onLfo1PitchChanged =
             [this](int value)
@@ -792,12 +738,6 @@ MainComponent::MainComponent()
 
                 keygroup.lfo1Pitch = value;
 
-                DBG(
-                    "KG LFO1 PITCH WRITE KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(keygroup.lfo1Pitch)
-                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
@@ -854,10 +794,7 @@ MainComponent::MainComponent()
                 );
             }
 
-            DBG(
-                "CURRENT ZONE = "
-                + juce::String(currentZone)
-            );
+
         };
 
 
@@ -893,29 +830,12 @@ MainComponent::MainComponent()
                     .keygroups[currentKeygroup]
                     .modVPitch;
 
-                DBG(
-                    "SELECT KG MODVPITCH KG="
-                    + juce::String(currentKeygroup)
-                    + " VALUE="
-                    + juce::String(modVPitch)
-                );
 
                 programEditor.setModPitchAmount(
                     modVPitch
                 );
             }
 
-            DBG("MAIN COMPONENT RECEIVED ZONE SELECTION");
-
-            DBG(
-                "KEYGROUP INDEX = "
-                + juce::String(currentKeygroup)
-            );
-
-            DBG(
-                "ZONE INDEX = "
-                + juce::String(currentZone)
-            );
 
             // ========================================
             // 4 Zone�S����Overview��
@@ -927,7 +847,7 @@ MainComponent::MainComponent()
                     loadedProgram.keygroups.size()
                     ))
             {
-                DBG("ABOUT TO CALL setZones");
+
 
                 velocityZoneEditor.setZones(
                     loadedProgram
@@ -935,26 +855,13 @@ MainComponent::MainComponent()
                     .zones
                 );
 
-                DBG("AFTER CALL setZones");
             }
 
             // ========================================
             // �I��Zone���ڍ�Editor��
             // ========================================
 
-            DBG(
-                "TREE SELECT ZONE SAMPLE=["
-                + zone.sampleName
-                + "] ID="
-                + juce::String(zone.sampleId)
-            );
 
-            DBG(
-                "TREE SELECT HEADER NAME=["
-                + sampleHeader.name
-                + "] ID="
-                + juce::String(sampleHeader.id)
-            );
 
 
             velocityZoneEditor.setZone(
@@ -965,7 +872,7 @@ MainComponent::MainComponent()
                 sampleHeader
             );
 
-            editorTabs.setCurrentTabIndex(1);
+            editorTabs.setCurrentTabIndex(2);
         };
 
     addAndMakeVisible(programCombo);
@@ -977,16 +884,64 @@ MainComponent::MainComponent()
 
     deviceStatusLabel.setColour(
         juce::Label::textColourId,
-        juce::Colours::white
+        juce::Colour::fromRGB(55, 55, 52)
     );
 
-    // �f�o�b�O�p�F�\���̈���m�F
-    //deviceStatusLabel.setColour(
-    //    juce::Label::backgroundColourId,
-    //    juce::Colours::darkgrey
-    //);
+    //addAndMakeVisible(loadProjectButton);
+
+    loadProjectButton.onClick = [this]()
+        {
+            loadProject();
+        };
+
+    loadProjectButton.toFront(false);
+
+
 
     addAndMakeVisible(deviceStatusLabel);
+
+    //addAndMakeVisible(saveProjectButton);
+
+    saveProjectButton.onClick = [this]()
+        {
+            saveProject();
+        };
+
+    keyboardMidiInputLabel.setText(
+        "Keyboard MIDI Input",
+        juce::dontSendNotification
+    );
+
+    addAndMakeVisible(
+        keyboardMidiInputLabel
+    );
+
+    addAndMakeVisible(
+        keyboardMidiInputCombo
+    );
+
+    keyboardMidiInputDevices =
+        juce::MidiInput::getAvailableDevices();
+
+    for (int i = 0;
+        i < keyboardMidiInputDevices.size();
+        ++i)
+    {
+        keyboardMidiInputCombo.addItem(
+            keyboardMidiInputDevices[i].name,
+            i + 1
+        );
+    }
+
+    keyboardMidiInputCombo.onChange =
+        [this]()
+        {
+            const int index =
+                keyboardMidiInputCombo
+                .getSelectedId() - 1;
+
+            openKeyboardMidiInput(index);
+        };
 
 
     velocityZoneEditor.onZoneRangeChanged =
@@ -1045,16 +1000,6 @@ MainComponent::MainComponent()
                 const int offset =
                     46 + zoneIndex * 24;
 
-                DBG(
-                    "ZONE MAP LOW VELOCITY PARTIAL SEND KG="
-                    + juce::String(currentKeygroup)
-                    + " ZONE="
-                    + juce::String(zoneIndex)
-                    + " OFFSET="
-                    + juce::String(offset)
-                    + " VALUE="
-                    + juce::String(low)
-                );
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
@@ -1069,16 +1014,6 @@ MainComponent::MainComponent()
                 const int offset =
                     47 + zoneIndex * 24;
 
-                DBG(
-                    "ZONE MAP HIGH VELOCITY PARTIAL SEND KG="
-                    + juce::String(currentKeygroup)
-                    + " ZONE="
-                    + juce::String(zoneIndex)
-                    + " OFFSET="
-                    + juce::String(offset)
-                    + " VALUE="
-                    + juce::String(high)
-                );
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
@@ -1132,16 +1067,7 @@ MainComponent::MainComponent()
                 const int offset =
                     46 + currentZone * 24;
 
-                DBG(
-                    "LOW VELOCITY PARTIAL SEND KG="
-                    + juce::String(currentKeygroup)
-                    + " ZONE="
-                    + juce::String(currentZone)
-                    + " OFFSET="
-                    + juce::String(offset)
-                    + " VALUE="
-                    + juce::String(low)
-                );
+
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
@@ -1156,16 +1082,7 @@ MainComponent::MainComponent()
                 const int offset =
                     47 + currentZone * 24;
 
-                DBG(
-                    "HIGH VELOCITY PARTIAL SEND KG="
-                    + juce::String(currentKeygroup)
-                    + " ZONE="
-                    + juce::String(currentZone)
-                    + " OFFSET="
-                    + juce::String(offset)
-                    + " VALUE="
-                    + juce::String(high)
-                );
+
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
@@ -1183,7 +1100,7 @@ MainComponent::MainComponent()
 
     keygroupTitleLabel.setColour(
         juce::Label::textColourId,
-        juce::Colours::lightgrey
+        juce::Colour::fromRGB(55, 55, 52)
     );
 
     keygroupTitleLabel.setFont(
@@ -1246,9 +1163,6 @@ MainComponent::MainComponent()
             const VelocityZone& zone
             )
         {
-            DBG(
-                "MAIN COMPONENT RECEIVED BASIC ZONE SELECTION"
-            );
 
             currentKeygroup = keygroupIndex;
             currentZone = zoneIndex;
@@ -1275,10 +1189,7 @@ MainComponent::MainComponent()
 
                 if (it != sampleHeaders.end())
                 {
-                    DBG(
-                        "BASIC ZONE FOUND SAMPLE HEADER ID="
-                        + juce::String(zone.sampleId)
-                    );
+  
 
                     sampleHeaderEditor.setSampleHeader(
                         it->second
@@ -1286,10 +1197,6 @@ MainComponent::MainComponent()
                 }
                 else
                 {
-                    DBG(
-                        "BASIC ZONE SAMPLE HEADER NOT LOADED -> REQUEST ID="
-                        + juce::String(zone.sampleId)
-                    );
 
                     sendSampleHeader(
                         zone.sampleId
@@ -1330,19 +1237,6 @@ MainComponent::MainComponent()
                 return;
             }
 
-            DBG("=== PROGRAM WRITE TEST ===");
-
-            DBG(
-                "PAN = "
-                + juce::String(testProgram.pan)
-            );
-
-            DBG(
-                "LOUDNESS = "
-                + juce::String(
-                    testProgram.loudness
-                )
-            );
 
             sysExSender.sendProgramData(
                 loadedProgram.programNumber,
@@ -1381,35 +1275,28 @@ MainComponent::MainComponent()
             const Keygroup& keygroup
             )
         {
-            DBG(
-                "MAIN COMPONENT RECEIVED KEYGROUP SELECTION "
-                + juce::String(keygroupIndex)
-            );
+
 
             currentKeygroup = keygroupIndex;
-
-            // Keygroup��I��������Zone 1��I����Ԃɂ���
             currentZone = 0;
 
-            editorTabs.setCurrentTabIndex(0);
+            const int currentTab =
+                editorTabs.getCurrentTabIndex();
 
-            //keyGroupEditor.setKeygroup(
-            //    keygroup,
-            //    keygroupIndex
-            //);
+            if (!initialProgramLoad)
+            {
+                if (currentTab == 0 ||
+                    currentTab == 2)
+                {
+                    editorTabs.setCurrentTabIndex(1);
+                }
+            }
 
             keyGroupEditor.setKeygroup(
                 loadedProgram.keygroups[keygroupIndex],
                 keygroupIndex
             );
 
-            // ========================================
-            // 4 Zone Overview�X�V
-            // ========================================
-
-            //velocityZoneEditor.setZones(
-            //    keygroup.zones
-            //);
 
             velocityZoneEditor.setZones(
                 loadedProgram.keygroups[keygroupIndex].zones
@@ -1419,46 +1306,13 @@ MainComponent::MainComponent()
                 currentZone
             );
 
-            // ========================================
-            // Zone 1���ڍ�Editor�ɂ��Z�b�g
-            // ========================================
-
             velocityZoneEditor.setZone(
                 loadedProgram.keygroups[keygroupIndex]
                 .zones[currentZone]
             );
         };
 
-    //addAndMakeVisible(keyGroupEditor);
-
-    //addAndMakeVisible(keyGroupViewport);
-
-
-
-
-    //programTree.setProgram(currentProgramData, sampleHeaders);
-
-    //addAndMakeVisible(velocityZoneEditor);
-   /* addAndMakeVisible(captureAButton);
-
-    captureAButton.onClick = [this]
-        {
-            saveDump("dump_A");
-            DBG("Captured A");
-        };
-
-    addAndMakeVisible(captureBButton);
-    captureBButton.onClick = [this]
-    {
-        saveDump("dump_B");
-        DBG("Captured B");
-    };
-
-    addAndMakeVisible(compareButton);
-    compareButton.onClick = [this]
-        {
-            compareLatest();
-        };*/
+   
 
 #if JUCE_DEBUG
 
@@ -1491,12 +1345,6 @@ MainComponent::MainComponent()
                 return;
             }
 
-            DBG("=== PROGRAM MIDI CHANNEL WRITE TEST ===");
-
-            DBG(
-                "MIDI CHANNEL RAW = "
-                + juce::String(testProgram.midiChannel)
-            );
 
 
             sysExSender.sendProgramData(
@@ -1530,14 +1378,6 @@ MainComponent::MainComponent()
             const int deleteIndex =
                 loadedProgram.groups - 1;
 
-            DBG(
-                "===== TEST DELETE KEYGROUP ====="
-            );
-
-            DBG(
-                "DELETE KG INDEX="
-                + juce::String(deleteIndex)
-            );
 
             sysExSender.sendDeleteKeygroup(
                 loadedProgram.programNumber,
@@ -1604,66 +1444,7 @@ MainComponent::MainComponent()
         };
 
 
-    #if JUCE_DEBUG
 
-
-
-
-    addAndMakeVisible(requestButton);
-    requestButton.onClick = [this]
-        {
-            sysExSender.sendRPLIST();
-        };
-
-    DBG("SETTING requestRPDATAButton CALLBACK");
-
-    addAndMakeVisible(requestRPDATAButton);
-
-    requestRPDATAButton.onStateChange = [this]()
-        {
-            DBG("GET PROGRAM STATE CHANGED");
-            DBG(
-                "DOWN = "
-                + juce::String(
-                    (int)requestRPDATAButton.isDown()
-                )
-            );
-        };
-
-    requestRPDATAButton.setTriggeredOnMouseDown(true);
-#endif
-
-//    requestRPDATAButton.onClick = [this]()
-//        {
-//            DBG("========== GET PROGRAM BUTTON CLICKED ==========");
-//            DBG("REQUEST PROGRAM HEADER");
-//
-////            sendProgramHeader(0);
-//            //sysExSender.sendProgramHeader(0);
-//
-//            if (currentProgram < 0)
-//            {
-//                DBG("GET PROGRAM: NO PROGRAM SELECTED");
-//                return;
-//            }
-//
-//            DBG(
-//                "REQUEST PROGRAM HEADER INDEX="
-//                + juce::String(currentProgram)
-//            );
-//
-//            sysExSender.sendProgramHeader(
-//                currentProgram
-//            );
-//
-//        };
-
-    DBG(
-        "HAS ONCLICK = "
-        + juce::String(
-            requestRPDATAButton.onClick ? "YES" : "NO"
-        )
-    );
 
     requestRPDATAButton.onClick =
         [this]
@@ -1679,12 +1460,8 @@ MainComponent::MainComponent()
             );
         };
 
-    DBG("requestRPDATAButton CALLBACK SET");
 
 
-
-    //addAndMakeVisible(programLabel);
-    //programLabel.setText("No program", juce::dontSendNotification);
 
     keygroupMap.onRangeChanged =
         [this](
@@ -1709,14 +1486,7 @@ MainComponent::MainComponent()
             kg.lowNote = lowNote;
             kg.highNote = highNote;
 
-            DBG(
-                "KEYGROUP RANGE CHANGED KG="
-                + juce::String(keygroupIndex)
-                + " LOW="
-                + juce::String(lowNote)
-                + " HIGH="
-                + juce::String(highNote)
-            );
+
 
             // �I�𒆂�KG�Ȃ�Editor�ɂ������f
             if (currentKeygroup ==
@@ -1751,31 +1521,13 @@ MainComponent::MainComponent()
             kg.lowNote = lowNote;
             kg.highNote = highNote;
 
-            DBG("===== MAP SEND =====");
-            DBG("KG = " + juce::String(keygroupIndex));
-            DBG("LOW = " + juce::String(lowNote));
-            DBG("HIGH = " + juce::String(highNote));
+
 
             auto encoded =
                 KeygroupEncoder::encode(kg);
 
-            DBG(
-                "ENCODE LOW="
-                + juce::String(
-                    (int)encoded[
-                        KeygroupHeaderOffset::Common::LONOTE
-                    ]
-                )
-            );
 
-            DBG(
-                "ENCODE HIGH="
-                + juce::String(
-                    (int)encoded[
-                        KeygroupHeaderOffset::Common::HINOTE
-                    ]
-                )
-            );
+
 
             sysExSender.sendKeygroupData(
                 loadedProgram.programNumber,
@@ -1783,76 +1535,76 @@ MainComponent::MainComponent()
                 encoded
             );
 
-            DBG(
-                "KEYGROUP DATA SENT KG="
-                + juce::String(keygroupIndex)
+
+        };
+
+
+
+    keyGroupEditor.onRequestKeyboardFocus =
+        [this]()
+        {
+            juce::MessageManager::callAsync(
+                [this]()
+                {
+                    juce::Component::unfocusAllComponents();
+
+                    keyboardComponent.grabKeyboardFocus();
+
+                    DBG("FORCED KEYBOARD FOCUS");
+                }
             );
         };
 
 
-    //keygroupMap.onDeleteKeygroup =
-    //    [this](int keygroupIndex)
-    //    {
-    //        if (loadedProgram.groups <= 1)
-    //            return;
-    //        pendingDeleteKeygroup =
-    //            keygroupIndex;
-
-    //        waitingForDeleteReply = true;
-
-    //        sysExSender.sendDeleteKeygroup(
-    //            loadedProgram.programNumber,
-    //            keygroupIndex
-    //        );
-    //    };
-
-    //keygroupMap.onAddKeygroup =
-    //    [this]()
-    //    {
-    //        DBG("ADD KG UI CLICK");
-
-    //        addKeygroup();
-    //    };
-
     keyGroupEditor.onFilterFreqChanged =
         [this](int keygroupIndex, int value)
         {
-            DBG(
-                "FILTER EDIT MODE ALL = "
-                + juce::String(
-                    keyGroupEditor.isFilterEditAll()
-                    ? "YES"
-                    : "NO"
-                )
-            );
+            if (currentProgramIndex < 0)
+                return;
+
+            if (waitingForSampleRenameReply ||
+                waitingForDeleteReply ||
+                pendingAddStage != PendingAddStage::none ||
+                pendingAddProgramStage != PendingAddProgramStage::none)
+            {
+                DBG("FILTER FREQ BLOCKED - COMMAND IN PROGRESS");
+                return;
+            }
+
 
             if (keyGroupEditor.isFilterEditAll())
             {
-                for (int kg = 0;
-                    kg < static_cast<int>(
-                        loadedProgram.keygroups.size());
-                        ++kg)
+                for (auto& kg : loadedProgram.keygroups)
                 {
-                    loadedProgram
-                        .keygroups[kg]
-                        .filter.freq = value;
+                    kg.filter.freq = value;
+                }
+
+                DBG(
+                    "FILTER FREQ ALL WRITE VALUE="
+                    + juce::String(value)
+                );
+
+                if (waitingForFilterReply)
+                {
+                    pendingFilterFreqValue = value;
+                    pendingFilterFreqKeygroup = 0x7f;
 
                     DBG(
-                        "FILTER FREQ ALL WRITE KG="
-                        + juce::String(kg)
-                        + " VALUE="
+                        "FILTER FREQ ALL PENDING VALUE="
                         + juce::String(value)
                     );
 
-                    sysExSender.sendKeygroupByte(
-                        currentProgramIndex,
-                        kg,
-                        KeygroupHeaderOffset::Filter::FILFRQ,
-                        static_cast<uint8_t>(value)
-                    );
-
-                    juce::Thread::sleep(20);
+                    return;
                 }
+
+                waitingForFilterReply = true;
+
+                sysExSender.sendKeygroupByte(
+                    currentProgramIndex,
+                    0x7f,
+                    KeygroupHeaderOffset::Filter::FILFRQ,
+                    static_cast<uint8_t>(value)
+                );
 
                 return;
             }
@@ -1868,12 +1620,22 @@ MainComponent::MainComponent()
                 .keygroups[keygroupIndex]
                 .filter.freq = value;
 
-            DBG(
-                "FILTER FREQ ONE WRITE KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+ 
+
+            if (waitingForFilterReply)
+            {
+                pendingFilterFreqValue = value;
+                pendingFilterFreqKeygroup = keygroupIndex;
+
+                DBG(
+                    "FILTER FREQ PENDING VALUE="
+                    + juce::String(value)
+                );
+
+                return;
+            }
+
+            waitingForFilterReply = true;
 
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
@@ -1898,13 +1660,7 @@ MainComponent::MainComponent()
                 .keygroups[keygroupIndex]
                 .filter.keyFollow = value;
 
-            DBG(
-                "FILTER KEY FOLLOW PARTIAL WRITE"
-                " KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+
 
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
@@ -1917,30 +1673,73 @@ MainComponent::MainComponent()
     keyGroupEditor.onEnv2R1Changed =
         [this](int keygroupIndex, int value)
         {
+
             if (keygroupIndex < 0 ||
                 keygroupIndex >= static_cast<int>(
-                    loadedProgram.keygroups.size()
-                    ))
+                    loadedProgram.keygroups.size()))
+                return;
+
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
+
+            const int targetKeygroup =
+                editAll
+                ? 0x7f
+                : keygroupIndex;
+
+            // ローカル値更新
+            if (editAll)
             {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.r1 = value;
+
+                if (waitingForFilterReply)
+                {
+                    pendingEnv2R1Value = value;
+                    pendingEnv2R1Keygroup = 0x7f;
+                    return;
+                }
+
+                waitingForFilterReply = true;
+
+
+
+                sysExSender.sendKeygroupHeaderByte(
+                    loadedProgram.programNumber,
+                    0x7f,
+                    static_cast<int>(
+                        KeygroupHeaderOffset::Env2::R1
+                        ),
+                    value
+                );
+
+                return;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.r1 = value;
+            }
+
+            // ACK待ち中なら最新値だけ保持
+            if (waitingForFilterReply)
+            {
+                pendingEnv2R1Value = value;
+                pendingEnv2R1Keygroup = targetKeygroup;
+
+
+
                 return;
             }
 
-            loadedProgram
-                .keygroups[keygroupIndex]
-                .env2.r1 = value;
-
-            DBG(
-                "ENV2 R1 PARTIAL WRITE"
-                " KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+            waitingForFilterReply = true;
 
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::R1),
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R1
+                    ),
                 static_cast<uint8_t>(value)
             );
         };
@@ -1948,24 +1747,53 @@ MainComponent::MainComponent()
     keyGroupEditor.onEnv2L1Changed =
         [this](int keygroupIndex, int value)
         {
+
+
+
             if (keygroupIndex < 0 ||
                 keygroupIndex >= static_cast<int>(
                     loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.l1 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 L1 PARTIAL WRITE"
-                " KG=" + juce::String(keygroupIndex)
-                + " VALUE=" + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll
+                ? 0x7f
+                : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::L1),
-                static_cast<uint8_t>(value)
+            // ローカル値更新
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.l1 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.l1 = value;
+            }
+
+            // ACK待ち中なら最新値だけ保持
+            if (waitingForFilterReply)
+            {
+                pendingEnv2L1Value = value;
+                pendingEnv2L1Keygroup = targetKeygroup;
+
+
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L1
+                    ),
+                value
             );
         };
 
@@ -1977,19 +1805,39 @@ MainComponent::MainComponent()
                     loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.r2 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 R2 PARTIAL WRITE"
-                " KG=" + juce::String(keygroupIndex)
-                + " VALUE=" + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::R2),
-                static_cast<uint8_t>(value)
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.r2 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.r2 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2R2Value = value;
+                pendingEnv2R2Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R2
+                    ),
+                value
             );
         };
 
@@ -1997,23 +1845,43 @@ MainComponent::MainComponent()
         [this](int keygroupIndex, int value)
         {
             if (keygroupIndex < 0 ||
-                keygroupIndex >= static_cast<int>(loadedProgram.keygroups.size()))
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.l2 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 L2 PARTIAL WRITE KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::L2),
-                static_cast<uint8_t>(value)
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.l2 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.l2 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2L2Value = value;
+                pendingEnv2L2Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L2
+                    ),
+                value
             );
         };
 
@@ -2022,23 +1890,43 @@ MainComponent::MainComponent()
         [this](int keygroupIndex, int value)
         {
             if (keygroupIndex < 0 ||
-                keygroupIndex >= static_cast<int>(loadedProgram.keygroups.size()))
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.r3 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 R3 PARTIAL WRITE KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::R3),
-                static_cast<uint8_t>(value)
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.r3 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.r3 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2R3Value = value;
+                pendingEnv2R3Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R3
+                    ),
+                value
             );
         };
 
@@ -2050,19 +1938,39 @@ MainComponent::MainComponent()
                     loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.l3 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 L3 PARTIAL WRITE"
-                " KG=" + juce::String(keygroupIndex)
-                + " VALUE=" + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::L3),
-                static_cast<uint8_t>(value)
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.l3 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.l3 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2L3Value = value;
+                pendingEnv2L3Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L3
+                    ),
+                value
             );
         };
 
@@ -2074,19 +1982,39 @@ MainComponent::MainComponent()
                     loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.r4 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
 
-            DBG(
-                "ENV2 R4 PARTIAL WRITE"
-                " KG=" + juce::String(keygroupIndex)
-                + " VALUE=" + juce::String(value)
-            );
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::R4),
-                static_cast<uint8_t>(value)
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.r4 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.r4 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2R4Value = value;
+                pendingEnv2R4Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R4
+                    ),
+                value
             );
         };
 
@@ -2098,19 +2026,234 @@ MainComponent::MainComponent()
                     loadedProgram.keygroups.size()))
                 return;
 
-            loadedProgram.keygroups[keygroupIndex].env2.l4 = value;
+            const bool editAll =
+                keyGroupEditor.isEnv2EditAll();
+
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
+
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env2.l4 = value;
+            }
+            else
+            {
+                loadedProgram.keygroups[keygroupIndex]
+                    .env2.l4 = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv2L4Value = value;
+                pendingEnv2L4Keygroup = targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L4
+                    ),
+                value
+            );
+        };
+
+    keyGroupEditor.onEnv1AttackChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            const bool editAll =
+                keyGroupEditor.isEnv1EditAll();
+
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
+
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env1.attack = value;
+            }
+            else
+            {
+                loadedProgram
+                    .keygroups[keygroupIndex]
+                    .env1.attack = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv1AttackValue = value;
+                pendingEnv1AttackKeygroup =
+                    targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
 
             DBG(
-                "ENV2 L4 PARTIAL WRITE"
-                " KG=" + juce::String(keygroupIndex)
-                + " VALUE=" + juce::String(value)
+                "ENV1 ATTACK SEND"
+                " KG=" + juce::String(targetKeygroup)
+                + " OFFSET="
+                + juce::String(
+                    static_cast<int>(
+                        KeygroupHeaderOffset::Env1::ATTACK))
+                + " VALUE="
+                + juce::String(value)
             );
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                static_cast<int>(KeygroupHeaderOffset::Env2::L4),
-                static_cast<uint8_t>(value)
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::ATTACK
+                    ),
+                value
+            );
+        };
+
+    keyGroupEditor.onEnv1DecayChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            const bool editAll =
+                keyGroupEditor.isEnv1EditAll();
+
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
+
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env1.decay = value;
+            }
+            else
+            {
+                loadedProgram
+                    .keygroups[keygroupIndex]
+                    .env1.decay = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv1DecayValue = value;
+                pendingEnv1DecayKeygroup =
+                    targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::DECAY
+                    ),
+                value
+            );
+        };
+
+    keyGroupEditor.onEnv1SustainChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            const bool editAll =
+                keyGroupEditor.isEnv1EditAll();
+
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
+
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env1.sustain = value;
+            }
+            else
+            {
+                loadedProgram
+                    .keygroups[keygroupIndex]
+                    .env1.sustain = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv1SustainValue = value;
+                pendingEnv1SustainKeygroup =
+                    targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::SUSTAIN
+                    ),
+                value
+            );
+        };
+
+    keyGroupEditor.onEnv1ReleaseChanged =
+        [this](int keygroupIndex, int value)
+        {
+            if (keygroupIndex < 0 ||
+                keygroupIndex >= static_cast<int>(
+                    loadedProgram.keygroups.size()))
+                return;
+
+            const bool editAll =
+                keyGroupEditor.isEnv1EditAll();
+
+            const int targetKeygroup =
+                editAll ? 0x7f : keygroupIndex;
+
+            if (editAll)
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                    kg.env1.release = value;
+            }
+            else
+            {
+                loadedProgram
+                    .keygroups[keygroupIndex]
+                    .env1.release = value;
+            }
+
+            if (waitingForFilterReply)
+            {
+                pendingEnv1ReleaseValue = value;
+                pendingEnv1ReleaseKeygroup =
+                    targetKeygroup;
+                return;
+            }
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                targetKeygroup,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::RELEASE
+                    ),
+                value
             );
         };
 
@@ -2118,10 +2261,59 @@ MainComponent::MainComponent()
     keyGroupEditor.onResonanceChanged =
         [this](int keygroupIndex, int value)
         {
+            if (currentProgramIndex < 0)
+                return;
+
+
+            if (waitingForSampleRenameReply ||
+                waitingForDeleteReply ||
+                pendingAddStage != PendingAddStage::none ||
+                pendingAddProgramStage != PendingAddProgramStage::none)
+            {
+                DBG("FILTER RESONANCE BLOCKED - COMMAND IN PROGRESS");
+                return;
+            }
+
+            if (keyGroupEditor.isFilterEditAll())
+            {
+                for (auto& kg : loadedProgram.keygroups)
+                {
+                    kg.filter.resonance = value;
+                }
+
+                DBG(
+                    "RESONANCE ALL WRITE VALUE="
+                    + juce::String(value)
+                );
+
+                if (waitingForFilterReply)
+                {
+                    pendingResonanceValue = value;
+                    pendingResonanceKeygroup = 0x7f;
+
+                    DBG(
+                        "FILTER RESONANCE ALL PENDING VALUE="
+                        + juce::String(value)
+                    );
+
+                    return;
+                }
+
+                waitingForFilterReply = true;
+
+                sysExSender.sendKeygroupWord(
+                    currentProgramIndex,
+                    0x7f,
+                    KeygroupHeaderOffset::Filter::FILQ,
+                    static_cast<uint16_t>(value)
+                );
+
+                return;
+            }
+
             if (keygroupIndex < 0 ||
                 keygroupIndex >= static_cast<int>(
-                    loadedProgram.keygroups.size()
-                    ))
+                    loadedProgram.keygroups.size()))
             {
                 return;
             }
@@ -2130,13 +2322,22 @@ MainComponent::MainComponent()
                 .keygroups[keygroupIndex]
                 .filter.resonance = value;
 
-            DBG(
-                "RESONANCE PARTIAL WRITE"
-                " KG="
-                + juce::String(keygroupIndex)
-                + " VALUE="
-                + juce::String(value)
-            );
+
+
+            if (waitingForFilterReply)
+            {
+                pendingResonanceValue = value;
+                pendingResonanceKeygroup = keygroupIndex;
+
+                DBG(
+                    "FILTER RESONANCE PENDING VALUE="
+                    + juce::String(value)
+                );
+
+                return;
+            }
+
+            waitingForFilterReply = true;
 
             sysExSender.sendKeygroupWord(
                 currentProgramIndex,
@@ -2144,6 +2345,8 @@ MainComponent::MainComponent()
                 KeygroupHeaderOffset::Filter::FILQ,
                 static_cast<uint16_t>(value)
             );
+
+
         };
 
     keyGroupEditor.onKeyRangeChanged =
@@ -2229,26 +2432,7 @@ MainComponent::MainComponent()
             const Keygroup& keygroup
             )
         {
-            DBG("KEYGROUP CALLBACK FIRED");
-
-            DBG("===== KEYGROUP UPDATED =====");
-            DBG(
-                "KEYGROUP = "
-                + juce::String(keygroupIndex)
-            );
-            DBG(
-                "LOW NOTE = "
-                + juce::String(keygroup.lowNote)
-            );
-            DBG(
-                "HIGH NOTE = "
-                + juce::String(keygroup.highNote)
-            );
-
-            DBG(
-                "loadedProgram.keygroups.size() = "
-                + juce::String((int)loadedProgram.keygroups.size())
-            );
+            
 
             if (keygroupIndex < 0 ||
                 keygroupIndex >= loadedProgram.keygroups.size())
@@ -2342,15 +2526,7 @@ MainComponent::MainComponent()
                 );
             }
 
-            DBG("LOADED PROGRAM KEYGROUP UPDATED");
 
-            //auto& updatedKeygroup =
-            //    loadedProgram.keygroups[keygroupIndex];
-
-            //auto encoded =
-            //    KeygroupEncoder::encode(
-            //        updatedKeygroup
-            //    );
 
             if (encoded.empty())
             {
@@ -2358,52 +2534,14 @@ MainComponent::MainComponent()
                 return;
             }
 
-            DBG(
-                "E_PTCH OFFSET=29 RAW="
-                + juce::String(
-                    (int)encoded[
-                        KeygroupHeaderOffset::Velocity::E_PTCH
-                    ]
-                )
-            );
-
-            DBG(
-                "ENCODED FILFRQ = "
-                + juce::String(
-                    encoded[
-                        KeygroupHeaderOffset::Filter::FILFRQ
-                    ]
-                )
-            );
-
-            DBG(
-                "ENCODED FILQ = "
-                + juce::String(
-                    encoded[
-                        KeygroupHeaderOffset::Filter::FILQ
-                    ]
-                )
-            );
+            
 
 
             // �����m�F
             const auto& raw =
                 updatedKeygroup.rawData;
 
-            for (int i = 0; i < (int)encoded.size(); ++i)
-            {
-                if (raw[i] != encoded[i])
-                {
-                    DBG(
-                        "ENCODE DIFF offset="
-                        + juce::String(i)
-                        + " "
-                        + juce::String((int)raw[i])
-                        + " -> "
-                        + juce::String((int)encoded[i])
-                    );
-                }
-            }
+
 
 
             sysExSender.sendKeygroupData(
@@ -2412,63 +2550,11 @@ MainComponent::MainComponent()
                 encoded
             );
 
-            //sysExSender.sendKeygroupWord(
-            //    currentProgramIndex,
-            //    keygroupIndex,
-            //    KeygroupHeaderOffset::Filter::FILQ,
-            //    static_cast<uint16_t>(
-            //        storedKeygroup.filter.resonance
-            //        )
-            //);
+
 
         };
 
-        /*rogramEditor.onEnv2PitchChanged =
-            [this](int value)
-            {
-                if (currentKeygroup < 0 ||
-                    currentKeygroup >=
-                    static_cast<int>(loadedProgram.keygroups.size()))
-                {
-                    DBG("NO VALID KEYGROUP SELECTED");
-                    return;
-                }
-
-                auto& keygroup =
-                    loadedProgram.keygroups[currentKeygroup];
-
-                keygroup.velocity.ePtch = value;
-
-                DBG(
-                    "PROGRAM TAB -> KEYGROUP E_PTCH = "
-                    + juce::String(value)
-                );
-
-                auto encoded =
-                    KeygroupEncoder::encode(keygroup);
-
-                if (encoded.empty())
-                {
-                    DBG("KEYGROUP ENCODE FAILED");
-                    return;
-                }
-
-                DBG(
-                    "E_PTCH OFFSET=29 RAW="
-                    + juce::String(
-                        (int)encoded[
-                            KeygroupHeaderOffset::Velocity::E_PTCH
-                        ]
-                    )
-                );
-
-                sysExSender.sendKeygroupData(
-                    loadedProgram.programNumber,
-                    currentKeygroup,
-                    encoded
-                );
-            };*/
-
+ 
 
 
 
@@ -3112,6 +3198,15 @@ MainComponent::MainComponent()
 
             if (nameChanged)
             {
+                if (waitingForFilterReply)
+                {
+                    DBG(
+                        "SAMPLE RENAME BLOCKED - FILTER COMMAND IN PROGRESS"
+                    );
+
+                    return;
+                }
+
                 DBG("SEND SAMPLE NAME ONLY");
 
                 waitingForSampleRenameReply = true;
@@ -3214,13 +3309,15 @@ MainComponent::MainComponent()
         juce::dontSendNotification
     );
 
+    keyboardComponent.setKeyPressBaseOctave(5);
+
     keyboardOctaveCombo.onChange = [this]()
         {
             const int octave =
                 keyboardOctaveCombo.getSelectedId();
 
             keyboardComponent.setKeyPressBaseOctave(
-                octave
+                octave + 2
             );
 
             DBG(
@@ -3230,145 +3327,20 @@ MainComponent::MainComponent()
         };
 
     addAndMakeVisible(deleteProgramButton);
-    addAndMakeVisible(addProgramButton);
+    //addAndMakeVisible(addProgramButton);
 
 
     deleteProgramButton.onClick =
         [this]()
         {
-            const int programNumber =
-                loadedProgram.programNumber;
-
-            juce::AlertWindow::showOkCancelBox(
-                juce::AlertWindow::WarningIcon,
-                "Delete Program?",
-                "This will delete the program and all of its keygroups.",
-                "Delete",
-                "Cancel",
-                nullptr,
-                juce::ModalCallbackFunction::create(
-                    [this, programNumber](int result)
-                    {
-                        if (result == 0)
-                            return;
-
-                        sysExSender.sendDeleteProgram(
-                            programNumber
-                        );
-
-                        sysExSender.sendRPLIST();
-                    }
-                )
-            );
+            deleteProgram();
         };
 
 
     addProgramButton.onClick =
         [this]()
         {
-            if (pendingAddProgramStage !=
-                PendingAddProgramStage::none)
-            {
-                return;
-            }
-
-            if (loadedProgram.keygroups.empty())
-            {
-                DBG("ADD PROGRAM: NO KEYGROUP TEMPLATE");
-                return;
-            }
-
-            const int newProgramNumber =
-                static_cast<int>(programList.size());
-
-            auto newProgram =
-                loadedProgram;
-
-            newProgram.programNumber =
-                newProgramNumber;
-
-            newProgram.groups = 1;
-            newProgram.keygroups.clear();
-
-            auto newKeygroup =
-                loadedProgram.keygroups[0];
-
-            newProgram.keygroups.push_back(
-                newKeygroup
-            );
-
-            newProgram.name =
-                (
-                    juce::String("NEW PRG ")
-                    + juce::String(newProgramNumber)
-                    ).toStdString();
-
-            auto encodedProgram =
-                ProgramEncoder::encode(
-                    newProgram
-                );
-
-            if (encodedProgram.empty())
-            {
-                DBG("ADD PROGRAM: ENCODE FAILED");
-                return;
-            }
-
-
-
-            std::string decodedName;
-
-            for (std::size_t i = 0;
-                i < ProgramOffset::General::NameLength;
-                ++i)
-            {
-                const auto raw =
-                    encodedProgram[
-                        ProgramOffset::General::Name + i
-                    ];
-
-                DBG(
-                    juce::String((int)i)
-                    + ": "
-                    + juce::String::formatted(
-                        "%02X",
-                        (unsigned)raw
-                    )
-                );
-
-                decodedName += decodePlistChar(raw);
-            }
-
-            while (!decodedName.empty()
-                && decodedName.back() == ' ')
-            {
-                decodedName.pop_back();
-            }
-
-
-
-            pendingNewProgramNumber =
-                newProgramNumber;
-
-            pendingNewProgram =
-                newProgram;
-
-            pendingNewProgramKeygroup =
-                newKeygroup;
-
-            pendingAddProgramStage =
-                PendingAddProgramStage::
-                waitingForProgramReply;
-
-            DBG(
-                "ADD PROGRAM: SEND PDATA PROGRAM="
-                + juce::String(newProgramNumber)
-            );
-
-            sysExSender.sendProgramData(
-                newProgramNumber,
-                encodedProgram
-            );
+            addProgram();
         };
     
     injectTestKeygroupHeaderByte(
@@ -3384,12 +3356,49 @@ MainComponent::MainComponent()
 
 
     deviceStatusLabel.toFront(false);
+    saveProjectButton.toFront(false);
+    loadProjectButton.toFront(false);
     startTimer(1000);
 
 }
 
 MainComponent::~MainComponent()
 {
+    setLookAndFeel(nullptr);
+}
+
+
+
+void MainComponent::deleteProgram()
+{
+    const int programNumber =
+        loadedProgram.programNumber;
+
+    const juce::String programName =
+        juce::String(loadedProgram.name);
+
+    juce::AlertWindow::showOkCancelBox(
+        juce::AlertWindow::WarningIcon,
+        "Delete Program?",
+        "Delete \"" + programName + "\"?\n\n"
+        "This will delete the program and all of its keygroups.",
+        "Delete",
+        "Cancel",
+        nullptr,
+        juce::ModalCallbackFunction::create(
+            [this, programNumber](int result)
+            {
+                if (result == 0)
+                    return;
+
+                sysExSender.sendDeleteProgram(
+                    programNumber
+                );
+
+                sysExSender.sendRPLIST();
+            }
+        )
+    );
 }
 
 //==============================================================================
@@ -3404,10 +3413,355 @@ void MainComponent::paint (juce::Graphics& g)
 }
 
 
+juce::StringArray MainComponent::getMenuBarNames()
+{
+    return {
+        "Program",
+        "MIDI"
+    };
+}
+
+juce::PopupMenu MainComponent::getMenuForIndex(
+    int topLevelMenuIndex,
+    const juce::String& menuName
+)
+{
+    juce::PopupMenu menu;
+
+    if (topLevelMenuIndex == 0)
+    {
+        menu.addItem(
+            1001,
+            "New Program"
+        );
+
+        menu.addItem(
+            1002,
+            "Delete Program"
+        );
+
+        menu.addItem(1005, "Reload from S3000XL");
+
+        menu.addSeparator();
+
+        menu.addItem(
+            1003,
+            "Load Program..."
+        );
+
+        menu.addItem(
+            1004,
+            "Save Program..."
+        );
+    }
+    else if (topLevelMenuIndex == 1)
+    {
+        juce::PopupMenu inputMenu;
+        juce::PopupMenu outputMenu;
+
+        // ==============================
+        // MIDI INPUT
+        // ==============================
+
+        for (int i = 0;
+            i < keyboardMidiInputDevices.size();
+            ++i)
+        {
+            inputMenu.addItem(
+                2000 + i,
+                keyboardMidiInputDevices[i].name
+            );
+        }
+
+        // ==============================
+        // MIDI OUTPUT
+        // ==============================
+
+        const auto outputs =
+            juce::MidiOutput::getAvailableDevices();
+
+        for (int i = 0;
+            i < outputs.size();
+            ++i)
+        {
+            outputMenu.addItem(
+                3000 + i,
+                outputs[i].name
+            );
+        }
+
+        menu.addSubMenu(
+            "MIDI Input",
+            inputMenu
+        );
+
+        menu.addSubMenu(
+            "MIDI Output",
+            outputMenu
+        );
+    }
+
+    return menu;
+}
+
+//void MainComponent::menuItemSelected(
+//    int menuItemID,
+//    int topLevelMenuIndex
+//)
+//{
+//    DBG(
+//        "MENU SELECTED ID="
+//        + juce::String(menuItemID)
+//        + " TOP="
+//        + juce::String(topLevelMenuIndex)
+//    );
+//}
+
+void MainComponent::openKeyboardMidiInput(int index)
+{
+    if (index < 0 ||
+        index >= keyboardMidiInputDevices.size())
+    {
+        return;
+    }
+
+    if (keyboardMidiInput)
+    {
+        keyboardMidiInput->stop();
+        keyboardMidiInput.reset();
+    }
+
+    const auto& device =
+        keyboardMidiInputDevices[index];
+
+    DBG(
+        "OPEN KEYBOARD MIDI INPUT: "
+        + device.name
+    );
+
+    keyboardMidiInput =
+        juce::MidiInput::openDevice(
+            device.identifier,
+            this
+        );
+
+    if (keyboardMidiInput)
+    {
+        keyboardMidiInput->start();
+
+        DBG(
+            "KEYBOARD MIDI INPUT STARTED"
+        );
+    }
+    else
+    {
+        DBG(
+            "FAILED TO OPEN KEYBOARD MIDI INPUT"
+        );
+    }
+}
+
+
+void MainComponent::addProgram()
+{
+    if (waitingForFilterReply)
+    {
+        DBG("ADD PROGRAM BLOCKED - FILTER COMMAND IN PROGRESS");
+        return;
+    }
+
+    if (pendingAddProgramStage !=
+        PendingAddProgramStage::none)
+    {
+        return;
+    }
+
+    if (loadedProgram.keygroups.empty())
+    {
+        DBG("ADD PROGRAM: NO KEYGROUP TEMPLATE");
+        return;
+    }
+
+    const int newProgramNumber =
+        static_cast<int>(programList.size());
+
+    auto newProgram =
+        loadedProgram;
+
+    newProgram.programNumber =
+        newProgramNumber;
+
+    newProgram.groups = 1;
+    newProgram.keygroups.clear();
+
+    auto newKeygroup =
+        loadedProgram.keygroups[0];
+
+    newProgram.keygroups.push_back(
+        newKeygroup
+    );
+
+    newProgram.name =
+        (
+            juce::String("NEW PRG ")
+            + juce::String(newProgramNumber)
+            ).toStdString();
+
+    auto encodedProgram =
+        ProgramEncoder::encode(
+            newProgram
+        );
+
+    if (encodedProgram.empty())
+    {
+        DBG("ADD PROGRAM: ENCODE FAILED");
+        return;
+    }
+
+    std::string decodedName;
+
+    for (std::size_t i = 0;
+        i < ProgramOffset::General::NameLength;
+        ++i)
+    {
+        const auto raw =
+            encodedProgram[
+                ProgramOffset::General::Name + i
+            ];
+
+        DBG(
+            juce::String((int)i)
+            + ": "
+            + juce::String::formatted(
+                "%02X",
+                (unsigned)raw
+            )
+        );
+
+        decodedName += decodePlistChar(raw);
+    }
+
+    while (!decodedName.empty()
+        && decodedName.back() == ' ')
+    {
+        decodedName.pop_back();
+    }
+
+    pendingNewProgramNumber =
+        newProgramNumber;
+
+    pendingNewProgram =
+        newProgram;
+
+    pendingNewProgramKeygroup =
+        newKeygroup;
+
+    pendingAddProgramStage =
+        PendingAddProgramStage::
+        waitingForProgramReply;
+
+    DBG(
+        "ADD PROGRAM: SEND PDATA PROGRAM="
+        + juce::String(newProgramNumber)
+    );
+
+    sysExSender.sendProgramData(
+        newProgramNumber,
+        encodedProgram
+    );
+}
+
+void MainComponent::menuItemSelected(
+    int menuItemID,
+    int topLevelMenuIndex
+)
+{
+    DBG(
+        "MENU SELECTED ID="
+        + juce::String(menuItemID)
+    );
+
+    // ==============================
+    // MIDI Keyboard Input
+    // ==============================
+   // MIDI INPUT
+    if (menuItemID >= 2000 &&
+        menuItemID < 3000)
+    {
+        const int index =
+            menuItemID - 2000;
+
+        openKeyboardMidiInput(index);
+        return;
+    }
+
+    // MIDI OUTPUT
+    if (menuItemID >= 3000 &&
+        menuItemID < 4000)
+    {
+        const int index =
+            menuItemID - 3000;
+
+        midiManager.openOutput(index);
+        return;
+    }
+
+    // ==============================
+    // Program Menu
+    // ==============================
+    switch (menuItemID)
+    {
+    case 1001:
+        addProgram();
+        break;
+
+    case 1002:
+        deleteProgram();
+        break;
+
+    case 1003:
+        DBG("MENU: LOAD PROJECT");
+        loadProject();
+        break;
+
+    case 1004:
+        DBG("MENU: SAVE PROJECT");
+        saveProject();
+        break;
+
+
+    case 1005:
+    {
+        DBG("MENU: RELOAD PROGRAM FROM S3000XL");
+
+        programRefreshPending = false;
+        programRefreshOnly = false;
+
+        loadProgram(
+            loadedProgram.programNumber
+        );
+
+        break;
+    }
+
+    default:
+        DBG("MENU: UNKNOWN ID");
+        break;
+    }
+}
+
 
 void MainComponent::resized()
 {
     auto area = getLocalBounds();
+
+    // =========================
+// Menu bar
+// =========================
+    menuBar.setBounds(
+        area.removeFromTop(24)
+    );
+
 
     // =========================
     // Top bar
@@ -3418,33 +3772,62 @@ void MainComponent::resized()
         topBar.removeFromLeft(330)
         .reduced(20, 15);
 
-    deleteProgramButton.setBounds(
-        programArea.removeFromRight(30)
-    );
+    //deleteProgramButton.setBounds(
+    //    programArea.removeFromRight(30)
+    //);
 
-    programArea.removeFromRight(6);
+    //programArea.removeFromRight(6);
 
-    addProgramButton.setBounds(
-        programArea.removeFromRight(30)
-    );
+    //addProgramButton.setBounds(
+    //    programArea.removeFromRight(30)
+    //);
 
-    programArea.removeFromRight(6);
+    //programArea.removeFromRight(6);
 
     programCombo.setBounds(
         programArea
     );
 
+    //auto projectButtonsArea =
+    //    topBar.removeFromLeft(270)
+    //    .reduced(5, 15);
+
+    //saveProjectButton.setBounds(
+    //    projectButtonsArea.removeFromLeft(120)
+    //);
+
+    //projectButtonsArea.removeFromLeft(10);
+
+    //loadProjectButton.setBounds(
+    //    projectButtonsArea.removeFromLeft(120)
+    //);
+
+
     deviceStatusLabel.setBounds(
         topBar.removeFromRight(250)
         .reduced(10, 15)
     );
-    
-    mockEnv2R1Button.setBounds(
-        getWidth() - 160,
-        10,
-        150,
-        30
-    );
+
+    //keyboardMidiInputLabel.setBounds(
+    //    10,
+    //    10,
+    //    150,
+    //    28
+    //);
+
+    //keyboardMidiInputCombo.setBounds(
+    //    165,
+    //    10,
+    //    220,
+    //    28
+    //);
+    //
+    //mockEnv2R1Button.setBounds(
+    //    getWidth() - 160,
+    //    10,
+    //    150,
+    //    30
+    //);
 
     // =========================
 // Audition keyboard
@@ -3508,51 +3891,51 @@ void MainComponent::resized()
     }
 
 
-#if JUCE_DEBUG
-    // =========================
-    // Debug toolbar
-    // =========================
-    auto debugRow = area.removeFromTop(32);
-    debugRow = debugRow.reduced(4, 2);
-
-    const int gap = 4;
-
-    captureAButton.setBounds(
-        debugRow.removeFromLeft(90)
-    );
-
-    debugRow.removeFromLeft(gap);
-
-    captureBButton.setBounds(
-        debugRow.removeFromLeft(90)
-    );
-
-    debugRow.removeFromLeft(gap);
-
-    compareButton.setBounds(
-        debugRow.removeFromLeft(90)
-    );
-
-    debugRow.removeFromLeft(gap);
-
-    requestButton.setBounds(
-        debugRow.removeFromLeft(110)
-    );
-
-    debugRow.removeFromLeft(gap);
-
-    requestRPDATAButton.setBounds(
-        debugRow.removeFromLeft(120)
-    );
-#else
-    requestButton.setBounds(
-        area.removeFromTop(32)
-    );
-
-    requestRPDATAButton.setBounds(
-        area.removeFromTop(32)
-    );
-#endif
+//#if JUCE_DEBUG
+//    // =========================
+//    // Debug toolbar
+//    // =========================
+//    auto debugRow = area.removeFromTop(32);
+//    debugRow = debugRow.reduced(4, 2);
+//
+//    const int gap = 4;
+//
+//    captureAButton.setBounds(
+//        debugRow.removeFromLeft(90)
+//    );
+//
+//    debugRow.removeFromLeft(gap);
+//
+//    captureBButton.setBounds(
+//        debugRow.removeFromLeft(90)
+//    );
+//
+//    debugRow.removeFromLeft(gap);
+//
+//    compareButton.setBounds(
+//        debugRow.removeFromLeft(90)
+//    );
+//
+//    debugRow.removeFromLeft(gap);
+//
+//    requestButton.setBounds(
+//        debugRow.removeFromLeft(110)
+//    );
+//
+//    debugRow.removeFromLeft(gap);
+//
+//    requestRPDATAButton.setBounds(
+//        debugRow.removeFromLeft(120)
+//    );
+//#else
+//    requestButton.setBounds(
+//        area.removeFromTop(32)
+//    );
+//
+//    requestRPDATAButton.setBounds(
+//        area.removeFromTop(32)
+//    );
+//#endif
 
     auto left = area.removeFromLeft(350);
 
@@ -3799,9 +4182,84 @@ void MainComponent::setDeviceConnected(bool connected)
 //}
 
 void MainComponent::handleIncomingMidiMessage(
-    juce::MidiInput*,
+    juce::MidiInput* source,
     const juce::MidiMessage& message)
 {
+
+    // ========================================
+    // MIDI KEYBOARD -> S3000XL THRU
+    // ========================================
+
+    if (source == keyboardMidiInput.get())
+    {
+        if (message.isNoteOn())
+        {
+            const int channel =
+                message.getChannel();
+
+            const int note =
+                message.getNoteNumber();
+
+            const int velocity =
+                message.getVelocity();
+
+            DBG(
+                "PHYSICAL NOTE ON"
+                " CH=" + juce::String(channel)
+                + " NOTE=" + juce::String(note)
+                + " VEL=" + juce::String(velocity)
+            );
+
+            sysExSender.sendNoteOn(
+                note,
+                velocity,
+                channel
+            );
+
+            return;
+        }
+
+        if (message.isNoteOff())
+        {
+            const int channel =
+                message.getChannel();
+
+            const int note =
+                message.getNoteNumber();
+
+            DBG(
+                "PHYSICAL NOTE OFF"
+                " CH=" + juce::String(channel)
+                + " NOTE=" + juce::String(note)
+            );
+
+            sysExSender.sendNoteOff(
+                channel,
+                note
+            );
+
+            return;
+        }
+
+        // CC / Pitch Bend / Aftertouch は従来通りそのままTHRU
+        if (message.isController() ||
+            message.isPitchWheel() ||
+            message.isChannelPressure() ||
+            message.isAftertouch())
+        {
+            sysExSender.sendMidiMessage(message);
+        }
+
+        return;
+    }
+
+    // ========================================
+// S3000XL -> EDITOR
+// ========================================
+
+
+
+
     if (message.isProgramChange())
     {
         DBG("MIDI PROGRAM CHANGE = "
@@ -5618,6 +6076,7 @@ void MainComponent::handleCommandReply(
         + juce::String((int)result)
     );
 
+
     // ========================================
 // SAMPLE RENAME Reply
 // ========================================
@@ -5854,48 +6313,19 @@ void MainComponent::handleCommandReply(
 
         pendingAddKeygroupIndex = -1;
 
-        // MIDI callback����UI�𒼐ڐG��Ȃ�
         juce::MessageManager::callAsync(
-            [this, addedIndex]()
+            [this]
             {
-                // ========================================
-                // ���[�J��Program�X�V
-                // ========================================
-
-                loadedProgram.keygroups.push_back(
-                    pendingAddedKeygroup
-                );
-
-                loadedProgram.groups =
-                    static_cast<int>(
-                        loadedProgram.keygroups.size()
-                        );
-
-                totalKeygroups =
-                    loadedProgram.groups;
-
-                currentKeygroup =
-                    addedIndex;
-
-                currentZone = 0;
-
-                DBG(
-                    "ADD LOCAL UPDATE GROUPS="
-                    + juce::String(
-                        loadedProgram.groups
-                    )
-                );
-
-                constexpr int rowHeightForMap = 32;
-                constexpr int extraHeight = 80;
+                constexpr int rowHeight = 32;
 
                 const int contentHeight =
                     juce::jmax(
                         200,
                         static_cast<int>(
                             loadedProgram.keygroups.size()
-                            ) * rowHeightForMap
-                        + extraHeight
+                            ) * rowHeight
+                        + KeygroupMap::buttonAreaHeight
+                        + 20
                     );
 
                 keygroupMap.setSize(
@@ -5915,40 +6345,11 @@ void MainComponent::handleCommandReply(
                     sampleHeaders
                 );
 
+                // 初回ロード完了
+                initialProgramLoad = false;
 
-                // ========================================
-                // UI�����X�V
-                // ========================================
-
-                //keygroupMap.setProgram(
-                //    loadedProgram
-                //);
-
-                //programTree.setProgram(
-                //    loadedProgram,
-                //    sampleHeaders
-                //);
-
-                auto& kg =
-                    loadedProgram.keygroups[
-                        currentKeygroup
-                    ];
-
-                keyGroupEditor.setKeygroup(
-                    kg,
-                    currentKeygroup
-                );
-
-
-
-                if (!kg.zones.empty())
-                {
-                    velocityZoneEditor.setZone(
-                        kg.zones[0]
-                    );
-                }
-
-
+                // 起動時はProgramタブ
+                editorTabs.setCurrentTabIndex(0);
             }
         );
 
@@ -6085,6 +6486,394 @@ void MainComponent::handleCommandReply(
             DBG("DELETE KEYGROUP FAILED");
             pendingDeleteKeygroup = -1;
         }
+
+        return;
+    }
+
+    if (waitingForFilterReply)
+    {
+        waitingForFilterReply = false;
+
+        DBG("FILTER REPLY RECEIVED");
+
+        if (pendingFilterFreqValue >= 0 &&
+            pendingFilterFreqKeygroup >= 0)
+        {
+            const int value =
+                pendingFilterFreqValue;
+
+            const int keygroupIndex =
+                pendingFilterFreqKeygroup;
+
+            pendingFilterFreqValue = -1;
+            pendingFilterFreqKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            DBG(
+                "FILTER FREQ SEND PENDING VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupByte(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::FILFRQ,
+                static_cast<uint8_t>(value)
+            );
+
+            return;
+        }
+
+        if (pendingResonanceValue >= 0 &&
+            pendingResonanceKeygroup >= 0)
+        {
+            const int value =
+                pendingResonanceValue;
+
+            const int keygroupIndex =
+                pendingResonanceKeygroup;
+
+            pendingResonanceValue = -1;
+            pendingResonanceKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            DBG(
+                "FILTER RESONANCE SEND PENDING VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupWord(
+                currentProgramIndex,
+                keygroupIndex,
+                KeygroupHeaderOffset::Filter::FILQ,
+                static_cast<uint16_t>(value)
+            );
+
+            return;
+        }
+
+        if (pendingEnv2R1Value >= 0 &&
+            pendingEnv2R1Keygroup >= 0)
+        {
+            const int value = pendingEnv2R1Value;
+            const int keygroupIndex = pendingEnv2R1Keygroup;
+
+            pendingEnv2R1Value = -1;
+            pendingEnv2R1Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R1
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2L1Value >= 0 &&
+            pendingEnv2L1Keygroup >= 0)
+        {
+            const int value = pendingEnv2L1Value;
+            const int keygroupIndex = pendingEnv2L1Keygroup;
+
+            pendingEnv2L1Value = -1;
+            pendingEnv2L1Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L1
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingModFilter1Value != -1000 &&
+            pendingModFilter1Keygroup >= 0)
+        {
+            const int value =
+                pendingModFilter1Value;
+
+            const int keygroupIndex =
+                pendingModFilter1Keygroup;
+
+            pendingModFilter1Value = -1000;
+            pendingModFilter1Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            DBG(
+                "MOD FILTER1 SEND PENDING"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                KeygroupHeaderOffset::Mod::Filter1,
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2R2Value >= 0 &&
+            pendingEnv2R2Keygroup >= 0)
+        {
+            const int value = pendingEnv2R2Value;
+            const int keygroupIndex = pendingEnv2R2Keygroup;
+
+            pendingEnv2R2Value = -1;
+            pendingEnv2R2Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R2
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2L2Value >= 0 &&
+            pendingEnv2L2Keygroup >= 0)
+        {
+            const int value = pendingEnv2L2Value;
+            const int keygroupIndex = pendingEnv2L2Keygroup;
+
+            pendingEnv2L2Value = -1;
+            pendingEnv2L2Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L2
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2R3Value >= 0 &&
+            pendingEnv2R3Keygroup >= 0)
+        {
+            const int value = pendingEnv2R3Value;
+            const int keygroupIndex = pendingEnv2R3Keygroup;
+
+            pendingEnv2R3Value = -1;
+            pendingEnv2R3Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R3
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2L3Value >= 0 &&
+            pendingEnv2L3Keygroup >= 0)
+        {
+            const int value = pendingEnv2L3Value;
+            const int keygroupIndex = pendingEnv2L3Keygroup;
+
+            pendingEnv2L3Value = -1;
+            pendingEnv2L3Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L3
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2R4Value >= 0 &&
+            pendingEnv2R4Keygroup >= 0)
+        {
+            const int value = pendingEnv2R4Value;
+            const int keygroupIndex = pendingEnv2R4Keygroup;
+
+            pendingEnv2R4Value = -1;
+            pendingEnv2R4Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::R4
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv2L4Value >= 0 &&
+            pendingEnv2L4Keygroup >= 0)
+        {
+            const int value = pendingEnv2L4Value;
+            const int keygroupIndex = pendingEnv2L4Keygroup;
+
+            pendingEnv2L4Value = -1;
+            pendingEnv2L4Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env2::L4
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv1AttackValue >= 0 &&
+            pendingEnv1AttackKeygroup >= 0)
+        {
+            const int value =
+                pendingEnv1AttackValue;
+
+            const int keygroupIndex =
+                pendingEnv1AttackKeygroup;
+
+            pendingEnv1AttackValue = -1;
+            pendingEnv1AttackKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::ATTACK
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv1DecayValue >= 0 &&
+            pendingEnv1DecayKeygroup >= 0)
+        {
+            const int value =
+                pendingEnv1DecayValue;
+
+            const int keygroupIndex =
+                pendingEnv1DecayKeygroup;
+
+            pendingEnv1DecayValue = -1;
+            pendingEnv1DecayKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::DECAY
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv1SustainValue >= 0 &&
+            pendingEnv1SustainKeygroup >= 0)
+        {
+            const int value =
+                pendingEnv1SustainValue;
+
+            const int keygroupIndex =
+                pendingEnv1SustainKeygroup;
+
+            pendingEnv1SustainValue = -1;
+            pendingEnv1SustainKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::SUSTAIN
+                    ),
+                value
+            );
+
+            return;
+        }
+
+        if (pendingEnv1ReleaseValue >= 0 &&
+            pendingEnv1ReleaseKeygroup >= 0)
+        {
+            const int value =
+                pendingEnv1ReleaseValue;
+
+            const int keygroupIndex =
+                pendingEnv1ReleaseKeygroup;
+
+            pendingEnv1ReleaseValue = -1;
+            pendingEnv1ReleaseKeygroup = -1;
+
+            waitingForFilterReply = true;
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                static_cast<int>(
+                    KeygroupHeaderOffset::Env1::RELEASE
+                    ),
+                value
+            );
+
+            return;
+        }
+
 
         return;
     }
@@ -6316,6 +7105,12 @@ void MainComponent::handleProgramHeaderResponse()
 
 void MainComponent::addKeygroup()
 {
+    if (waitingForFilterReply)
+    {
+        DBG("ADD KG BLOCKED - FILTER COMMAND IN PROGRESS");
+        return;
+    }
+
     if (loadedProgram.keygroups.empty())
     {
         DBG("ADD KG: NO KEYGROUPS");
@@ -7406,6 +8201,12 @@ void MainComponent::handleNoteOn(
     int midiNoteNumber,
     float)
 {
+
+    DBG(
+        "HANDLE NOTE ON FROM MIDI KEYBOARD STATE NOTE="
+        + juce::String(midiNoteNumber)
+    );
+
     if (!keyboardToggle.getToggleState())
         return;
 
@@ -7482,15 +8283,1943 @@ bool MainComponent::keyPressed(
     const juce::KeyPress& key,
     juce::Component*)
 {
-    return keyboardComponent.keyPressed(key);
+    DBG(
+        "PC KEY PRESSED: "
+        + key.getTextDescription()
+    );
+
+    keyGroupEditor.suspendFilterRealtime();
+
+    const bool handled =
+        keyboardComponent.keyPressed(key);
+
+    DBG(
+        "keyboardComponent.keyPressed RESULT="
+        + juce::String(handled ? 1 : 0)
+    );
+
+    return handled;
 }
 
 bool MainComponent::keyStateChanged(
     bool isKeyDown,
     juce::Component*)
 {
+    DBG(
+        "PC KEY STATE CHANGED isKeyDown="
+        + juce::String(isKeyDown ? 1 : 0)
+    );
+
     return keyboardComponent.keyStateChanged(isKeyDown);
 }
+
+void MainComponent::saveProject()
+{
+    auto chooser = std::make_shared<juce::FileChooser>(
+        "Save S3000XL Project",
+        juce::File{},
+        "*.json"
+    );
+
+    chooser->launchAsync(
+        juce::FileBrowserComponent::saveMode
+        | juce::FileBrowserComponent::canSelectFiles,
+        [this, chooser](const juce::FileChooser& fc)
+        {
+            auto file = fc.getResult();
+
+            if (file == juce::File{})
+                return;
+
+            juce::DynamicObject::Ptr root =
+                new juce::DynamicObject();
+
+            root->setProperty(
+                "format",
+                "S3000XL Editor Project"
+            );
+
+            root->setProperty(
+                "version",
+                1
+            );
+
+            juce::DynamicObject::Ptr program =
+                new juce::DynamicObject();
+
+            program->setProperty(
+                "programNumber",
+                loadedProgram.programNumber
+            );
+
+            program->setProperty(
+                "name",
+                juce::String(loadedProgram.name)
+            );
+
+            program->setProperty(
+                "midiChannel",
+                loadedProgram.midiChannel
+            );
+
+            program->setProperty(
+                "polyphony",
+                loadedProgram.polyphony
+            );
+
+            program->setProperty(
+                "priority",
+                loadedProgram.priority
+            );
+
+            program->setProperty(
+                "playLow",
+                loadedProgram.playLow
+            );
+
+            program->setProperty(
+                "playHigh",
+                loadedProgram.playHigh
+            );
+
+            program->setProperty(
+                "pan",
+                loadedProgram.pan
+            );
+
+            program->setProperty(
+                "loudness",
+                loadedProgram.loudness
+            );
+
+            program->setProperty("output", loadedProgram.output);
+            program->setProperty("stereoLevel", loadedProgram.stereoLevel);
+
+            program->setProperty("lfo1Rate", loadedProgram.lfo1Rate);
+            program->setProperty("lfo1Depth", loadedProgram.lfo1Depth);
+            program->setProperty("lfo1Delay", loadedProgram.lfo1Delay);
+
+            program->setProperty("lfo2Rate", loadedProgram.lfo2Rate);
+            program->setProperty("lfo2Depth", loadedProgram.lfo2Depth);
+            program->setProperty("lfo2Delay", loadedProgram.lfo2Delay);
+
+            program->setProperty("modWheelDepth", loadedProgram.modWheelDepth);
+            program->setProperty("pressureDepth", loadedProgram.pressureDepth);
+            program->setProperty("velocityDepth", loadedProgram.velocityDepth);
+
+            program->setProperty(
+                "velocityLoudness",
+                loadedProgram.velocityLoudness
+            );
+
+            program->setProperty("bendUp", loadedProgram.bendUp);
+            program->setProperty("pressurePitch", loadedProgram.pressurePitch);
+
+            program->setProperty(
+                "keygroupCrossfade",
+                loadedProgram.keygroupCrossfade
+            );
+
+            program->setProperty("groups", loadedProgram.groups);
+            program->setProperty("tune", loadedProgram.tune);
+
+            program->setProperty(
+                "individualOutputLevel",
+                loadedProgram.individualOutputLevel
+            );
+
+            program->setProperty("legato", loadedProgram.legato);
+            program->setProperty("bendDown", loadedProgram.bendDown);
+            program->setProperty("bendMode", loadedProgram.bendMode);
+            program->setProperty("transpose", loadedProgram.transpose);
+
+            program->setProperty(
+                "lfo1Desync",
+                loadedProgram.lfo1Desync
+            );
+
+            program->setProperty(
+                "voiceAssign",
+                loadedProgram.voiceAssign
+            );
+
+            program->setProperty(
+                "softLoudness",
+                loadedProgram.softLoudness
+            );
+
+            program->setProperty(
+                "softAttack",
+                loadedProgram.softAttack
+            );
+
+            program->setProperty(
+                "softFilter",
+                loadedProgram.softFilter
+            );
+
+            // =========================
+// Portamento
+// =========================
+
+            program->setProperty(
+                "portamentoTime",
+                loadedProgram.portamentoTime
+            );
+
+            program->setProperty(
+                "portamentoType",
+                loadedProgram.portamentoType
+            );
+
+            program->setProperty(
+                "portamentoEnabled",
+                loadedProgram.portamentoEnabled
+            );
+
+            program->setProperty("modSPan1", loadedProgram.modSPan1);
+            program->setProperty("modSPan2", loadedProgram.modSPan2);
+            program->setProperty("modSPan3", loadedProgram.modSPan3);
+
+            program->setProperty("modSAmp1", loadedProgram.modSAmp1);
+            program->setProperty("modSAmp2", loadedProgram.modSAmp2);
+            program->setProperty("modSAmp3", loadedProgram.modSAmp3);
+
+            program->setProperty(
+                "modSLfo1Rate",
+                loadedProgram.modSLfo1Rate
+            );
+
+            program->setProperty(
+                "modSLfo1Depth",
+                loadedProgram.modSLfo1Depth
+            );
+
+            program->setProperty(
+                "modSLfo1Delay",
+                loadedProgram.modSLfo1Delay
+            );
+
+            program->setProperty(
+                "modSFilter1",
+                loadedProgram.modSFilter1
+            );
+
+            program->setProperty(
+                "modSFilter2",
+                loadedProgram.modSFilter2
+            );
+
+            program->setProperty(
+                "modSFilter3",
+                loadedProgram.modSFilter3
+            );
+
+            program->setProperty(
+                "modSPitch",
+                loadedProgram.modSPitch
+            );
+
+            program->setProperty(
+                "modVPitch",
+                loadedProgram.modVPitch
+            );
+
+            program->setProperty("modVPan1", loadedProgram.modVPan1);
+            program->setProperty("modVPan2", loadedProgram.modVPan2);
+            program->setProperty("modVPan3", loadedProgram.modVPan3);
+
+            program->setProperty("modVAmp1", loadedProgram.modVAmp1);
+            program->setProperty("modVAmp2", loadedProgram.modVAmp2);
+
+            program->setProperty(
+                "modVLfo1Rate",
+                loadedProgram.modVLfo1Rate
+            );
+
+            program->setProperty(
+                "modVLfo1Depth",
+                loadedProgram.modVLfo1Depth
+            );
+
+            program->setProperty(
+                "modVLfo1Delay",
+                loadedProgram.modVLfo1Delay
+            );
+
+            program->setProperty("lfo1Wave", loadedProgram.lfo1Wave);
+            program->setProperty("lfo2Wave", loadedProgram.lfo2Wave);
+
+            juce::Array<juce::var> temperament;
+
+            for (const auto value : loadedProgram.temperament)
+            {
+                temperament.add(
+                    static_cast<int>(value)
+                );
+            }
+
+            program->setProperty(
+                "temperament",
+                temperament
+            );
+
+            root->setProperty(
+                "program",
+                juce::var(program.get())
+            );
+
+            juce::Array<juce::var> keygroups;
+
+            for (const auto& kg : loadedProgram.keygroups)
+            {
+                juce::DynamicObject::Ptr keygroup =
+                    new juce::DynamicObject();
+
+                keygroup->setProperty(
+                    "id",
+                    static_cast<int>(kg.id)
+                );
+
+                keygroup->setProperty(
+                    "nextAddress",
+                    static_cast<int>(kg.nextAddress)
+                );
+
+                keygroup->setProperty(
+                    "filterVelocityToFreq",
+                    kg.filter.velocityToFreq
+                );
+
+                keygroup->setProperty(
+                    "filterPressureToFreq",
+                    kg.filter.pressureToFreq
+                );
+
+                keygroup->setProperty(
+                    "filterEnvelopeToFreq",
+                    kg.filter.envelopeToFreq
+                );
+
+                keygroup->setProperty(
+                    "lowNote",
+                    kg.lowNote
+                );
+
+                keygroup->setProperty(
+                    "highNote",
+                    kg.highNote
+                );
+
+                keygroup->setProperty(
+                    "tune",
+                    kg.tune
+                );
+
+                keygroup->setProperty(
+                    "filterFreq",
+                    kg.filter.freq
+                );
+
+                keygroup->setProperty(
+                    "filterKeyFollow",
+                    kg.filter.keyFollow
+                );
+
+                keygroup->setProperty(
+                    "filterResonance",
+                    kg.filter.resonance
+                );
+
+                keygroup->setProperty(
+                    "lfo1Pitch",
+                    kg.lfo1Pitch
+                );
+
+                keygroup->setProperty(
+                    "modVPitch",
+                    kg.modVPitch
+                );
+
+                keygroup->setProperty(
+                    "modFilter1",
+                    kg.modFilter1
+                );
+
+                keygroup->setProperty(
+                    "modFilter2",
+                    kg.modFilter2
+                );
+
+                keygroup->setProperty(
+                    "modFilter3",
+                    kg.modFilter3
+                );
+
+                juce::DynamicObject::Ptr env1 =
+                    new juce::DynamicObject();
+
+                env1->setProperty(
+                    "attack",
+                    kg.env1.attack
+                );
+
+                env1->setProperty(
+                    "decay",
+                    kg.env1.decay
+                );
+
+                env1->setProperty(
+                    "sustain",
+                    kg.env1.sustain
+                );
+
+                env1->setProperty(
+                    "release",
+                    kg.env1.release
+                );
+
+                keygroup->setProperty(
+                    "env1",
+                    juce::var(env1.get())
+                );
+
+
+                juce::DynamicObject::Ptr env2 =
+                    new juce::DynamicObject();
+
+                env2->setProperty(
+                    "r1",
+                    kg.env2.r1
+                );
+
+                env2->setProperty(
+                    "l1",
+                    kg.env2.l1
+                );
+
+                env2->setProperty(
+                    "r2",
+                    kg.env2.r2
+                );
+
+                env2->setProperty(
+                    "l2",
+                    kg.env2.l2
+                );
+
+                env2->setProperty(
+                    "r3",
+                    kg.env2.r3
+                );
+
+                env2->setProperty(
+                    "l3",
+                    kg.env2.l3
+                );
+
+                env2->setProperty(
+                    "r4",
+                    kg.env2.r4
+                );
+
+                env2->setProperty(
+                    "l4",
+                    kg.env2.l4
+                );
+
+                env2->setProperty(
+                    "velAttack",
+                    kg.env2.velAttack
+                );
+
+                env2->setProperty(
+                    "velRelease",
+                    kg.env2.velRelease
+                );
+
+                env2->setProperty(
+                    "noteOffRelease",
+                    kg.env2.noteOffRelease
+                );
+
+                env2->setProperty(
+                    "keyTracking",
+                    kg.env2.keyTracking
+                );
+
+                keygroup->setProperty(
+                    "env2",
+                    juce::var(env2.get())
+                );
+
+                juce::DynamicObject::Ptr playback =
+                    new juce::DynamicObject();
+
+                playback->setProperty(
+                    "kbeat",
+                    kg.playback.kbeat
+                );
+
+                playback->setProperty(
+                    "ahold",
+                    static_cast<int>(kg.playback.ahold)
+                );
+
+                playback->setProperty(
+                    "constantPitch",
+                    static_cast<int>(kg.playback.constantPitch)
+                );
+
+                playback->setProperty(
+                    "keygroupXfade",
+                    kg.playback.keygroupXfade
+                );
+
+                keygroup->setProperty(
+                    "playback",
+                    juce::var(playback.get())
+                );
+
+
+                juce::DynamicObject::Ptr velocity =
+                    new juce::DynamicObject();
+
+                velocity->setProperty(
+                    "vAtt2",
+                    static_cast<int>(kg.velocity.vAtt2)
+                );
+
+                velocity->setProperty(
+                    "vRel2",
+                    static_cast<int>(kg.velocity.vRel2)
+                );
+
+                velocity->setProperty(
+                    "oRel2",
+                    static_cast<int>(kg.velocity.oRel2)
+                );
+
+                velocity->setProperty(
+                    "kDar2",
+                    static_cast<int>(kg.velocity.kDar2)
+                );
+
+                velocity->setProperty(
+                    "vEnv2",
+                    static_cast<int>(kg.velocity.vEnv2)
+                );
+
+                velocity->setProperty(
+                    "ePtch",
+                    static_cast<int>(kg.velocity.ePtch)
+                );
+
+                velocity->setProperty(
+                    "vxFade",
+                    static_cast<int>(kg.velocity.vxFade)
+                );
+
+                velocity->setProperty(
+                    "vZones",
+                    static_cast<int>(kg.velocity.vZones)
+                );
+
+                velocity->setProperty(
+                    "lkxf",
+                    static_cast<int>(kg.velocity.lkxf)
+                );
+
+                velocity->setProperty(
+                    "rkxf",
+                    static_cast<int>(kg.velocity.rkxf)
+                );
+
+                keygroup->setProperty(
+                    "velocity",
+                    juce::var(velocity.get())
+                );
+
+
+                juce::Array<juce::var> zones;
+
+                for (const auto& zone : kg.zones)
+                {
+                    juce::DynamicObject::Ptr zoneObject =
+                        new juce::DynamicObject();
+
+                    zoneObject->setProperty(
+                        "sampleName",
+                        zone.sampleName
+                    );
+
+                    zoneObject->setProperty(
+                        "sampleId",
+                        zone.sampleId
+                    );
+
+                    zoneObject->setProperty(
+                        "lowVel",
+                        static_cast<int>(zone.lowVel)
+                    );
+
+                    zoneObject->setProperty(
+                        "highVel",
+                        static_cast<int>(zone.highVel)
+                    );
+
+                    zoneObject->setProperty(
+                        "semitone",
+                        zone.semitone
+                    );
+
+                    zoneObject->setProperty(
+                        "fineTuneRaw",
+                        zone.fineTuneRaw
+                    );
+
+                    zoneObject->setProperty(
+                        "loudness",
+                        static_cast<int>(zone.loudness)
+                    );
+
+                    zoneObject->setProperty(
+                        "filterFreq",
+                        static_cast<int>(zone.filterFreq)
+                    );
+
+                    zoneObject->setProperty(
+                        "pan",
+                        static_cast<int>(zone.pan)
+                    );
+
+                    zoneObject->setProperty(
+                        "playMode",
+                        static_cast<int>(zone.playMode)
+                    );
+
+                    zoneObject->setProperty(
+                        "lowVelXFade",
+                        static_cast<int>(zone.lowVelXFade)
+                    );
+
+                    zoneObject->setProperty(
+                        "highVelXFade",
+                        static_cast<int>(zone.highVelXFade)
+                    );
+
+                    zoneObject->setProperty(
+                        "constantPitch",
+                        zone.constantPitch
+                    );
+
+                    zones.add(
+                        juce::var(zoneObject.get())
+                    );
+                }
+
+                keygroup->setProperty(
+                    "zones",
+                    zones
+                );
+
+                keygroups.add(
+                    juce::var(keygroup.get())
+                );
+            }
+
+            root->setProperty(
+                "keygroups",
+                keygroups
+            );
+
+            juce::Array<juce::var> sampleHeadersArray;
+
+            for (const auto& [sampleId, header] : sampleHeaders)
+            {
+                juce::DynamicObject::Ptr sampleHeaderObject =
+                    new juce::DynamicObject();
+
+                sampleHeaderObject->setProperty(
+                    "sampleId",
+                    sampleId
+                );
+
+                sampleHeaderObject->setProperty(
+                    "id",
+                    header.id
+                );
+
+                sampleHeaderObject->setProperty(
+                    "bandwidth",
+                    header.bandwidth
+                );
+
+                sampleHeaderObject->setProperty(
+                    "originalPitch",
+                    header.originalPitch
+                );
+
+                sampleHeaderObject->setProperty(
+                    "name",
+                    header.name
+                );
+
+                sampleHeaderObject->setProperty(
+                    "sampleRateValid",
+                    header.sampleRateValid
+                );
+
+                sampleHeaderObject->setProperty(
+                    "numLoops",
+                    header.numLoops
+                );
+
+                sampleHeaderObject->setProperty(
+                    "activeLoop",
+                    header.activeLoop
+                );
+
+                sampleHeaderObject->setProperty(
+                    "highestLoop",
+                    header.highestLoop
+                );
+
+                sampleHeaderObject->setProperty(
+                    "playType",
+                    header.playType
+                );
+
+                sampleHeaderObject->setProperty(
+                    "tune",
+                    header.tune
+                );
+
+                sampleHeaderObject->setProperty(
+                    "location",
+                    static_cast<juce::int64>(header.location)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "length",
+                    static_cast<juce::int64>(header.length)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "start",
+                    static_cast<juce::int64>(header.start)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "end",
+                    static_cast<juce::int64>(header.end)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "spare",
+                    static_cast<int>(header.spare)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "waveComment",
+                    static_cast<int>(header.waveComment)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "stereoPartner",
+                    static_cast<int>(header.stereoPartner)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "sampleRate",
+                    static_cast<int>(header.sampleRate)
+                );
+
+                sampleHeaderObject->setProperty(
+                    "holdLoopTune",
+                    static_cast<int>(header.holdLoopTune)
+                );
+
+                juce::Array<juce::var> loops;
+
+                for (const auto& loop : header.loops)
+                {
+                    juce::DynamicObject::Ptr loopObject =
+                        new juce::DynamicObject();
+
+                    loopObject->setProperty(
+                        "position",
+                        static_cast<juce::int64>(loop.position)
+                    );
+
+                    loopObject->setProperty(
+                        "length",
+                        loop.length
+                    );
+
+                    loopObject->setProperty(
+                        "dwell",
+                        static_cast<int>(loop.dwell)
+                    );
+
+                    loopObject->setProperty(
+                        "relativeFactors",
+                        static_cast<juce::int64>(loop.relativeFactors)
+                    );
+
+                    loops.add(
+                        juce::var(loopObject.get())
+                    );
+                }
+
+                sampleHeaderObject->setProperty(
+                    "loops",
+                    loops
+                );
+
+                sampleHeadersArray.add(
+                    juce::var(sampleHeaderObject.get())
+                );
+            }
+
+            root->setProperty(
+                "sampleHeaders",
+                sampleHeadersArray
+            );
+
+            const juce::String json =
+                juce::JSON::toString(
+                    juce::var(root.get()),
+                    true
+                );
+
+            file.replaceWithText(json);
+
+            DBG(
+                "PROJECT SAVED = "
+                + file.getFullPathName()
+            );
+        }
+    );
+}
+
+void MainComponent::loadProject()
+{
+    auto chooser = std::make_shared<juce::FileChooser>(
+        "Load S3000XL Project",
+        juce::File{},
+        "*.json"
+    );
+
+    chooser->launchAsync(
+        juce::FileBrowserComponent::openMode
+        | juce::FileBrowserComponent::canSelectFiles,
+        [this, chooser](const juce::FileChooser& fc)
+        {
+            const auto file = fc.getResult();
+
+            if (file == juce::File{})
+                return;
+
+            const juce::String jsonText =
+                file.loadFileAsString();
+
+            const juce::var json =
+                juce::JSON::parse(jsonText);
+
+            if (json.isVoid())
+            {
+                DBG("PROJECT LOAD FAILED: INVALID JSON");
+                return;
+            }
+
+            auto* root =
+                json.getDynamicObject();
+
+            if (root == nullptr)
+            {
+                DBG("PROJECT LOAD FAILED: ROOT IS NOT OBJECT");
+                return;
+            }
+
+            DBG(
+                "PROJECT LOADED = "
+                + file.getFullPathName()
+            );
+
+            DBG(
+                "FORMAT = "
+                + root->getProperty("format").toString()
+            );
+
+            DBG(
+                "VERSION = "
+                + root->getProperty("version").toString()
+            );
+
+            auto programVar =
+                root->getProperty("program");
+
+            auto* programObject =
+                programVar.getDynamicObject();
+
+            if (programObject == nullptr)
+            {
+                DBG("PROJECT LOAD FAILED: PROGRAM IS NOT OBJECT");
+                return;
+            }
+
+            loadedProgram.programNumber =
+                static_cast<int>(
+                    programObject->getProperty("programNumber")
+                    );
+
+            loadedProgram.name =
+                programObject->getProperty("name")
+                .toString()
+                .toStdString();
+
+            loadedProgram.midiChannel =
+                static_cast<int>(
+                    programObject->getProperty("midiChannel")
+                    );
+
+            loadedProgram.polyphony =
+                static_cast<int>(
+                    programObject->getProperty("polyphony")
+                    );
+
+            loadedProgram.priority =
+                static_cast<int>(
+                    programObject->getProperty("priority")
+                    );
+
+            loadedProgram.playLow =
+                static_cast<int>(
+                    programObject->getProperty("playLow")
+                    );
+
+            loadedProgram.playHigh =
+                static_cast<int>(
+                    programObject->getProperty("playHigh")
+                    );
+
+            loadedProgram.pan =
+                static_cast<int>(
+                    programObject->getProperty("pan")
+                    );
+
+            loadedProgram.loudness =
+                static_cast<int>(
+                    programObject->getProperty("loudness")
+                    );
+
+            loadedProgram.output =
+                static_cast<int>(
+                    programObject->getProperty("output")
+                    );
+
+            loadedProgram.stereoLevel =
+                static_cast<int>(
+                    programObject->getProperty("stereoLevel")
+                    );
+
+            loadedProgram.lfo1Rate =
+                static_cast<int>(
+                    programObject->getProperty("lfo1Rate")
+                    );
+
+            loadedProgram.lfo1Depth =
+                static_cast<int>(
+                    programObject->getProperty("lfo1Depth")
+                    );
+
+            loadedProgram.lfo1Delay =
+                static_cast<int>(
+                    programObject->getProperty("lfo1Delay")
+                    );
+
+            loadedProgram.lfo2Rate =
+                static_cast<int>(
+                    programObject->getProperty("lfo2Rate")
+                    );
+
+            loadedProgram.lfo2Depth =
+                static_cast<int>(
+                    programObject->getProperty("lfo2Depth")
+                    );
+
+            loadedProgram.lfo2Delay =
+                static_cast<int>(
+                    programObject->getProperty("lfo2Delay")
+                    );
+
+            loadedProgram.modWheelDepth =
+                static_cast<int>(
+                    programObject->getProperty("modWheelDepth")
+                    );
+
+            loadedProgram.pressureDepth =
+                static_cast<int>(
+                    programObject->getProperty("pressureDepth")
+                    );
+
+            loadedProgram.velocityDepth =
+                static_cast<int>(
+                    programObject->getProperty("velocityDepth")
+                    );
+
+            loadedProgram.velocityLoudness =
+                static_cast<int>(
+                    programObject->getProperty("velocityLoudness")
+                    );
+
+            loadedProgram.bendUp =
+                static_cast<int>(
+                    programObject->getProperty("bendUp")
+                    );
+
+            loadedProgram.pressurePitch =
+                static_cast<int>(
+                    programObject->getProperty("pressurePitch")
+                    );
+
+            loadedProgram.keygroupCrossfade =
+                static_cast<bool>(
+                    programObject->getProperty("keygroupCrossfade")
+                    );
+
+            loadedProgram.tune =
+                static_cast<double>(
+                    programObject->getProperty("tune")
+                    );
+
+            loadedProgram.individualOutputLevel =
+                static_cast<int>(
+                    programObject->getProperty("individualOutputLevel")
+                    );
+
+            loadedProgram.legato =
+                static_cast<bool>(
+                    programObject->getProperty("legato")
+                    );
+
+            loadedProgram.bendDown =
+                static_cast<int>(
+                    programObject->getProperty("bendDown")
+                    );
+
+            loadedProgram.bendMode =
+                static_cast<int>(
+                    programObject->getProperty("bendMode")
+                    );
+
+            loadedProgram.transpose =
+                static_cast<int>(
+                    programObject->getProperty("transpose")
+                    );
+
+            loadedProgram.lfo1Desync =
+                static_cast<bool>(
+                    programObject->getProperty("lfo1Desync")
+                    );
+
+            loadedProgram.voiceAssign =
+                static_cast<int>(
+                    programObject->getProperty("voiceAssign")
+                    );
+
+            loadedProgram.softLoudness =
+                static_cast<int>(
+                    programObject->getProperty("softLoudness")
+                    );
+
+            loadedProgram.softAttack =
+                static_cast<int>(
+                    programObject->getProperty("softAttack")
+                    );
+
+            loadedProgram.softFilter =
+                static_cast<int>(
+                    programObject->getProperty("softFilter")
+                    );
+
+            // =========================
+// Portamento
+// =========================
+
+            loadedProgram.portamentoTime =
+                static_cast<int>(
+                    programObject->getProperty("portamentoTime")
+                    );
+
+            loadedProgram.portamentoType =
+                static_cast<int>(
+                    programObject->getProperty("portamentoType")
+                    );
+
+            loadedProgram.portamentoEnabled =
+                static_cast<bool>(
+                    programObject->getProperty("portamentoEnabled")
+                    );
+
+            loadedProgram.modSPan1 =
+                static_cast<int>(
+                    programObject->getProperty("modSPan1")
+                    );
+
+            loadedProgram.modSPan2 =
+                static_cast<int>(
+                    programObject->getProperty("modSPan2")
+                    );
+
+            loadedProgram.modSPan3 =
+                static_cast<int>(
+                    programObject->getProperty("modSPan3")
+                    );
+
+            loadedProgram.modSAmp1 =
+                static_cast<int>(
+                    programObject->getProperty("modSAmp1")
+                    );
+
+            loadedProgram.modSAmp2 =
+                static_cast<int>(
+                    programObject->getProperty("modSAmp2")
+                    );
+
+            loadedProgram.modSAmp3 =
+                static_cast<int>(
+                    programObject->getProperty("modSAmp3")
+                    );
+
+            loadedProgram.modSLfo1Rate =
+                static_cast<int>(
+                    programObject->getProperty("modSLfo1Rate")
+                    );
+
+            loadedProgram.modSLfo1Depth =
+                static_cast<int>(
+                    programObject->getProperty("modSLfo1Depth")
+                    );
+
+            loadedProgram.modSLfo1Delay =
+                static_cast<int>(
+                    programObject->getProperty("modSLfo1Delay")
+                    );
+
+            loadedProgram.modSFilter1 =
+                static_cast<int>(
+                    programObject->getProperty("modSFilter1")
+                    );
+
+            loadedProgram.modSFilter2 =
+                static_cast<int>(
+                    programObject->getProperty("modSFilter2")
+                    );
+
+            loadedProgram.modSFilter3 =
+                static_cast<int>(
+                    programObject->getProperty("modSFilter3")
+                    );
+
+            loadedProgram.modSPitch =
+                static_cast<int>(
+                    programObject->getProperty("modSPitch")
+                    );
+
+            loadedProgram.modVPitch =
+                static_cast<int>(
+                    programObject->getProperty("modVPitch")
+                    );
+
+            loadedProgram.modVPan1 =
+                static_cast<int>(
+                    programObject->getProperty("modVPan1")
+                    );
+
+            loadedProgram.modVPan2 =
+                static_cast<int>(
+                    programObject->getProperty("modVPan2")
+                    );
+
+            loadedProgram.modVPan3 =
+                static_cast<int>(
+                    programObject->getProperty("modVPan3")
+                    );
+
+            loadedProgram.modVAmp1 =
+                static_cast<int>(
+                    programObject->getProperty("modVAmp1")
+                    );
+
+            loadedProgram.modVAmp2 =
+                static_cast<int>(
+                    programObject->getProperty("modVAmp2")
+                    );
+
+            loadedProgram.modVLfo1Rate =
+                static_cast<int>(
+                    programObject->getProperty("modVLfo1Rate")
+                    );
+
+            loadedProgram.modVLfo1Depth =
+                static_cast<int>(
+                    programObject->getProperty("modVLfo1Depth")
+                    );
+
+            loadedProgram.modVLfo1Delay =
+                static_cast<int>(
+                    programObject->getProperty("modVLfo1Delay")
+                    );
+
+            loadedProgram.lfo1Wave =
+                static_cast<int>(
+                    programObject->getProperty("lfo1Wave")
+                    );
+
+            loadedProgram.lfo2Wave =
+                static_cast<int>(
+                    programObject->getProperty("lfo2Wave")
+                    );
+
+            auto temperamentVar =
+                programObject->getProperty("temperament");
+
+            if (auto* temperamentArray = temperamentVar.getArray())
+            {
+                const int count =
+                    juce::jmin(
+                        12,
+                        temperamentArray->size()
+                    );
+
+                for (int i = 0; i < count; ++i)
+                {
+                    loadedProgram.temperament[i] =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                (*temperamentArray)[i]
+                                )
+                            );
+                }
+            }
+
+
+            DBG(
+                "PROGRAM RESTORED NAME = "
+                + juce::String(loadedProgram.name)
+            );
+
+            DBG(
+                "PROGRAM RESTORED PAN = "
+                + juce::String(loadedProgram.pan)
+            );
+
+            DBG(
+                "RESTORED LFO1 RATE = "
+                + juce::String(loadedProgram.lfo1Rate)
+            );
+
+            DBG(
+                "RESTORED LFO2 DEPTH = "
+                + juce::String(loadedProgram.lfo2Depth)
+            );
+
+            DBG(
+                "RESTORED MOD WHEEL DEPTH = "
+                + juce::String(loadedProgram.modWheelDepth)
+            );
+
+            DBG("BEFORE SETPROGRAM FROM PROJECT");
+
+            auto keygroupsVar =
+                root->getProperty("keygroups");
+
+            auto* keygroupsArray =
+                keygroupsVar.getArray();
+
+            if (keygroupsArray == nullptr)
+            {
+                DBG("PROJECT LOAD FAILED: KEYGROUPS IS NOT ARRAY");
+                return;
+            }
+
+            loadedProgram.keygroups.clear();
+
+            for (const auto& keygroupVar : *keygroupsArray)
+            {
+                auto* keygroupObject =
+                    keygroupVar.getDynamicObject();
+
+                if (keygroupObject == nullptr)
+                    continue;
+
+                Keygroup kg;
+
+                kg.id =
+                    static_cast<uint8_t>(
+                        static_cast<int>(
+                            keygroupObject->getProperty("id")
+                            )
+                        );
+
+                kg.nextAddress =
+                    static_cast<uint16_t>(
+                        static_cast<int>(
+                            keygroupObject->getProperty("nextAddress")
+                            )
+                        );
+
+                kg.filter.velocityToFreq =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterVelocityToFreq")
+                        );
+
+                kg.filter.pressureToFreq =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterPressureToFreq")
+                        );
+
+                kg.filter.envelopeToFreq =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterEnvelopeToFreq")
+                        );
+
+
+                kg.lowNote =
+                    static_cast<int>(
+                        keygroupObject->getProperty("lowNote")
+                        );
+
+                kg.highNote =
+                    static_cast<int>(
+                        keygroupObject->getProperty("highNote")
+                        );
+
+                kg.tune =
+                    static_cast<int>(
+                        keygroupObject->getProperty("tune")
+                        );
+
+                kg.filter.freq =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterFreq")
+                        );
+
+                kg.filter.keyFollow =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterKeyFollow")
+                        );
+
+                kg.filter.resonance =
+                    static_cast<int>(
+                        keygroupObject->getProperty("filterResonance")
+                        );
+
+                kg.lfo1Pitch =
+                    static_cast<int>(
+                        keygroupObject->getProperty("lfo1Pitch")
+                        );
+
+                kg.modVPitch =
+                    static_cast<int>(
+                        keygroupObject->getProperty("modVPitch")
+                        );
+
+                kg.modFilter1 =
+                    static_cast<int>(
+                        keygroupObject->getProperty("modFilter1")
+                        );
+
+                kg.modFilter2 =
+                    static_cast<int>(
+                        keygroupObject->getProperty("modFilter2")
+                        );
+
+                auto env1Var =
+                    keygroupObject->getProperty("env1");
+
+                if (auto* env1Object = env1Var.getDynamicObject())
+                {
+                    kg.env1.attack =
+                        static_cast<int>(
+                            env1Object->getProperty("attack")
+                            );
+
+                    kg.env1.decay =
+                        static_cast<int>(
+                            env1Object->getProperty("decay")
+                            );
+
+                    kg.env1.sustain =
+                        static_cast<int>(
+                            env1Object->getProperty("sustain")
+                            );
+
+                    kg.env1.release =
+                        static_cast<int>(
+                            env1Object->getProperty("release")
+                            );
+                }
+
+
+                auto env2Var =
+                    keygroupObject->getProperty("env2");
+
+                if (auto* env2Object = env2Var.getDynamicObject())
+                {
+                    kg.env2.r1 =
+                        static_cast<int>(
+                            env2Object->getProperty("r1")
+                            );
+
+                    kg.env2.l1 =
+                        static_cast<int>(
+                            env2Object->getProperty("l1")
+                            );
+
+                    kg.env2.r2 =
+                        static_cast<int>(
+                            env2Object->getProperty("r2")
+                            );
+
+                    kg.env2.l2 =
+                        static_cast<int>(
+                            env2Object->getProperty("l2")
+                            );
+
+                    kg.env2.r3 =
+                        static_cast<int>(
+                            env2Object->getProperty("r3")
+                            );
+
+                    kg.env2.l3 =
+                        static_cast<int>(
+                            env2Object->getProperty("l3")
+                            );
+
+                    kg.env2.r4 =
+                        static_cast<int>(
+                            env2Object->getProperty("r4")
+                            );
+
+                    kg.env2.l4 =
+                        static_cast<int>(
+                            env2Object->getProperty("l4")
+                            );
+
+                    kg.env2.velAttack =
+                        static_cast<int>(
+                            env2Object->getProperty("velAttack")
+                            );
+
+                    kg.env2.velRelease =
+                        static_cast<int>(
+                            env2Object->getProperty("velRelease")
+                            );
+
+                    kg.env2.noteOffRelease =
+                        static_cast<int>(
+                            env2Object->getProperty("noteOffRelease")
+                            );
+
+                    kg.env2.keyTracking =
+                        static_cast<int>(
+                            env2Object->getProperty("keyTracking")
+                            );
+                }
+
+                kg.modFilter3 =
+                    static_cast<int>(
+                        keygroupObject->getProperty("modFilter3")
+                        );
+
+
+                auto playbackVar =
+                    keygroupObject->getProperty("playback");
+
+                if (auto* playbackObject = playbackVar.getDynamicObject())
+                {
+                    kg.playback.kbeat =
+                        static_cast<int>(
+                            playbackObject->getProperty("kbeat")
+                            );
+
+                    kg.playback.ahold =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                playbackObject->getProperty("ahold")
+                                )
+                            );
+
+                    kg.playback.constantPitch =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                playbackObject->getProperty("constantPitch")
+                                )
+                            );
+
+                    kg.playback.keygroupXfade =
+                        static_cast<int>(
+                            playbackObject->getProperty("keygroupXfade")
+                            );
+                }
+
+
+                auto velocityVar =
+                    keygroupObject->getProperty("velocity");
+
+                if (auto* velocityObject = velocityVar.getDynamicObject())
+                {
+                    kg.velocity.vAtt2 =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("vAtt2")
+                                )
+                            );
+
+                    kg.velocity.vRel2 =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("vRel2")
+                                )
+                            );
+
+                    kg.velocity.oRel2 =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("oRel2")
+                                )
+                            );
+
+                    kg.velocity.kDar2 =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("kDar2")
+                                )
+                            );
+
+                    kg.velocity.vEnv2 =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("vEnv2")
+                                )
+                            );
+
+                    kg.velocity.ePtch =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("ePtch")
+                                )
+                            );
+
+                    kg.velocity.vxFade =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("vxFade")
+                                )
+                            );
+
+                    kg.velocity.vZones =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("vZones")
+                                )
+                            );
+
+                    kg.velocity.lkxf =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("lkxf")
+                                )
+                            );
+
+                    kg.velocity.rkxf =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                velocityObject->getProperty("rkxf")
+                                )
+                            );
+                }
+
+                auto zonesVar =
+                    keygroupObject->getProperty("zones");
+
+                auto* zonesArray =
+                    zonesVar.getArray();
+
+                if (zonesArray != nullptr)
+                {
+                    const int zoneCount =
+                        juce::jmin(
+                            4,
+                            zonesArray->size()
+                        );
+
+                    for (int i = 0; i < zoneCount; ++i)
+                    {
+                        auto* zoneObject =
+                            (*zonesArray)[i].getDynamicObject();
+
+                        if (zoneObject == nullptr)
+                            continue;
+
+                        auto& zone = kg.zones[i];
+
+                        zone.sampleName =
+                            zoneObject->getProperty("sampleName")
+                            .toString();
+
+                        zone.sampleId =
+                            static_cast<int>(
+                                zoneObject->getProperty("sampleId")
+                                );
+
+                        zone.lowVel =
+                            static_cast<uint8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("lowVel")
+                                    )
+                                );
+
+                        zone.highVel =
+                            static_cast<uint8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("highVel")
+                                    )
+                                );
+
+                        zone.semitone =
+                            static_cast<int>(
+                                zoneObject->getProperty("semitone")
+                                );
+
+                        zone.fineTuneRaw =
+                            static_cast<int>(
+                                zoneObject->getProperty("fineTuneRaw")
+                                );
+
+                        zone.loudness =
+                            static_cast<int8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("loudness")
+                                    )
+                                );
+
+                        zone.filterFreq =
+                            static_cast<int8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("filterFreq")
+                                    )
+                                );
+
+                        zone.pan =
+                            static_cast<int8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("pan")
+                                    )
+                                );
+
+                        zone.playMode =
+                            static_cast<PlayMode>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("playMode")
+                                    )
+                                );
+
+                        zone.lowVelXFade =
+                            static_cast<uint8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("lowVelXFade")
+                                    )
+                                );
+
+                        zone.highVelXFade =
+                            static_cast<uint8_t>(
+                                static_cast<int>(
+                                    zoneObject->getProperty("highVelXFade")
+                                    )
+                                );
+
+                        zone.constantPitch =
+                            static_cast<bool>(
+                                zoneObject->getProperty("constantPitch")
+                                );
+                    }
+                }
+
+                loadedProgram.keygroups.push_back(
+                    std::move(kg)
+                );
+            }
+
+            loadedProgram.groups =
+                static_cast<int>(
+                    loadedProgram.keygroups.size()
+                    );
+
+            DBG(
+                "KEYGROUPS RESTORED = "
+                + juce::String(loadedProgram.keygroups.size())
+            );
+
+            if (!loadedProgram.keygroups.empty())
+            {
+                DBG(
+                    "KG1 RANGE = "
+                    + juce::String(loadedProgram.keygroups[0].lowNote)
+                    + " - "
+                    + juce::String(loadedProgram.keygroups[0].highNote)
+                );
+
+                DBG(
+                    "KG1 ZONE1 SAMPLE = "
+                    + loadedProgram.keygroups[0].zones[0].sampleName
+                );
+
+                const auto& kg =
+                    loadedProgram.keygroups[0];
+
+
+                DBG(
+                    "KG1 PLAYBACK KBEAT = "
+                    + juce::String(kg.playback.kbeat)
+                );
+
+                DBG(
+                    "KG1 VELOCITY VATT2 = "
+                    + juce::String(static_cast<int>(kg.velocity.vAtt2))
+                );
+
+                DBG(
+                    "KG1 VELOCITY EPTCH = "
+                    + juce::String(static_cast<int>(kg.velocity.ePtch))
+                );
+
+                DBG(
+                    "KG1 ENV1 ATTACK = "
+                    + juce::String(kg.env1.attack)
+                );
+
+                DBG(
+                    "KG1 ENV2 L1 = "
+                    + juce::String(kg.env2.l1)
+                );
+
+                DBG(
+                    "KG1 ENV2 R4 = "
+                    + juce::String(kg.env2.r4)
+                );
+            }
+
+            auto sampleHeadersVar =
+                root->getProperty("sampleHeaders");
+
+            if (auto* sampleHeadersArray = sampleHeadersVar.getArray())
+            {
+                sampleHeaders.clear();
+
+                for (const auto& sampleHeaderVar : *sampleHeadersArray)
+                {
+                    auto* sampleHeaderObject =
+                        sampleHeaderVar.getDynamicObject();
+
+                    if (sampleHeaderObject == nullptr)
+                        continue;
+
+                    const int sampleId =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("sampleId")
+                            );
+
+                    SampleHeader header;
+
+                    header.id =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("id")
+                            );
+
+                    header.bandwidth =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("bandwidth")
+                            );
+
+                    header.originalPitch =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("originalPitch")
+                            );
+
+                    header.name =
+                        sampleHeaderObject->getProperty("name").toString();
+
+                    header.sampleRateValid =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("sampleRateValid")
+                            );
+
+                    header.numLoops =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("numLoops")
+                            );
+
+                    header.activeLoop =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("activeLoop")
+                            );
+
+                    header.highestLoop =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("highestLoop")
+                            );
+
+                    header.playType =
+                        static_cast<int>(
+                            sampleHeaderObject->getProperty("playType")
+                            );
+
+                    header.tune =
+                        static_cast<double>(
+                            sampleHeaderObject->getProperty("tune")
+                            );
+
+                    header.location =
+                        static_cast<uint32_t>(
+                            static_cast<juce::int64>(
+                                sampleHeaderObject->getProperty("location")
+                                )
+                            );
+
+                    header.length =
+                        static_cast<uint64_t>(
+                            static_cast<juce::int64>(
+                                sampleHeaderObject->getProperty("length")
+                                )
+                            );
+
+                    header.start =
+                        static_cast<uint32_t>(
+                            static_cast<juce::int64>(
+                                sampleHeaderObject->getProperty("start")
+                                )
+                            );
+
+                    header.end =
+                        static_cast<uint32_t>(
+                            static_cast<juce::int64>(
+                                sampleHeaderObject->getProperty("end")
+                                )
+                            );
+
+                    header.spare =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                sampleHeaderObject->getProperty("spare")
+                                )
+                            );
+
+                    header.waveComment =
+                        static_cast<uint8_t>(
+                            static_cast<int>(
+                                sampleHeaderObject->getProperty("waveComment")
+                                )
+                            );
+
+                    header.stereoPartner =
+                        static_cast<uint16_t>(
+                            static_cast<int>(
+                                sampleHeaderObject->getProperty("stereoPartner")
+                                )
+                            );
+
+                    header.sampleRate =
+                        static_cast<uint16_t>(
+                            static_cast<int>(
+                                sampleHeaderObject->getProperty("sampleRate")
+                                )
+                            );
+
+                    header.holdLoopTune =
+                        static_cast<int8_t>(
+                            static_cast<int>(
+                                sampleHeaderObject->getProperty("holdLoopTune")
+                                )
+                            );
+
+                    auto loopsVar =
+                        sampleHeaderObject->getProperty("loops");
+
+                    if (auto* loopsArray = loopsVar.getArray())
+                    {
+                        const int loopCount =
+                            juce::jmin(
+                                4,
+                                loopsArray->size()
+                            );
+
+                        for (int i = 0; i < loopCount; ++i)
+                        {
+                            auto* loopObject =
+                                (*loopsArray)[i].getDynamicObject();
+
+                            if (loopObject == nullptr)
+                                continue;
+
+                            auto& loop = header.loops[i];
+
+                            loop.position =
+                                static_cast<uint32_t>(
+                                    static_cast<juce::int64>(
+                                        loopObject->getProperty("position")
+                                        )
+                                    );
+
+                            loop.length =
+                                static_cast<double>(
+                                    loopObject->getProperty("length")
+                                    );
+
+                            loop.dwell =
+                                static_cast<uint16_t>(
+                                    static_cast<int>(
+                                        loopObject->getProperty("dwell")
+                                        )
+                                    );
+
+                            loop.relativeFactors =
+                                static_cast<uint32_t>(
+                                    static_cast<juce::int64>(
+                                        loopObject->getProperty("relativeFactors")
+                                        )
+                                    );
+                        }
+                    }
+
+                    sampleHeaders[sampleId] = std::move(header);
+                }
+            }
+
+            DBG(
+                "SAMPLE HEADERS RESTORED = "
+                + juce::String(sampleHeaders.size())
+            );
+
+            programEditor.setProgram(loadedProgram);
+
+            DBG("AFTER SETPROGRAM FROM PROJECT");
+
+            keygroupMap.setProgram(loadedProgram);
+
+            programTree.setProgram(
+                loadedProgram,
+                sampleHeaders
+            );
+
+            DBG("PROJECT TREE UPDATED");
+        }
+    );
+}
+
 
 
 // write-test

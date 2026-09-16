@@ -151,6 +151,9 @@ void ProgramTreeItem::paintItem(
     int height
 )
 {
+    g.setColour(
+        juce::Colours::white
+    );
     g.drawText(
         programData.name,
         5,

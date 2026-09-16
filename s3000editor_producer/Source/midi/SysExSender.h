@@ -86,6 +86,11 @@ public:
         uint16_t value
     );
 
+    void sendMidiMessage(
+        const juce::MidiMessage& message
+    );
+
+
 
     
     

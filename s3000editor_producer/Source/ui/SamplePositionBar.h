@@ -33,7 +33,13 @@ public:
 
     std::function<void()> onEditFinished;
 
+    void setLoopEditable(bool editable)
+    {
+        loopEditable = editable;
+    }
+
 private:
+    bool loopEditable = true;
     uint64_t sampleLength = 0;
 
     uint32_t startPosition = 0;

@@ -5,14 +5,7 @@ void KeygroupMap::setProgram(
 {
     currentProgram = program;
 
-    DBG("===== KEYGROUP MAP SET PROGRAM =====");
 
-    DBG(
-        "MAP WIDTH="
-        + juce::String(getWidth())
-        + " HEIGHT="
-        + juce::String(getHeight())
-    );
 
     for (int i = 0;
         i < (int)currentProgram.keygroups.size();
@@ -21,14 +14,6 @@ void KeygroupMap::setProgram(
         const auto& kg =
             currentProgram.keygroups[i];
 
-        DBG(
-            "MAP KG="
-            + juce::String(i)
-            + " LOW="
-            + juce::String(kg.lowNote)
-            + " HIGH="
-            + juce::String(kg.highNote)
-        );
     }
 
     if (!currentProgram.keygroups.empty() &&
@@ -106,12 +91,7 @@ void KeygroupMap::paint(
     //const float rowHeight = 32.0f;
     const float labelWidth = 55.0f;
 
-    //// ¶‘¤‚ðKG”Ô†—p‚ÉŠm•Û
-    //auto mapArea = area;
 
-    //mapArea.removeFromLeft(
-    //    labelWidth
-    //);
 
     for (int i = 0; i < count; ++i)
     {
@@ -143,31 +123,7 @@ void KeygroupMap::paint(
         const auto bar =
             getBarBounds(i);
 
-        /*const float normalizedLow =
-            juce::jlimit(
-                0.0f,
-                1.0f,
-                static_cast<float>(kg.lowNote)
-                / 127.0f
-            );
 
-        const float normalizedHigh =
-            juce::jlimit(
-                0.0f,
-                1.0f,
-                static_cast<float>(kg.highNote + 1)
-                / 128.0f
-            );
-
-        const float x1 =
-            mapArea.getX()
-            + normalizedLow
-            * mapArea.getWidth();
-
-        const float x2 =
-            mapArea.getX()
-            + normalizedHigh
-            * mapArea.getWidth();*/
 
 
 

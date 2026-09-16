@@ -1,3 +1,4 @@
+
 #include "SampleHeaderEditor.h"
 
 SampleHeaderEditor::SampleHeaderEditor()
@@ -5,7 +6,7 @@ SampleHeaderEditor::SampleHeaderEditor()
 
 {
     titleLabel.setText(
-        "Sample Header",
+        "Sample",
         juce::dontSendNotification
     );
 
@@ -25,175 +26,68 @@ SampleHeaderEditor::SampleHeaderEditor()
     addAndMakeVisible(titleLabel);
     addAndMakeVisible(samplePositionBar);
 
-    samplePositionBar.onRangeChanged =
-        [this](
-            uint32_t start,
-            uint32_t end)
-        {
-            if (!hasValidHeader)
-                return;
+    samplePositionBar.onRangeChanged = nullptr;
+    samplePositionBar.onLoopRangeChanged = nullptr;
+    samplePositionBar.onEditFinished = nullptr;
 
-            currentHeader.start = start;
-            currentHeader.end = end;
+    startEditor.setReadOnly(true);
+    startEditor.setCaretVisible(false);
 
-            auto& loop =
-                currentHeader.loops[selectedLoopIndex];
+    endEditor.setReadOnly(true);
+    endEditor.setCaretVisible(false);
 
-            // ==============================
-            // START側の制約
-            // ==============================
+    //samplePositionBar.onRangeChanged =
+    //    [this](
+    //        uint32_t start,
+    //        uint32_t end)
+    //    {
+    //        if (!hasValidHeader)
+    //            return;
 
-            if (loop.position < currentHeader.start)
-            {
-                const double oldLoopEnd =
-                    static_cast<double>(loop.position)
-                    + loop.length;
+    //        currentHeader.start = start;
+    //        currentHeader.end = end;
 
-                loop.position =
-                    currentHeader.start;
+    //        startEditor.setText(
+    //            juce::String(currentHeader.start),
+    //            false
+    //        );
 
-                if (oldLoopEnd > currentHeader.start)
-                {
-                    loop.length =
-                        oldLoopEnd
-                        - static_cast<double>(
-                            currentHeader.start
-                            );
-                }
-                else
-                {
-                    loop.length = 0.0;
-                }
-            }
+    //        endEditor.setText(
+    //            juce::String(currentHeader.end),
+    //            false
+    //        );
 
-            // ==============================
-            // END側の制約
-            // ==============================
+    //        const auto& loop =
+    //            currentHeader.loops[selectedLoopIndex];
 
-            const double loopEnd =
-                static_cast<double>(loop.position)
-                + loop.length;
-
-            if (loopEnd > currentHeader.end)
-            {
-                if (loop.position <= currentHeader.end)
-                {
-                    loop.length =
-                        static_cast<double>(
-                            currentHeader.end
-                            - loop.position
-                            );
-                }
-                else
-                {
-                    loop.position =
-                        currentHeader.end;
-
-                    loop.length = 0.0;
-                }
-            }
-
-            // ==============================
-            // 数値欄更新
-            // ==============================
-
-            startEditor.setText(
-                juce::String(currentHeader.start),
-                false
-            );
-
-            endEditor.setText(
-                juce::String(currentHeader.end),
-                false
-            );
-
-            loopPositionEditor.setText(
-                juce::String(
-                    (juce::int64)loop.position
-                ),
-                false
-            );
-
-            loopLengthEditor.setText(
-                juce::String(
-                    loop.length,
-                    3
-                ),
-                false
-            );
-
-            // ==============================
-            // バー更新
-            // ==============================
-
-            samplePositionBar.setPositions(
-                currentHeader.length,
-                currentHeader.start,
-                currentHeader.end,
-                loop.position,
-                static_cast<uint32_t>(
-                    loop.position
-                    + loop.length
-                    )
-            );
-        };
+    //        samplePositionBar.setPositions(
+    //            currentHeader.length,
+    //            currentHeader.start,
+    //            currentHeader.end,
+    //            loop.position,
+    //            static_cast<uint32_t>(
+    //                loop.position + loop.length
+    //                )
+    //        );
+    //    };
 
 
-    samplePositionBar.onLoopRangeChanged =
-        [this](
-            uint32_t loopStart,
-            uint32_t loopEnd)
-        {
-            if (!hasValidHeader)
-                return;
-
-            auto& loop =
-                currentHeader.loops[selectedLoopIndex];
-
-            loop.position = loopStart;
-
-            loop.length =
-                static_cast<double>(
-                    loopEnd - loopStart
-                    );
-
-            loopPositionEditor.setText(
-                juce::String(
-                    (juce::int64)loop.position
-                ),
-                false
-            );
-
-            loopLengthEditor.setText(
-                juce::String(
-                    loop.length,
-                    3
-                ),
-                false
-            );
-
-            //if (onSampleHeaderChanged)
-            //{
-            //    onSampleHeaderChanged(
-            //        currentHeader
-            //    );
-            //}
-        };
+    //samplePositionBar.onLoopRangeChanged = nullptr;
 
 
-    samplePositionBar.onEditFinished =
-        [this]()
-        {
-            if (!hasValidHeader)
-                return;
+    //samplePositionBar.onEditFinished =
+    //    [this]()
+    //    {
+    //        if (!hasValidHeader)
+    //            return;
 
-            if (onSampleHeaderChanged)
-            {
-                onSampleHeaderChanged(
-                    currentHeader
-                );
-            }
-        };
+    //        if (onSampleHeaderChanged)
+    //        {
+    //            onSampleHeaderChanged(
+    //                currentHeader
+    //            );
+    //        }
+    //    };
 
 
 
@@ -424,14 +318,16 @@ SampleHeaderEditor::SampleHeaderEditor()
     numLoopsCombo.addItem("3", 4);
     numLoopsCombo.addItem("4", 5);
 
-    numLoopsCombo.onChange = [this]()
-        {
-            currentHeader.numLoops =
-                numLoopsCombo.getSelectedId() - 1;
+    //numLoopsCombo.onChange = [this]()
+    //    {
+    //        currentHeader.numLoops =
+    //            numLoopsCombo.getSelectedId() - 1;
 
-            if (onSampleHeaderChanged)
-                onSampleHeaderChanged(currentHeader);
-        };
+    //        if (onSampleHeaderChanged)
+    //            onSampleHeaderChanged(currentHeader);
+    //    };
+
+    numLoopsCombo.setEnabled(false);
 
 
     playTypeCombo.addItem("Normal looping", 1);
@@ -439,15 +335,15 @@ SampleHeaderEditor::SampleHeaderEditor()
     playTypeCombo.addItem("No looping", 3);
     playTypeCombo.addItem("Play to sample end", 4);
 
-    playTypeCombo.onChange = [this]()
-        {
-            // ComboBox ID は1始まりなので -1
-            currentHeader.playType =
-                playTypeCombo.getSelectedId() - 1;
+    //playTypeCombo.onChange = [this]()
+    //    {
+    //        // ComboBox ID は1始まりなので -1
+    //        currentHeader.playType =
+    //            playTypeCombo.getSelectedId() - 1;
 
-            if (onSampleHeaderChanged)
-                onSampleHeaderChanged(currentHeader);
-        };
+    //        if (onSampleHeaderChanged)
+    //            onSampleHeaderChanged(currentHeader);
+    //    };
 
     tuneEditor.onFocusLost = [this]()
         {
@@ -492,7 +388,7 @@ SampleHeaderEditor::SampleHeaderEditor()
                 onSampleHeaderChanged(currentHeader);
         };
 
-    startEditor.onFocusLost = [this]()
+    /*startEditor.onFocusLost = [this]()
         {
             if (!hasValidHeader)
                 return;
@@ -528,10 +424,10 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
-        };
+        };*/
 
 
-    endEditor.onFocusLost = [this]()
+   /* endEditor.onFocusLost = [this]()
         {
             const auto newEnd =
                 static_cast<uint32_t>(
@@ -565,7 +461,7 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
-        };
+        };*/
 
     //loop1PositionEditor.onFocusLost = [this]()
     //    {
@@ -578,61 +474,67 @@ SampleHeaderEditor::SampleHeaderEditor()
     //            onSampleHeaderChanged(currentHeader);
     //    };
 
-    loopPositionEditor.onFocusLost = [this]()
-        {
-            const auto newPosition =
-                static_cast<uint32_t>(
-                    loopPositionEditor
-                    .getText()
-                    .getLargeIntValue()
-                    );
+    loopPositionEditor.setReadOnly(true);
+    loopPositionEditor.setCaretVisible(false);
 
-            const auto& loop =
-                currentHeader.loops[selectedLoopIndex];
+    //loopPositionEditor.onFocusLost = [this]()
+    //    {
+    //        const auto newPosition =
+    //            static_cast<uint32_t>(
+    //                loopPositionEditor
+    //                .getText()
+    //                .getLargeIntValue()
+    //                );
 
-            // Loop EndがSample Endを超えない
-            if (newPosition > currentHeader.end ||
-                static_cast<double>(newPosition) + loop.length >
-                static_cast<double>(currentHeader.end))
-            {
-                loopPositionEditor.setText(
-                    juce::String(
-                        (juce::int64)loop.position
-                    ),
-                    false
-                );
+    //        const auto& loop =
+    //            currentHeader.loops[selectedLoopIndex];
 
-                return;
-            }
+    //        // Loop EndがSample Endを超えない
+    //        if (newPosition > currentHeader.end ||
+    //            static_cast<double>(newPosition) + loop.length >
+    //            static_cast<double>(currentHeader.end))
+    //        {
+    //            loopPositionEditor.setText(
+    //                juce::String(
+    //                    (juce::int64)loop.position
+    //                ),
+    //                false
+    //            );
 
-            // Model更新
-            currentHeader.loops[selectedLoopIndex].position =
-                newPosition;
+    //            return;
+    //        }
 
-            const auto& updatedLoop =
-                currentHeader.loops[selectedLoopIndex];
+    //        // Model更新
+    //        currentHeader.loops[selectedLoopIndex].position =
+    //            newPosition;
 
-            const auto loopEnd =
-                static_cast<uint32_t>(
-                    updatedLoop.position
-                    + updatedLoop.length
-                    );
+    //        const auto& updatedLoop =
+    //            currentHeader.loops[selectedLoopIndex];
 
-            // オレンジのLoop範囲も更新
-            samplePositionBar.setPositions(
-                currentHeader.length,
-                currentHeader.start,
-                currentHeader.end,
-                updatedLoop.position,
-                loopEnd
-            );
+    //        const auto loopEnd =
+    //            static_cast<uint32_t>(
+    //                updatedLoop.position
+    //                + updatedLoop.length
+    //                );
 
-            // 実機へ反映
-            if (onSampleHeaderChanged)
-                onSampleHeaderChanged(currentHeader);
-        };
+    //        // オレンジのLoop範囲も更新
+    //        samplePositionBar.setPositions(
+    //            currentHeader.length,
+    //            currentHeader.start,
+    //            currentHeader.end,
+    //            updatedLoop.position,
+    //            loopEnd
+    //        );
 
-    loopLengthEditor.onFocusLost = [this]()
+    //        // 実機へ反映
+    //        if (onSampleHeaderChanged)
+    //            onSampleHeaderChanged(currentHeader);
+    //    };
+
+    loopLengthEditor.setReadOnly(true);
+    loopLengthEditor.setCaretVisible(false);
+
+    /*loopLengthEditor.onFocusLost = [this]()
         {
             const double newLength =
                 loopLengthEditor
@@ -672,43 +574,53 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             if (onSampleHeaderChanged)
                 onSampleHeaderChanged(currentHeader);
-        };
-
-    sampleRateEditor.onFocusLost = [this]()
-        {
-            const int value =
-                sampleRateEditor.getText().getIntValue();
-
-            // 16-bit fieldなので最低限この範囲
-            if (value < 0 || value > 65535)
-            {
-                sampleRateEditor.setText(
-                    juce::String(currentHeader.sampleRate),
-                    false
-                );
-                return;
-            }
-
-            if (value == currentHeader.sampleRate)
-                return;
-
-            currentHeader.sampleRate = value;
-
-            DBG(
-                "SAMPLE RATE CHANGED = "
-                + juce::String(value)
-            );
-
-            if (onSampleHeaderChanged)
-            {
-                onSampleHeaderChanged(
-                    currentHeader
-                );
-            }
-        };
+        };*/
 
 
-    loopDwellEditor.onFocusLost = [this]()
+    sampleRateEditor.setText(
+        juce::String(currentHeader.sampleRate) + " Hz",
+        false
+    );
+
+    //sampleRateEditor.onFocusLost = [this]()
+    //    {
+    //        const int value =
+    //            sampleRateEditor.getText().getIntValue();
+
+    //        // 16-bit fieldなので最低限この範囲
+    //        if (value < 0 || value > 65535)
+    //        {
+    //            sampleRateEditor.setText(
+    //                juce::String(currentHeader.sampleRate),
+    //                false
+    //            );
+    //            return;
+    //        }
+
+    //        if (value == currentHeader.sampleRate)
+    //            return;
+
+    //        currentHeader.sampleRate = value;
+
+    //        DBG(
+    //            "SAMPLE RATE CHANGED = "
+    //            + juce::String(value)
+    //        );
+
+    //        if (onSampleHeaderChanged)
+    //        {
+    //            onSampleHeaderChanged(
+    //                currentHeader
+    //            );
+    //        }
+    //    };
+
+
+
+    loopDwellEditor.setReadOnly(true);
+    loopDwellEditor.setCaretVisible(false);
+
+   /* loopDwellEditor.onFocusLost = [this]()
         {
             const int newDwell =
                 loopDwellEditor
@@ -739,7 +651,7 @@ SampleHeaderEditor::SampleHeaderEditor()
                 onSampleHeaderChanged(currentHeader);
 
             updateLoopDwellStatus();
-        };
+        };*/
 
     //lengthEditor.onFocusLost = [this]()
     //    {
@@ -1032,31 +944,33 @@ SampleHeaderEditor::SampleHeaderEditor()
     //playTypeCombo.addItem("No Loop", 3);
     //playTypeCombo.addItem("Play To End", 4);
 
-    playTypeCombo.onChange = [this]()
-        {
-            const int selectedId =
-                playTypeCombo.getSelectedId();
+    //playTypeCombo.onChange = [this]()
+    //    {
+    //        const int selectedId =
+    //            playTypeCombo.getSelectedId();
 
-            if (selectedId <= 0)
-                return;
+    //        if (selectedId <= 0)
+    //            return;
 
-            // ComboBox ID 1-4 → S3000XL raw 0-3
-            const int value = selectedId - 1;
+    //        // ComboBox ID 1-4 → S3000XL raw 0-3
+    //        const int value = selectedId - 1;
 
-            if (value == currentHeader.playType)
-                return;
+    //        if (value == currentHeader.playType)
+    //            return;
 
-            currentHeader.playType = value;
+    //        currentHeader.playType = value;
 
-            DBG(
-                "PLAYBACK TYPE CHANGED = "
-                + juce::String(value)
-            );
+    //        DBG(
+    //            "PLAYBACK TYPE CHANGED = "
+    //            + juce::String(value)
+    //        );
 
-            if (onSampleHeaderChanged)
-                onSampleHeaderChanged(currentHeader);
-        };
+    //        if (onSampleHeaderChanged)
+    //            onSampleHeaderChanged(currentHeader);
+    //    };
 
+
+    playTypeCombo.setEnabled(false);
 
     addAndMakeVisible(loopDwellStatusLabel);
 
@@ -1140,7 +1054,7 @@ SampleHeaderEditor::SampleHeaderEditor()
     //startEditor.setReadOnly(true);
     //endEditor.setReadOnly(true);
 
-    //sampleRateEditor.setReadOnly(true);
+    sampleRateEditor.setReadOnly(true);
     //holdLoopTuneEditor.setReadOnly(true);
 
     auto setupSectionLabel =
@@ -1155,7 +1069,9 @@ SampleHeaderEditor::SampleHeaderEditor()
 
             label.setColour(
                 juce::Label::textColourId,
-                juce::Colours::lightgrey
+                juce::Colour::fromRGB(
+                    55, 55, 52
+                )
             );
 
             label.setFont(
@@ -1253,11 +1169,10 @@ void SampleHeaderEditor::setSampleHeader(
     //    juce::String(header.bandwidth),
     //    false
     //);
-
-    sampleRateEditor.setText(
-        juce::String(header.sampleRate),
-        false
-    );
+sampleRateEditor.setText(
+    juce::String(currentHeader.sampleRate) + " Hz",
+    juce::dontSendNotification
+);
 
 
     bandwidthCombo.setSelectedId(
@@ -1336,8 +1251,8 @@ void SampleHeaderEditor::setSampleHeader(
     );
 
     sampleRateEditor.setText(
-        juce::String(currentHeader.sampleRate),
-        false
+        juce::String(currentHeader.sampleRate) + " Hz",
+        juce::dontSendNotification
     );
 
     holdLoopTuneEditor.setText(
@@ -1472,6 +1387,13 @@ void SampleHeaderEditor::setSampleHeader(
 void SampleHeaderEditor::paint(
     juce::Graphics& g)
 {
+    // S3000XL-style panel background
+    g.fillAll(
+        juce::Colour::fromRGB(
+            198, 197, 191
+        )
+    );
+
     auto drawCard =
         [&g](const juce::Rectangle<int>& bounds)
         {
@@ -1481,9 +1403,11 @@ void SampleHeaderEditor::paint(
             auto r =
                 bounds.toFloat();
 
+            // Card background
             g.setColour(
-                juce::Colours::white
-                .withAlpha(0.045f)
+                juce::Colour::fromRGB(
+                    218, 216, 208
+                )
             );
 
             g.fillRoundedRectangle(
@@ -1491,9 +1415,11 @@ void SampleHeaderEditor::paint(
                 6.0f
             );
 
+            // Card border
             g.setColour(
-                juce::Colours::white
-                .withAlpha(0.10f)
+                juce::Colour::fromRGB(
+                    150, 149, 144
+                )
             );
 
             g.drawRoundedRectangle(
@@ -1508,7 +1434,6 @@ void SampleHeaderEditor::paint(
     drawCard(rangeCardBounds);
     drawCard(loopCardBounds);
 }
-
 void SampleHeaderEditor::resized()
 {
     auto area =
@@ -1894,7 +1819,7 @@ void SampleHeaderEditor::clear()
 
     idEditor.clear();
     nameEditor.clear();
-    sampleRateEditor.clear();
+    /*sampleRateEditor.clear();*/
     pitchEditor.clear();
     //pitchNoteLabel.clear();
     pitchNoteLabel.setText(
@@ -1947,6 +1872,8 @@ void SampleHeaderEditor::clear()
     );
 
     selectedLoopIndex = 0;
+
+    sampleRateEditor.setCaretVisible(false);
 
     DBG("SAMPLE HEADER EDITOR CLEARED");
 }

@@ -89,6 +89,14 @@ namespace ProgramOffset
 
     }
 
+    namespace Portamento
+    {
+        constexpr std::size_t Time = 110;    // PORTIME
+        constexpr std::size_t Type = 111;    // PORTYPE
+        constexpr std::size_t Enable = 112;  // PORTEN
+    }
+
+
     namespace Mod
     {
         constexpr std::size_t ModSPan1 = 76;

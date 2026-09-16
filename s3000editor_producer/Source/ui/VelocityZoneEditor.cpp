@@ -107,6 +107,12 @@ VelocityZoneEditor::VelocityZoneEditor()
     );
 
     semitoneSlider.setRange(-50, 50, 1);
+
+    semitoneSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
     semitoneSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
     );
@@ -133,6 +139,13 @@ VelocityZoneEditor::VelocityZoneEditor()
 
 
     fineTuneSlider.setRange(-50, 50, 1);
+
+
+    fineTuneSlider.setDoubleClickReturnValue(
+        true,
+        0.0
+    );
+
     fineTuneSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
     );
@@ -176,16 +189,6 @@ VelocityZoneEditor::VelocityZoneEditor()
             currentZone.constantPitch =
                 selectedId == 2;
 
-            DBG(
-                "TRACKING COMBO ID="
-                + juce::String(selectedId)
-                + " CONSTANT PITCH="
-                + juce::String(
-                    currentZone.constantPitch
-                    ? 1
-                    : 0
-                )
-            );
 
             if (onTrackingChanged)
             {
@@ -318,46 +321,6 @@ VelocityZoneEditor::VelocityZoneEditor()
         };
     
 
-
-    //sampleNameEditor.setReadOnly(true);
-    //sampleNameEditor.onFocusLost = [this]()
-    //    {
-    //        const auto newName =
-    //            sampleNameEditor.getText();
-
-    //        if (newName == currentZone.sampleName)
-    //            return;
-
-    //        currentZone.sampleName = newName;
-
-    //        // 名前変更時点ではIDは未解決に戻す
-    //        currentZone.sampleId = -1;
-
-    //        if (onZoneChanged)
-    //            onZoneChanged(currentZone);
-    //    };
-
-
-    //tuneEditor.onFocusLost = [this]()
-    //    {
-    //        const int value =
-    //            tuneEditor.getText().getIntValue();
-
-    //        // ひとまず signed 8-bit 範囲
-    //        if (value < -128 || value > 127)
-    //        {
-    //            tuneEditor.setText(
-    //                juce::String(currentZone.tune),
-    //                false
-    //            );
-    //            return;
-    //        }
-
-    //        currentZone.tune = value;
-
-    //        if (onZoneChanged)
-    //            onZoneChanged(currentZone);
-    //    };
     sampleCombo.onChange = [this]()
         {
             const int comboId =
@@ -431,62 +394,6 @@ VelocityZoneEditor::VelocityZoneEditor()
             }
         };
 
-    //semitoneEditor.onFocusLost = [this]()
-    //    {
-    //        const int value =
-    //            semitoneEditor.getText().getIntValue();
-
-    //        // ひとまずsigned byteより安全な範囲
-    //        if (value < -50 || value > 50)
-    //        {
-    //            semitoneEditor.setText(
-    //                juce::String(currentZone.semitone),
-    //                false
-    //            );
-    //            return;
-    //        }
-
-    //        currentZone.semitone = value;
-
-    //        if (onSemitoneChanged)
-    //            onSemitoneChanged(currentZone.semitone);
-    //    };
-
-    //fineTuneEditor.onFocusLost = [this]()
-    //    {
-    //        const int cents =
-    //            fineTuneEditor.getText().getIntValue();
-
-    //        if (cents < -50 || cents > 50)
-    //        {
-    //            const int currentCents =
-    //                juce::roundToInt(
-    //                    currentZone.fineTuneRaw
-    //                    * 100.0
-    //                    / 256.0
-    //                );
-
-    //            fineTuneEditor.setText(
-    //                juce::String(currentCents),
-    //                false
-    //            );
-
-    //            return;
-    //        }
-
-    //        currentZone.fineTuneRaw =
-    //            juce::roundToInt(
-    //                cents * 256.0 / 100.0
-    //            );
-
-    //        if (onFineTuneChanged)
-    //            onFineTuneChanged(currentZone.fineTuneRaw);
-    //    };
-
-
-
-
-
 
 
 
@@ -495,11 +402,15 @@ VelocityZoneEditor::VelocityZoneEditor()
         juce::dontSendNotification
     );
 
-
     auto setupZoneSlider =
         [](juce::Slider& slider)
         {
             slider.setRange(-50, 50, 1);
+
+            slider.setDoubleClickReturnValue(
+                true,
+                0.0
+            );
 
             slider.setSliderStyle(
                 juce::Slider::LinearHorizontal
@@ -560,45 +471,13 @@ VelocityZoneEditor::VelocityZoneEditor()
 
             if (onFilterFreqChanged)
                 onFilterFreqChanged(value);
+
+
         };
 
     
 
-    //lowVelXFadeEditor.onFocusLost = [this]()
-    //    {
-    //        const int value =
-    //            lowVelXFadeEditor.getText().getIntValue();
 
-    //        if (value < 0 || value > 255)
-    //            return;
-
-    //        if (value == currentZone.lowVelXFade)
-    //            return;
-
-    //        currentZone.lowVelXFade =
-    //            static_cast<uint8_t>(value);
-
-    //        if (onZoneChanged)
-    //            onZoneChanged(currentZone);
-    //    };
-
-    //highVelXFadeEditor.onFocusLost = [this]()
-    //    {
-    //        const int value =
-    //            highVelXFadeEditor.getText().getIntValue();
-
-    //        if (value < 0 || value > 255)
-    //            return;
-
-    //        if (value == currentZone.highVelXFade)
-    //            return;
-
-    //        currentZone.highVelXFade =
-    //            static_cast<uint8_t>(value);
-
-    //        if (onZoneChanged)
-    //            onZoneChanged(currentZone);
-    //    };
 
     auto setupSectionLabel =
         [this](juce::Label& label,
@@ -611,7 +490,9 @@ VelocityZoneEditor::VelocityZoneEditor()
 
             label.setColour(
                 juce::Label::textColourId,
-                juce::Colours::lightgrey
+                juce::Colour::fromRGB(
+                    55, 55, 52
+                )
             );
 
             label.setFont(
@@ -727,6 +608,13 @@ void VelocityZoneEditor::setHighVelocity(
 void VelocityZoneEditor::paint(
     juce::Graphics& g)
 {
+    // S3000XL-style panel background
+    g.fillAll(
+        juce::Colour::fromRGB(
+            198, 197, 191
+        )
+    );
+
     auto drawCard =
         [&g](const juce::Rectangle<int>& bounds)
         {
@@ -738,8 +626,9 @@ void VelocityZoneEditor::paint(
 
             // Card background
             g.setColour(
-                juce::Colours::white
-                .withAlpha(0.045f)
+                juce::Colour::fromRGB(
+                    218, 216, 208
+                )
             );
 
             g.fillRoundedRectangle(
@@ -747,10 +636,11 @@ void VelocityZoneEditor::paint(
                 6.0f
             );
 
-            // Subtle border
+            // Card border
             g.setColour(
-                juce::Colours::white
-                .withAlpha(0.10f)
+                juce::Colour::fromRGB(
+                    150, 149, 144
+                )
             );
 
             g.drawRoundedRectangle(

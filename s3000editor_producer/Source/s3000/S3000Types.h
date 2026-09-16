@@ -5,18 +5,6 @@
 #include <string>
 #include <vector>
 
-//struct Envelope
-//{
-//    int attack = 0;
-//    int decay = 0;
-//    int sustain = 0;
-//    int release = 0;
-//
-//    int velAttack = 0;
-//    int velRelease = 0;
-//    int noteOffRelease = 0;
-//    int keyTracking = 0;
-//};
 
 struct Envelope1
 {
@@ -265,6 +253,11 @@ struct Program
     int softAttack = 0;
     int softFilter = 0;
 
+    // Portamento
+    int portamentoTime = 0;       // PORTIME 0-99
+    int portamentoType = 0;       // PORTYPE
+    bool portamentoEnabled = false; // PORTEN
+
     int modSPan1 = 0;
     int modSPan2 = 0;
     int modSPan3 = 0;
@@ -299,16 +292,6 @@ struct Program
     int lfo1Wave = 0;
     int lfo2Wave = 0;
 
-    // Voice
-    //bool lfo1Desync = false;
-    //int voiceAssign = 0;
-
-    // Soft Pedal
-    //int softLoudness = 0;
-    //int softAttack = 0;
-    //int softFilter = 0;
-
-    //double tune = 0.0;
 
     std::array<int8_t, 12> temperament{};
 

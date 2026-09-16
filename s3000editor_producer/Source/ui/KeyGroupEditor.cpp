@@ -144,13 +144,17 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(resonanceLabel);
     addAndMakeVisible(resonanceKnob);
 
-    addAndMakeVisible(filterEditModeCombo);
+    addAndMakeVisible(filterEditAllToggle);
 
-    filterEditModeCombo.addItem("ONE", 1);
-    filterEditModeCombo.addItem("ALL", 2);
+    filterEditAllToggle.setToggleState(
+        false,
+        juce::dontSendNotification
+    );
 
-    filterEditModeCombo.setSelectedId(
-        1,
+
+
+    filterEditAllToggle.setToggleState(
+        false,
         juce::dontSendNotification
     );
 
@@ -159,6 +163,45 @@ KeyGroupEditor::KeyGroupEditor()
     env1DecayLabel.setText("Decay", juce::dontSendNotification);
     env1SustainLabel.setText("Sustain", juce::dontSendNotification);
     env1ReleaseLabel.setText("Release", juce::dontSendNotification);
+
+
+    lowNoteEditor.setInputRestrictions(3, "0123456789");
+    highNoteEditor.setInputRestrictions(3, "0123456789");
+
+    // =========================
+// Numeric input restrictions
+// =========================
+
+// 0 - 99
+    env1SustainEditor.setInputRestrictions(2, "0123456789");
+    env1ReleaseEditor.setInputRestrictions(2, "0123456789");
+
+    env2R1Editor.setInputRestrictions(2, "0123456789");
+    env2L1Editor.setInputRestrictions(2, "0123456789");
+    env2R2Editor.setInputRestrictions(2, "0123456789");
+    env2L2Editor.setInputRestrictions(2, "0123456789");
+    env2R3Editor.setInputRestrictions(2, "0123456789");
+    env2L3Editor.setInputRestrictions(2, "0123456789");
+    env2R4Editor.setInputRestrictions(2, "0123456789");
+    env2L4Editor.setInputRestrictions(2, "0123456789");
+
+    // signed numeric values
+    tuneEditor.setInputRestrictions(3, "-0123456789");
+
+    env2VelAttackEditor.setInputRestrictions(
+        4, "-0123456789");
+
+    env2VelReleaseEditor.setInputRestrictions(
+        4, "-0123456789");
+
+    env2NoteOffReleaseEditor.setInputRestrictions(
+        4, "-0123456789");
+
+    env2KeyTrackingEditor.setInputRestrictions(
+        4, "-0123456789");
+
+    velocityEnv2Editor.setInputRestrictions(
+        4, "-0123456789");
 
 
 
@@ -196,10 +239,7 @@ KeyGroupEditor::KeyGroupEditor()
 
     addAndMakeVisible(env2Editor);
 
-    //env2AttackLabel.setText("ENV2 Attack", juce::dontSendNotification);
-    //env2DecayLabel.setText("ENV2 Decay", juce::dontSendNotification);
-    //env2SustainLabel.setText("ENV2 Sustain", juce::dontSendNotification);
-    //env2ReleaseLabel.setText("ENV2 Release", juce::dontSendNotification);
+
 
     env2R1Label.setText(
         "R1 (Attack)",
@@ -296,20 +336,7 @@ KeyGroupEditor::KeyGroupEditor()
         juce::dontSendNotification
     );
 
-    //velocityToFreqLabel.setText(
-    //    "Velocity -> Freq",
-    //    juce::dontSendNotification
-    //);
 
-    //pressureToFreqLabel.setText(
-    //    "Pressure -> Freq",
-    //    juce::dontSendNotification
-    //);
-
-    //envelopeToFreqLabel.setText(
-    //    "Envelope -> Freq",
-    //    juce::dontSendNotification
-    //);
 
     velocityEnv2Label.setText(
         "Velocity -> ENV2",
@@ -331,11 +358,6 @@ KeyGroupEditor::KeyGroupEditor()
         juce::dontSendNotification
     );
 
-    addAndMakeVisible(modulationSectionLabel);
-    modulationSectionLabel.setText(
-        "MODULATION",
-        juce::dontSendNotification
-    );
 
     modulationSectionLabel.setFont(
         juce::Font(15.0f, juce::Font::bold)
@@ -346,7 +368,7 @@ KeyGroupEditor::KeyGroupEditor()
     );
 
 
-    addAndMakeVisible(keyXFadeSectionLabel);
+
     keyXFadeSectionLabel.setText(
         "KEY XFADE",
         juce::dontSendNotification
@@ -385,11 +407,6 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(velocityZonesLabel);
     addAndMakeVisible(velocityZonesEditor);
 
-    addAndMakeVisible(leftKeyXFadeLabel);
-    addAndMakeVisible(leftKeyXFadeEditor);
-
-    addAndMakeVisible(rightKeyXFadeLabel);
-    addAndMakeVisible(rightKeyXFadeEditor);
 
 
     addAndMakeVisible(velocityEnv2Label);
@@ -414,10 +431,7 @@ KeyGroupEditor::KeyGroupEditor()
 
             currentKeygroup.env1.attack = value;
 
-            DBG(
-                "ENV1 ATTACK CHANGED = "
-                + juce::String(value)
-            );
+
 
             if (onKeygroupChanged)
             {
@@ -463,10 +477,7 @@ KeyGroupEditor::KeyGroupEditor()
 
             currentKeygroup.env1.sustain = value;
 
-            DBG(
-                "ENV1 SUSTAIN CHANGED = "
-                + juce::String(value)
-            );
+
 
             if (onKeygroupChanged)
             {
@@ -496,10 +507,7 @@ KeyGroupEditor::KeyGroupEditor()
 
             currentKeygroup.env1.release = value;
 
-            DBG(
-                "ENV1 RELEASE CHANGED = "
-                + juce::String(value)
-            );
+
 
             if (onKeygroupChanged)
             {
@@ -644,21 +652,16 @@ KeyGroupEditor::KeyGroupEditor()
                 juce::String(l4), false);
         };
 
-    env2Editor.onEditFinished =
-        [this]()
-        {
-            DBG("ENV2 EDIT FINISHED");
-        };
+        env2Editor.onEditFinished =
+            [this]()
+            {
+                DBG("ENV2 EDIT FINISHED");
+
+                if (onRequestKeyboardFocus)
+                    onRequestKeyboardFocus();
+            };
 
 
-    //addAndMakeVisible(velocityToFreqLabel);
-    //addAndMakeVisible(velocityToFreqKnob);
-
-    //addAndMakeVisible(pressureToFreqLabel);
-    //addAndMakeVisible(pressureToFreqKnob);
-
-    //addAndMakeVisible(envelopeToFreqLabel);
-    //addAndMakeVisible(envelopeToFreqKnob);
 
     auto setupFilterKnob =
         [this](
@@ -747,13 +750,8 @@ KeyGroupEditor::KeyGroupEditor()
 
             pendingResonance = value;
 
-            DBG(
-                "FILTER RESONANCE QUEUED = "
-                + juce::String(value)
-            );
 
-            if (!isFilterEditAll() &&
-                !isTimerRunning())
+            if (!isTimerRunning())
             {
                 startTimer(15);
             }
@@ -762,16 +760,11 @@ KeyGroupEditor::KeyGroupEditor()
     resonanceKnob.onDragEnd = [this]()
         {
             const int value =
-                juce::roundToInt(
-                    resonanceKnob.getValue()
-                );
+                juce::roundToInt(resonanceKnob.getValue());
 
             pendingResonance = -1;
 
-            DBG(
-                "FILTER RESONANCE FINAL SEND = "
-                + juce::String(value)
-            );
+
 
             if (value != lastSentResonance)
             {
@@ -785,6 +778,9 @@ KeyGroupEditor::KeyGroupEditor()
                     );
                 }
             }
+
+            if (onRequestKeyboardFocus)
+                onRequestKeyboardFocus();
         };
 
 
@@ -809,10 +805,6 @@ KeyGroupEditor::KeyGroupEditor()
 
             currentKeygroup.tune = value;
 
-            DBG(
-                "KEYGROUP TUNE CHANGED = "
-                + juce::String(value)
-            );
 
             if (onKeygroupChanged)
             {
@@ -832,13 +824,9 @@ KeyGroupEditor::KeyGroupEditor()
 
             pendingFilterFreq = value;
 
-            DBG(
-                "FILTER FREQ QUEUED = "
-                + juce::String(value)
-            );
 
-            if (!isFilterEditAll() &&
-                !isTimerRunning())
+
+            if (!isTimerRunning())
             {
                 startTimer(15);
             }
@@ -846,17 +834,12 @@ KeyGroupEditor::KeyGroupEditor()
 
     filterFreqKnob.onDragEnd = [this]()
         {
-            stopTimer();
-
             const int value =
                 juce::roundToInt(filterFreqKnob.getValue());
 
             pendingFilterFreq = -1;
 
-            DBG(
-                "FILTER FREQ FINAL SEND = "
-                + juce::String(value)
-            );
+
 
             if (value != lastSentFilterFreq)
             {
@@ -870,6 +853,9 @@ KeyGroupEditor::KeyGroupEditor()
                     );
                 }
             }
+
+            if (onRequestKeyboardFocus)
+                onRequestKeyboardFocus();
         };
 
     auto sendKeygroupChange = [this]()
@@ -904,148 +890,36 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
-    /*filterKeyFollowKnob.onValueChange = [this]()
+    addAndMakeVisible(env2EditAllToggle);
+
+    env2EditAllToggle.setToggleState(
+        false,
+        juce::dontSendNotification
+    );
+
+
+
+    env2EditAllToggle.onClick =
+        [this]()
         {
-            const int value =
-                juce::roundToInt(filterKeyFollowKnob.getValue());
-
-            if (value == currentKeygroup.filter.keyFollow)
-                return;
-
-            currentKeygroup.filter.keyFollow = value;
-
             DBG(
-                "FILTER KEY FOLLOW CHANGED = "
-                + juce::String(value)
+                "ENV2 ALL TOGGLE CLICKED STATE="
+                + juce::String(
+                    env2EditAllToggle.getToggleState()
+                    ? 1
+                    : 0
+                )
             );
-
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
-        };*/
-
-    //velocityToFreqKnob.onValueChange =
-    //    [this, sendKeygroupChange]()
-    //    {
-    //        currentKeygroup.filter.velocityToFreq =
-    //            juce::roundToInt(
-    //                velocityToFreqKnob.getValue()
-    //            );
-
-    //        if (!velocityToFreqKnob.isMouseButtonDown())
-    //            sendKeygroupChange();
-    //    };
-
-    //velocityToFreqKnob.onDragEnd =
-    //    [sendKeygroupChange]()
-    //    {
-    //        sendKeygroupChange();
-    //    };
-
-    //pressureToFreqKnob.onValueChange =
-    //    [this, sendKeygroupChange]()
-    //    {
-    //        currentKeygroup.filter.pressureToFreq =
-    //            juce::roundToInt(
-    //                pressureToFreqKnob.getValue()
-    //            );
-
-    //        if (!pressureToFreqKnob.isMouseButtonDown())
-    //            sendKeygroupChange();
-    //    };
-
-    //pressureToFreqKnob.onDragEnd =
-    //    [sendKeygroupChange]()
-    //    {
-    //        sendKeygroupChange();
-    //    };
-
-    //envelopeToFreqKnob.onValueChange =
-    //    [this, sendKeygroupChange]()
-    //    {
-    //        currentKeygroup.filter.envelopeToFreq =
-    //            juce::roundToInt(
-    //                envelopeToFreqKnob.getValue()
-    //            );
-
-    //        if (!envelopeToFreqKnob.isMouseButtonDown())
-    //            sendKeygroupChange();
-    //    };
-
-    //envelopeToFreqKnob.onDragEnd =
-    //    [sendKeygroupChange]()
-    //    {
-    //        sendKeygroupChange();
-    //    };
-   
-
-    /*env2AttackEditor.onFocusLost = [this]()
-        {
-            const int value = env2AttackEditor.getText().getIntValue();
-
-            if (value < 0 || value > 127)
-                return;
-
-            if (value == currentKeygroup.env2.attack)
-                return;
-
-            currentKeygroup.env2.attack = value;
-
-            if (onKeygroupChanged)
-                onKeygroupChanged(currentKeygroupIndex, currentKeygroup);
         };
 
-    env2DecayEditor.onFocusLost = [this]()
-        {
-            const int value = env2DecayEditor.getText().getIntValue();
+    addAndMakeVisible(env1EditAllToggle);
 
-            if (value < 0 || value > 127)
-                return;
+    env1EditAllToggle.setToggleState(
+        false,
+        juce::dontSendNotification
+    );
 
-            if (value == currentKeygroup.env2.decay)
-                return;
 
-            currentKeygroup.env2.decay = value;
-
-            if (onKeygroupChanged)
-                onKeygroupChanged(currentKeygroupIndex, currentKeygroup);
-        };
-
-    env2SustainEditor.onFocusLost = [this]()
-        {
-            const int value = env2SustainEditor.getText().getIntValue();
-
-            if (value < 0 || value > 127)
-                return;
-
-            if (value == currentKeygroup.env2.sustain)
-                return;
-
-            currentKeygroup.env2.sustain = value;
-
-            if (onKeygroupChanged)
-                onKeygroupChanged(currentKeygroupIndex, currentKeygroup);
-        };
-
-    env2ReleaseEditor.onFocusLost = [this]()
-        {
-            const int value = env2ReleaseEditor.getText().getIntValue();
-
-            if (value < 0 || value > 127)
-                return;
-
-            if (value == currentKeygroup.env2.release)
-                return;
-
-            currentKeygroup.env2.release = value;
-
-            if (onKeygroupChanged)
-                onKeygroupChanged(currentKeygroupIndex, currentKeygroup);
-        };*/
 
     env2R1Editor.onFocusLost = [this]()
         {
@@ -1290,42 +1164,7 @@ KeyGroupEditor::KeyGroupEditor()
             }
         };
 
-    ePtchEditor.onFocusLost = [this]()
-        {
-            DBG("E_PTCH FOCUS LOST");
-            const int value =
-                ePtchEditor.getText().getIntValue();
-
-            if (value < -50 || value > 50)
-                return;
-
-            if (value == currentKeygroup.velocity.ePtch)
-                return;
-
-            currentKeygroup.velocity.ePtch = value;
-
-            DBG(
-                "E TO PITCH CHANGED = "
-                + juce::String(value)
-            );
-
-            if (onKeygroupChanged)
-            {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
-            }
-        };
-
-    ePtchEditor.onTextChange =
-        [this]()
-        {
-            DBG(
-                "E_PTCH TEXT CHANGED = "
-                + ePtchEditor.getText()
-            );
-        };
+    
 
     velocityXFadeEditor.onFocusLost = [this]()
         {
@@ -1608,10 +1447,6 @@ KeyGroupEditor::KeyGroupEditor()
         juce::dontSendNotification
     );
 
-    addAndMakeVisible(velocityXFadeLabel);
-    addAndMakeVisible(velocityXFadeEditor);
-
-
 
     env2VelAttackLabel.setText(
         "Vel Attack",
@@ -1638,8 +1473,7 @@ KeyGroupEditor::KeyGroupEditor()
         juce::dontSendNotification
     );
 
-    addAndMakeVisible(ePtchLabel);
-    addAndMakeVisible(ePtchEditor);
+
 
     ePtchEditor.toFront(false);
 
@@ -1650,11 +1484,6 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(env2VelReleaseLabel);
     addAndMakeVisible(env2VelReleaseEditor);
 
-    addAndMakeVisible(env2NoteOffReleaseLabel);
-    addAndMakeVisible(env2NoteOffReleaseEditor);
-
-    addAndMakeVisible(env2KeyTrackingLabel);
-    addAndMakeVisible(env2KeyTrackingEditor);
 
     addAndMakeVisible(env1Editor);
 
@@ -1665,6 +1494,18 @@ KeyGroupEditor::KeyGroupEditor()
             int sustain,
             int release)
         {
+            const int oldAttack =
+                currentKeygroup.env1.attack;
+
+            const int oldDecay =
+                currentKeygroup.env1.decay;
+
+            const int oldSustain =
+                currentKeygroup.env1.sustain;
+
+            const int oldRelease =
+                currentKeygroup.env1.release;
+
             currentKeygroup.env1.attack = attack;
             currentKeygroup.env1.decay = decay;
             currentKeygroup.env1.sustain = sustain;
@@ -1681,17 +1522,52 @@ KeyGroupEditor::KeyGroupEditor()
 
             env1ReleaseEditor.setText(
                 juce::String(release), false);
+
+            if (attack != oldAttack &&
+                onEnv1AttackChanged)
+            {
+                onEnv1AttackChanged(
+                    currentKeygroupIndex,
+                    attack
+                );
+            }
+
+            if (decay != oldDecay &&
+                onEnv1DecayChanged)
+            {
+                onEnv1DecayChanged(
+                    currentKeygroupIndex,
+                    decay
+                );
+            }
+
+            if (sustain != oldSustain &&
+                onEnv1SustainChanged)
+            {
+                onEnv1SustainChanged(
+                    currentKeygroupIndex,
+                    sustain
+                );
+            }
+
+            if (release != oldRelease &&
+                onEnv1ReleaseChanged)
+            {
+                onEnv1ReleaseChanged(
+                    currentKeygroupIndex,
+                    release
+                );
+            }
         };
 
     env1Editor.onEditFinished =
         [this]()
         {
-            if (onKeygroupChanged)
+            
+            if (onRequestKeyboardFocus)
             {
-                onKeygroupChanged(
-                    currentKeygroupIndex,
-                    currentKeygroup
-                );
+           
+                onRequestKeyboardFocus();
             }
         };
 
@@ -1709,10 +1585,7 @@ void KeyGroupEditor::timerCallback()
         {
             lastSentFilterFreq = value;
 
-            DBG(
-                "FILTER FREQ LIVE SEND = "
-                + juce::String(value)
-            );
+
 
             if (onFilterFreqChanged)
             {
@@ -1733,10 +1606,7 @@ void KeyGroupEditor::timerCallback()
         {
             lastSentResonance = value;
 
-            DBG(
-                "FILTER RESONANCE LIVE SEND = "
-                + juce::String(value)
-            );
+
 
             if (onResonanceChanged)
             {
@@ -1757,10 +1627,7 @@ void KeyGroupEditor::timerCallback()
         {
             lastSentFilterKeyFollow = value;
 
-            DBG(
-                "FILTER KEY FOLLOW LIVE SEND = "
-                + juce::String(value)
-            );
+
 
             if (onFilterKeyFollowChanged)
             {
@@ -2009,20 +1876,7 @@ void KeyGroupEditor::setKeygroup(
         juce::dontSendNotification
     );
 
-    //velocityToFreqKnob.setValue(
-    //    keygroup.filter.velocityToFreq,
-    //    juce::dontSendNotification
-    //);
 
-    //pressureToFreqKnob.setValue(
-    //    keygroup.filter.pressureToFreq,
-    //    juce::dontSendNotification
-    //);
-
-    //envelopeToFreqKnob.setValue(
-    //    keygroup.filter.envelopeToFreq,
-    //    juce::dontSendNotification
-    //);
 
     env1AttackEditor.setText(
         juce::String(keygroup.env1.attack),
@@ -2051,25 +1905,6 @@ void KeyGroupEditor::setKeygroup(
         keygroup.env1.release
     );
 
-    //env2AttackEditor.setText(
-    //    juce::String(keygroup.env2.attack),
-    //    false
-    //);
-
-    //env2DecayEditor.setText(
-    //    juce::String(keygroup.env2.decay),
-    //    false
-    //);
-
-    //env2SustainEditor.setText(
-    //    juce::String(keygroup.env2.sustain),
-    //    false
-    //);
-
-    //env2ReleaseEditor.setText(
-    //    juce::String(keygroup.env2.release),
-    //    false
-    //);
 
 
     env2R1Editor.setText(
@@ -2273,23 +2108,25 @@ void KeyGroupEditor::resized()
         );
     }
 
-    filterEditModeCombo.setBounds(
-        20,
-        20,
-        80,
-        24
-    );
+    {
+        auto header =
+            area.removeFromTop(24);
 
-    filterSectionLabel.setBounds(
-        area.removeFromTop(24)
-    );
+        filterEditAllToggle.setBounds(
+            header.removeFromRight(85)
+        );
+
+        filterSectionLabel.setBounds(
+            header
+        );
+    }
 
 
     {
         auto section =
             area.removeFromTop(130);
 
-        constexpr int numberOfKnobs = 6;
+        constexpr int numberOfKnobs = 3;
 
         const int itemWidth =
             section.getWidth() / numberOfKnobs;
@@ -2316,15 +2153,6 @@ void KeyGroupEditor::resized()
         auto keyFollowArea =
             section.removeFromLeft(itemWidth);
 
-        auto velocityArea =
-            section.removeFromLeft(itemWidth);
-
-        auto pressureArea =
-            section.removeFromLeft(itemWidth);
-
-        auto envelopeArea =
-            section.removeFromLeft(itemWidth);
-
         auto resonanceArea =
             section;
 
@@ -2334,31 +2162,11 @@ void KeyGroupEditor::resized()
             filterFreqKnob
         );
 
-
-
         layoutKnob(
             keyFollowArea,
             filterKeyFollowLabel,
             filterKeyFollowKnob
         );
-
-        //layoutKnob(
-        //    velocityArea,
-        //    velocityToFreqLabel,
-        //    velocityToFreqKnob
-        //);
-
-        //layoutKnob(
-        //    pressureArea,
-        //    pressureToFreqLabel,
-        //    pressureToFreqKnob
-        //);
-
-        //layoutKnob(
-        //    envelopeArea,
-        //    envelopeToFreqLabel,
-        //    envelopeToFreqKnob
-        //);
 
         layoutKnob(
             resonanceArea,
@@ -2367,9 +2175,18 @@ void KeyGroupEditor::resized()
         );
     }
 
-env1SectionLabel.setBounds(
-    area.removeFromTop(24)
-);
+    {
+        auto header =
+            area.removeFromTop(24);
+
+        env1EditAllToggle.setBounds(
+            header.removeFromRight(85)
+        );
+
+        env1SectionLabel.setBounds(
+            header
+        );
+    }
 
 
 // =========================
@@ -2442,31 +2259,20 @@ env1SectionLabel.setBounds(
 
 area.removeFromTop(6);
 
-    /*ddRow(env2AttackLabel, env2AttackEditor);
-    addRow(env2DecayLabel, env2DecayEditor);
-    addRow(env2SustainLabel, env2SustainEditor);
-    addRow(env2ReleaseLabel, env2ReleaseEditor);*/
 
-    /*addRow(env2R1Label, env2R1Editor);
-    addRow(env2L1Label, env2L1Editor);
 
-    addRow(env2R2Label, env2R2Editor);
-    addRow(env2L2Label, env2L2Editor);
+{
+    auto header =
+        area.removeFromTop(24);
 
-    addRow(env2R3Label, env2R3Editor);
-    addRow(env2L3Label, env2L3Editor);
+    env2EditAllToggle.setBounds(
+        header.removeFromRight(85)
+    );
 
-    addRow(env2R4Label, env2R4Editor);
-    addRow(env2L4Label, env2L4Editor);
-
-    addRow(env2VelAttackLabel, env2VelAttackEditor);
-    addRow(env2VelReleaseLabel, env2VelReleaseEditor);
-    addRow(env2NoteOffReleaseLabel, env2NoteOffReleaseEditor);
-    addRow(env2KeyTrackingLabel, env2KeyTrackingEditor);*/
-
-env2SectionLabel.setBounds(
-    area.removeFromTop(24)
-);
+    env2SectionLabel.setBounds(
+        header
+    );
+}
 
 // =========================
 // ENV2
@@ -2604,11 +2410,8 @@ env2SectionLabel.setBounds(
     auto velReleaseArea =
         row3.removeFromLeft(itemWidth);
 
-    auto noteOffArea =
+    auto velEnv2Area =
         row3.removeFromLeft(itemWidth);
-
-    auto keyTrackArea =
-        row3;
 
     env2VelAttackLabel.setBounds(
         velAttackArea.removeFromLeft(envLabelWidth)
@@ -2626,20 +2429,12 @@ env2SectionLabel.setBounds(
         velReleaseArea.removeFromLeft(envEditorWidth)
     );
 
-    env2NoteOffReleaseLabel.setBounds(
-        noteOffArea.removeFromLeft(envLabelWidth)
+    velocityEnv2Label.setBounds(
+        velEnv2Area.removeFromLeft(envLabelWidth)
     );
 
-    env2NoteOffReleaseEditor.setBounds(
-        noteOffArea.removeFromLeft(envEditorWidth)
-    );
-
-    env2KeyTrackingLabel.setBounds(
-        keyTrackArea.removeFromLeft(envLabelWidth)
-    );
-
-    env2KeyTrackingEditor.setBounds(
-        keyTrackArea.removeFromLeft(envEditorWidth)
+    velocityEnv2Editor.setBounds(
+        velEnv2Area.removeFromLeft(envEditorWidth)
     );
 
     section.removeFromTop(10);
@@ -2651,118 +2446,12 @@ env2SectionLabel.setBounds(
 
 area.removeFromTop(6);
 
-modulationSectionLabel.setBounds(
-    area.removeFromTop(24)
-);
 
-// =========================
-// MODULATION
-// =========================
-{
-    auto row =
-        area.removeFromTop(30);
-
-    const int itemWidth =
-        row.getWidth() / 4;
-
-    const int modLabelWidth = 100;
-    const int modEditorWidth = 90;
-
-    auto velEnvArea =
-        row.removeFromLeft(itemWidth);
-
-    auto pitchArea =
-        row.removeFromLeft(itemWidth);
-
-    auto velXFadeArea =
-        row.removeFromLeft(itemWidth);
-
-    auto velZonesArea =
-        row;
-
-
-    velocityEnv2Label.setBounds(
-        velEnvArea.removeFromLeft(modLabelWidth)
-    );
-
-    velocityEnv2Editor.setBounds(
-        velEnvArea.removeFromLeft(modEditorWidth)
-    );
-
-
-    ePtchLabel.setBounds(
-        pitchArea.removeFromLeft(modLabelWidth)
-    );
-
-    ePtchEditor.setBounds(
-        pitchArea.removeFromLeft(modEditorWidth)
-    );
-
-
-    velocityXFadeLabel.setBounds(
-        velXFadeArea.removeFromLeft(modLabelWidth)
-    );
-
-    velocityXFadeEditor.setBounds(
-        velXFadeArea.removeFromLeft(modEditorWidth)
-    );
-
-
-    velocityZonesLabel.setBounds(
-        velZonesArea.removeFromLeft(modLabelWidth)
-    );
-
-    velocityZonesEditor.setBounds(
-        velZonesArea.removeFromLeft(modEditorWidth)
-    );
-}
 
 area.removeFromTop(6);
 
 area.removeFromTop(6);
 
-keyXFadeSectionLabel.setBounds(
-    area.removeFromTop(24)
-);
-
-
-// =========================
-// KEY XFADE
-// =========================
-{
-    auto row =
-        area.removeFromTop(30);
-
-    const int itemWidth =
-        row.getWidth() / 2;
-
-    const int xfadeLabelWidth = 100;
-    const int xfadeEditorWidth = 90;
-
-    auto leftArea =
-        row.removeFromLeft(itemWidth);
-
-    auto rightArea =
-        row;
-
-
-    leftKeyXFadeLabel.setBounds(
-        leftArea.removeFromLeft(xfadeLabelWidth)
-    );
-
-    leftKeyXFadeEditor.setBounds(
-        leftArea.removeFromLeft(xfadeEditorWidth)
-    );
-
-
-    rightKeyXFadeLabel.setBounds(
-        rightArea.removeFromLeft(xfadeLabelWidth)
-    );
-
-    rightKeyXFadeEditor.setBounds(
-        rightArea.removeFromLeft(xfadeEditorWidth)
-    );
-}
 
 
 
@@ -2773,8 +2462,18 @@ keyXFadeSectionLabel.setBounds(
 void KeyGroupEditor::paint(
     juce::Graphics& g)
 {
+    // S3000XL-style panel background
+    g.fillAll(
+        juce::Colour::fromRGB(
+            198, 197, 191
+        )
+    );
+
+    // Section divider lines
     g.setColour(
-        juce::Colours::white.withAlpha(0.18f)
+        juce::Colour::fromRGB(
+            120, 119, 115
+        ).withAlpha(0.45f)
     );
 
     auto drawSectionLine =
@@ -2810,7 +2509,6 @@ void KeyGroupEditor::paint(
     drawSectionLine(env1SectionLabel);
     drawSectionLine(env2SectionLabel);
     drawSectionLine(modulationSectionLabel);
-    drawSectionLine(keyXFadeSectionLabel);
 }
 
 void KeyGroupEditor::setResonance(int value)
@@ -2835,4 +2533,10 @@ void KeyGroupEditor::setFilterKeyFollow(int value)
         value,
         juce::dontSendNotification
     );
+}
+
+void KeyGroupEditor::suspendFilterRealtime()
+{
+    pendingFilterFreq = -1;
+    pendingResonance = -1;
 }

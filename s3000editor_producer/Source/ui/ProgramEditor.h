@@ -27,6 +27,19 @@ public:
     std::function<void(int)> onModFilter2SourceChanged;
     std::function<void(int)> onModFilter3SourceChanged;
 
+    std::function<void(bool)> onPortamentoEnableChanged;
+    std::function<void(int)> onPortamentoTypeChanged;
+    std::function<void(int)> onPortamentoValueChanged;
+
+    //std::function<void(int)> onEnv2EnvelopePitchChanged;
+
+
+    bool isModulationEditAll() const
+    {
+        return modulationEditAllToggle.getToggleState();
+    }
+
+
 
 
 
@@ -300,6 +313,23 @@ private:
 
     //juce::Slider modPitchAmountSlider;
     //juce::Label modPitchAmountLabel;
+
+    juce::ToggleButton modulationEditAllToggle{ "ALL" };
+
+ /*   juce::Label env2EnvelopePitchLabel;
+    juce::Slider env2EnvelopePitchSlider;
+    juce::Label env2EnvelopePitchAmountLabel;*/
+
+    juce::Label portamentoSectionLabel{ {}, "PORTAMENTO" };
+
+    juce::ToggleButton portamentoEnableToggle{ "ON" };
+
+    juce::ComboBox portamentoTypeCombo;
+
+    juce::Slider portamentoValueSlider;
+    juce::Rectangle<int> portamentoCardBounds;
+
+
 
 
 

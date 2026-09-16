@@ -93,7 +93,9 @@ void ProgramRangeBar::paint(
     );
 
     g.setColour(
-        juce::Colours::cornflowerblue
+        juce::Colour::fromRGB(
+            190, 45, 38
+        )
     );
 
     g.fillRoundedRectangle(
@@ -101,8 +103,19 @@ void ProgramRangeBar::paint(
         4.0f
     );
 
-    g.setColour(
+    g.fillRoundedRectangle(
+        activeArea,
+        4.0f
+    );
+
+    /*g.setColour(
         juce::Colours::white
+    );*/
+
+    g.setColour(
+        juce::Colour::fromRGB(
+            55, 55, 52
+        )
     );
 
     g.fillRect(
