@@ -72,7 +72,7 @@ void KeygroupMap::paint(
     auto area = getMapArea();
 
     g.setColour(
-        juce::Colours::darkgrey
+        juce::Colour::fromRGB(218, 216, 208)
     );
 
     g.fillRoundedRectangle(
@@ -105,7 +105,7 @@ void KeygroupMap::paint(
         if (i == selectedKeygroup)
         {
             g.setColour(
-                juce::Colours::white
+                juce::Colour::fromRGB(190, 45, 38)
                 .withAlpha(0.10f)
             );
 
@@ -132,7 +132,7 @@ void KeygroupMap::paint(
         // =========================
 
         g.setColour(
-            juce::Colours::white
+            juce::Colour::fromRGB(55, 55, 52)
         );
 
         g.drawText(
@@ -153,13 +153,13 @@ void KeygroupMap::paint(
         if (i == selectedKeygroup)
         {
             g.setColour(
-                juce::Colours::cornflowerblue
+                juce::Colour::fromRGB(190, 45, 38)
             );
         }
         else
         {
             g.setColour(
-                juce::Colours::grey
+                juce::Colour::fromRGB(140, 139, 134)
             );
         }
 
@@ -231,7 +231,7 @@ void KeygroupMap::paint(
             lowName + "-" + highName;
 
         g.setColour(
-            juce::Colours::white
+            juce::Colour::fromRGB(55, 55, 52)
         );
 
         g.drawText(

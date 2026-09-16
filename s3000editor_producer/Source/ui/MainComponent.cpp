@@ -3402,14 +3402,91 @@ void MainComponent::deleteProgram()
 }
 
 //==============================================================================
-void MainComponent::paint (juce::Graphics& g)
+void MainComponent::paint(juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll(
+        getLookAndFeel().findColour(
+            juce::ResizableWindow::backgroundColourId
+        )
+    );
 
-    g.setFont (juce::FontOptions (16.0f));
-    g.setColour (juce::Colours::white);
-    g.drawText ("Hello World!", getLocalBounds(), juce::Justification::centred, true);
+    const auto akaiRed =
+        juce::Colour::fromRGB(190, 45, 38);
+
+    const auto darkText =
+        juce::Colour::fromRGB(55, 55, 52);
+
+    // =========================
+    // AKAI
+    // =========================
+
+    g.setColour(akaiRed);
+
+    g.setFont(
+        juce::Font(24.0f).boldened()
+    );
+
+    g.drawText(
+        "AKAI",
+        20,
+        31,
+        65,
+        28,
+        juce::Justification::centredLeft
+    );
+
+    // =========================
+    // Divider
+    // =========================
+
+    g.setColour(
+        juce::Colour::fromRGB(130, 130, 125)
+    );
+
+    g.fillRect(
+        92,
+        32,
+        1,
+        34
+    );
+
+    // =========================
+    // S3000XL
+    // =========================
+
+    g.setColour(akaiRed);
+
+    g.setFont(
+        juce::Font(20.0f).boldened()
+    );
+
+    g.drawText(
+        "S3000XL",
+        104,
+        31,
+        105,
+        24,
+        juce::Justification::centredLeft
+    );
+
+    // =========================
+    // Subtitle
+    // =========================
+
+    g.setColour(darkText);
+
+    g.setFont(
+        juce::Font(9.0f).boldened()
+    );
+
+    g.drawText(
+        "SYSEX EDITOR",
+        105,
+        53,
+        105,
+        12,
+        juce::Justification::centredLeft
+    );
 }
 
 
@@ -3768,39 +3845,25 @@ void MainComponent::resized()
     // =========================
     auto topBar = area.removeFromTop(60);
 
+    //auto programArea =
+    //    topBar.removeFromLeft(330)
+    //    .reduced(20, 15);
+
+    //programCombo.setBounds(
+    //    programArea
+    //);
+
+    topBar.removeFromLeft(230);
+
     auto programArea =
         topBar.removeFromLeft(330)
-        .reduced(20, 15);
-
-    //deleteProgramButton.setBounds(
-    //    programArea.removeFromRight(30)
-    //);
-
-    //programArea.removeFromRight(6);
-
-    //addProgramButton.setBounds(
-    //    programArea.removeFromRight(30)
-    //);
-
-    //programArea.removeFromRight(6);
+        .reduced(10, 15);
 
     programCombo.setBounds(
         programArea
     );
 
-    //auto projectButtonsArea =
-    //    topBar.removeFromLeft(270)
-    //    .reduced(5, 15);
 
-    //saveProjectButton.setBounds(
-    //    projectButtonsArea.removeFromLeft(120)
-    //);
-
-    //projectButtonsArea.removeFromLeft(10);
-
-    //loadProjectButton.setBounds(
-    //    projectButtonsArea.removeFromLeft(120)
-    //);
 
 
     deviceStatusLabel.setBounds(
@@ -3808,26 +3871,7 @@ void MainComponent::resized()
         .reduced(10, 15)
     );
 
-    //keyboardMidiInputLabel.setBounds(
-    //    10,
-    //    10,
-    //    150,
-    //    28
-    //);
 
-    //keyboardMidiInputCombo.setBounds(
-    //    165,
-    //    10,
-    //    220,
-    //    28
-    //);
-    //
-    //mockEnv2R1Button.setBounds(
-    //    getWidth() - 160,
-    //    10,
-    //    150,
-    //    30
-    //);
 
     // =========================
 // Audition keyboard
@@ -3891,59 +3935,13 @@ void MainComponent::resized()
     }
 
 
-//#if JUCE_DEBUG
-//    // =========================
-//    // Debug toolbar
-//    // =========================
-//    auto debugRow = area.removeFromTop(32);
-//    debugRow = debugRow.reduced(4, 2);
-//
-//    const int gap = 4;
-//
-//    captureAButton.setBounds(
-//        debugRow.removeFromLeft(90)
-//    );
-//
-//    debugRow.removeFromLeft(gap);
-//
-//    captureBButton.setBounds(
-//        debugRow.removeFromLeft(90)
-//    );
-//
-//    debugRow.removeFromLeft(gap);
-//
-//    compareButton.setBounds(
-//        debugRow.removeFromLeft(90)
-//    );
-//
-//    debugRow.removeFromLeft(gap);
-//
-//    requestButton.setBounds(
-//        debugRow.removeFromLeft(110)
-//    );
-//
-//    debugRow.removeFromLeft(gap);
-//
-//    requestRPDATAButton.setBounds(
-//        debugRow.removeFromLeft(120)
-//    );
-//#else
-//    requestButton.setBounds(
-//        area.removeFromTop(32)
-//    );
-//
-//    requestRPDATAButton.setBounds(
-//        area.removeFromTop(32)
-//    );
-//#endif
-
     auto left = area.removeFromLeft(350);
 
     auto keygroupSection =
         left.removeFromTop(220)
         .reduced(10);
 
-    // �Œ�w�b�_
+
     auto keygroupHeader =
         keygroupSection.removeFromTop(34);
 
@@ -3961,7 +3959,6 @@ void MainComponent::resized()
         keygroupHeader.removeFromRight(90)
     );
 
-    // �o�[���������X�N���[��
     keygroupMapViewport.setBounds(
         keygroupSection
     );
@@ -3974,7 +3971,7 @@ void MainComponent::resized()
 
     editorTabs.setBounds(area);
 
-    // Keygroup Editor ��Viewport���ŃX�N���[��
+
     keyGroupEditor.setSize(
         juce::jmax(
             300,
@@ -3983,7 +3980,7 @@ void MainComponent::resized()
         1200
     );
 
-    // Sample Header��Viewport��
+
     sampleHeaderEditor.setSize(
         juce::jmax(
             300,
@@ -3992,7 +3989,7 @@ void MainComponent::resized()
         750
     );
 
-    // Program Editor��Viewport���ŃX�N���[��
+
     programEditor.setSize(
         juce::jmax(
             300,
@@ -4151,35 +4148,7 @@ void MainComponent::setDeviceConnected(bool connected)
     }
 }
 
-//void MainComponent::handleIncomingMidiMessage(
-//    juce::MidiInput*,
-//    const juce::MidiMessage& message)
-//{
-//    if (!message.isSysEx())
-//        return;
-//
-//    /*lastDeviceResponseTime =
-//        juce::Time::getMillisecondCounterHiRes();*/
-//
-//    processIncomingSysEx(message);
-//
-//    //juce::MessageManager::callAsync(
-//    //    [this]()
-//    //    {
-//    //        deviceConnected = true;
-//
-//    //        deviceStatusLabel.setText(
-//    //            "S3000XL: Connected",
-//    //            juce::dontSendNotification
-//    //        );
-//
-//    //        deviceStatusLabel.setColour(
-//    //            juce::Label::textColourId,
-//    //            juce::Colours::lightgreen
-//    //        );
-//    //    }
-//    //);
-//}
+
 
 void MainComponent::handleIncomingMidiMessage(
     juce::MidiInput* source,

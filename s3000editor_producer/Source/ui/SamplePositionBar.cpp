@@ -308,8 +308,8 @@ void SamplePositionBar::paint(
     );
 
     g.setColour(
-        juce::Colours::cornflowerblue
-        .withAlpha(0.65f)
+        juce::Colour::fromRGB(190, 45, 38)
+        .withAlpha(0.75f)
     );
 
     g.fillRect(playbackRange);
@@ -332,7 +332,7 @@ void SamplePositionBar::paint(
         );
 
         g.setColour(
-            juce::Colours::orange
+            juce::Colour::fromRGB(75, 75, 72)
             .withAlpha(0.90f)
         );
 
@@ -342,88 +342,7 @@ void SamplePositionBar::paint(
         );
     }
 
-    // ========================================
-    // START / END MARKERS
-    // ========================================
-
-    //g.setColour(
-    //    juce::Colours::white
-    //);
-
-    //g.fillRect(
-    //    startX - 1.0f,
-    //    timeline.getY() - 5.0f,
-    //    2.0f,
-    //    timeline.getHeight() + 10.0f
-    //);
-
-    //g.fillRect(
-    //    endX - 1.0f,
-    //    timeline.getY() - 5.0f,
-    //    2.0f,
-    //    timeline.getHeight() + 10.0f
-    //);
-
-    //// START triangle
-    //{
-    //    juce::Path marker;
-
-    //    marker.addTriangle(
-    //        startX - 5.0f,
-    //        timeline.getY() - 8.0f,
-
-    //        startX + 5.0f,
-    //        timeline.getY() - 8.0f,
-
-    //        startX,
-    //        timeline.getY() - 2.0f
-    //    );
-
-    //    g.fillPath(marker);
-    //}
-
-    //// END triangle
-    //{
-    //    juce::Path marker;
-
-    //    marker.addTriangle(
-    //        endX - 5.0f,
-    //        timeline.getY() - 8.0f,
-
-    //        endX + 5.0f,
-    //        timeline.getY() - 8.0f,
-
-    //        endX,
-    //        timeline.getY() - 2.0f
-    //    );
-
-    //    g.fillPath(marker);
-    //}
-
-    // ========================================
-    // LOOP MARKERS
-    // ========================================
-
-    /*if (loopEndPosition > loopStartPosition)
-    {
-        g.setColour(
-            juce::Colours::orange
-        );
-
-        g.fillRect(
-            loopStartX - 1.0f,
-            timeline.getY() + 2.0f,
-            2.0f,
-            timeline.getHeight() - 4.0f
-        );
-
-        g.fillRect(
-            loopEndX - 1.0f,
-            timeline.getY() + 2.0f,
-            2.0f,
-            timeline.getHeight() - 4.0f
-        );
-    }*/
+    
 
     // ========================================
     // BOTTOM LABELS
@@ -460,7 +379,7 @@ void SamplePositionBar::paint(
     if (loopEndPosition > loopStartPosition)
     {
         g.setColour(
-            juce::Colours::orange
+            juce::Colour::fromRGB(55, 55, 52)
         );
 
         g.drawText(

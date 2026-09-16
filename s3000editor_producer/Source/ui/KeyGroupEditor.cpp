@@ -34,6 +34,11 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(lowNoteLabel);
     addAndMakeVisible(lowNoteEditor);
 
+    //lowNoteEditor.setColour(
+    //    juce::TextEditor::textColourId,
+    //    juce::Colour::fromRGB(35, 35, 35)
+    //);
+
     addAndMakeVisible(highNoteLabel);
     addAndMakeVisible(highNoteEditor);
 
@@ -412,6 +417,48 @@ KeyGroupEditor::KeyGroupEditor()
     addAndMakeVisible(velocityEnv2Label);
     addAndMakeVisible(velocityEnv2Editor);
 
+    auto styleTextEditor =
+        [](juce::TextEditor& editor)
+        {
+            editor.setColour(
+                juce::TextEditor::textColourId,
+                juce::Colour::fromRGB(35, 35, 35)
+            );
+
+            editor.setColour(
+                juce::TextEditor::backgroundColourId,
+                juce::Colour::fromRGB(218, 216, 208)
+            );
+
+            editor.setColour(
+                juce::TextEditor::outlineColourId,
+                juce::Colour::fromRGB(130, 130, 125)
+            );
+        };
+
+    styleTextEditor(lowNoteEditor);
+    styleTextEditor(highNoteEditor);
+    styleTextEditor(tuneEditor);
+
+    styleTextEditor(env1AttackEditor);
+    styleTextEditor(env1DecayEditor);
+    styleTextEditor(env1SustainEditor);
+    styleTextEditor(env1ReleaseEditor);
+
+    styleTextEditor(env2R1Editor);
+    styleTextEditor(env2L1Editor);
+    styleTextEditor(env2R2Editor);
+    styleTextEditor(env2L2Editor);
+    styleTextEditor(env2R3Editor);
+    styleTextEditor(env2L3Editor);
+    styleTextEditor(env2R4Editor);
+    styleTextEditor(env2L4Editor);
+
+    styleTextEditor(env2VelAttackEditor);
+    styleTextEditor(env2VelReleaseEditor);
+    styleTextEditor(velocityEnv2Editor);
+
+
     env1AttackEditor.onFocusLost = [this]()
         {
             const int value =
@@ -696,7 +743,7 @@ KeyGroupEditor::KeyGroupEditor()
 
             knob.setColour(
                 juce::Slider::rotarySliderFillColourId,
-                juce::Colour(0xff51a9c9)
+                juce::Colour::fromRGB(190, 45, 38)
             );
 
             knob.setColour(
@@ -707,6 +754,11 @@ KeyGroupEditor::KeyGroupEditor()
             knob.setColour(
                 juce::Slider::thumbColourId,
                 juce::Colours::white
+            );
+
+            knob.setColour(
+                juce::Slider::textBoxTextColourId,
+                juce::Colour::fromRGB(35, 35, 35)
             );
         };
 

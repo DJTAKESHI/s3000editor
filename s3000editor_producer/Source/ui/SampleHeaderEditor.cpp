@@ -1101,6 +1101,31 @@ SampleHeaderEditor::SampleHeaderEditor()
         "LOOP"
     );
 
+    auto styleTextEditor =
+        [](juce::TextEditor& editor)
+        {
+            editor.setColour(
+                juce::TextEditor::textColourId,
+                juce::Colour::fromRGB(35, 35, 35)
+            );
+        };
+
+    styleTextEditor(nameEditor);
+    styleTextEditor(idEditor);
+    styleTextEditor(pitchEditor);
+    styleTextEditor(tuneEditor);
+
+    styleTextEditor(lengthEditor);
+    styleTextEditor(startEditor);
+    styleTextEditor(endEditor);
+
+    styleTextEditor(sampleRateEditor);
+    styleTextEditor(holdLoopTuneEditor);
+
+    styleTextEditor(loopPositionEditor);
+    styleTextEditor(loopLengthEditor);
+    styleTextEditor(loopDwellEditor);
+
 
 }
 

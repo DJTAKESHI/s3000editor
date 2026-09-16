@@ -106,6 +106,23 @@ VelocityZoneEditor::VelocityZoneEditor()
         2
     );
 
+    const auto darkText =
+        juce::Colour::fromRGB(35, 35, 35);
+
+    // TextEditor
+    sampleIdEditor.setColour(
+        juce::TextEditor::textColourId,
+        darkText);
+
+    lowVelEditor.setColour(
+        juce::TextEditor::textColourId,
+        darkText);
+
+    highVelEditor.setColour(
+        juce::TextEditor::textColourId,
+        darkText);
+
+
     semitoneSlider.setRange(-50, 50, 1);
 
     semitoneSlider.setDoubleClickReturnValue(
@@ -136,6 +153,16 @@ VelocityZoneEditor::VelocityZoneEditor()
             if (onSemitoneChanged)
                 onSemitoneChanged(value);
         };
+
+    semitoneSlider.setColour(
+        juce::Slider::textBoxTextColourId,
+        juce::Colour::fromRGB(35, 35, 35)
+    );
+
+    fineTuneSlider.setColour(
+        juce::Slider::textBoxTextColourId,
+        juce::Colour::fromRGB(35, 35, 35)
+    );
 
 
     fineTuneSlider.setRange(-50, 50, 1);
@@ -174,6 +201,11 @@ VelocityZoneEditor::VelocityZoneEditor()
                     currentZone.fineTuneRaw
                 );
         };
+
+    fineTuneSlider.setColour(
+        juce::Slider::textBoxTextColourId,
+        juce::Colour::fromRGB(35, 35, 35)
+    );
 
     pitchTrackingCombo.onChange =
         [this]()
@@ -421,6 +453,11 @@ VelocityZoneEditor::VelocityZoneEditor()
                 false,
                 50,
                 20
+            );
+
+            slider.setColour(
+                juce::Slider::textBoxTextColourId,
+                juce::Colour::fromRGB(35, 35, 35)
             );
         };
 

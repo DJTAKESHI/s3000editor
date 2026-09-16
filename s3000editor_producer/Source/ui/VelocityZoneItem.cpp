@@ -217,7 +217,7 @@ void VelocityZoneItem::paintItem(
     int height)
 {
     g.setColour(
-        juce::Colours::white
+        juce::Colour::fromRGB(55, 55, 52)
     );
 
     juce::String sampleName;

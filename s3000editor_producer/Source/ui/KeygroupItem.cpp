@@ -73,7 +73,7 @@ void KeygroupItem::paintItem(
 )
 {
     g.setColour(
-        juce::Colours::white
+        juce::Colour::fromRGB(55, 55, 52)
     );
 
 

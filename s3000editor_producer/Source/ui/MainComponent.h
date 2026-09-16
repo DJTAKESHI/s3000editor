@@ -208,6 +208,16 @@ public:
             juce::Colour::fromRGB(190, 45, 38)
         );
 
+        setColour(
+            juce::ScrollBar::thumbColourId,
+            juce::Colour::fromRGB(130, 129, 124)
+        );
+
+        setColour(
+            juce::ScrollBar::backgroundColourId,
+            juce::Colour::fromRGB(218, 216, 208)
+        );
+
     }
 
     void drawTabButton(
