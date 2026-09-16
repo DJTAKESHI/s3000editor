@@ -877,9 +877,9 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(programCombo);
 
-    deviceStatusLabel.setText(
-        "S3000XL: Waiting for device...",
-        juce::dontSendNotification
+    deviceStatusLabel.setColour(
+        juce::Label::textColourId,
+        juce::Colour::fromRGB(55, 55, 52)
     );
 
     deviceStatusLabel.setColour(
@@ -4096,7 +4096,7 @@ void MainComponent::setDeviceConnected(bool connected)
 
         deviceStatusLabel.setColour(
             juce::Label::textColourId,
-            juce::Colours::lightgreen
+            juce::Colour::fromRGB(55, 55, 52)
         );
 
         if (!wasConnected)
