@@ -91,6 +91,18 @@ MainComponent::MainComponent()
             );
         };
 
+
+    juce::PropertiesFile::Options options;
+
+    options.applicationName = "S3000XLEditor";
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder =
+        "Application Support";
+
+    midiProperties =
+        std::make_unique<juce::PropertiesFile>(
+            options
+        );
    
 
     keygroupMap.onKeygroupSelected =
@@ -3022,65 +3034,12 @@ MainComponent::MainComponent()
         DBG("Dump files not found yet");
     }
 
-    // ==============================
-    // Open S3000XL MIDI ports
-    // ==============================
-
-    const auto inputs =
-        juce::MidiInput::getAvailableDevices();
-
-    for (int i = 0; i < inputs.size(); ++i)
+    if (!restoreS3000MidiDevices())
     {
-        
-        DBG("INPUT "
-                + juce::String(i)
-                + " NAME="
-                + inputs[i].name);
-        
-        if (inputs[i].name.containsIgnoreCase("UX16"))
-        {
-            midiManager.openInput(
-                i,
-                this
-            );
+        DBG("S3000 MIDI SETUP REQUIRED");
 
-            break;
-        }
+        showS3000MidiSetup();
     }
-
-    const auto outputs =
-        juce::MidiOutput::getAvailableDevices();
-
-    for (int i = 0; i < outputs.size(); ++i)
-    {
-        
-        DBG("OUTPUT SEARCH "
-                + juce::String(i)
-                + " NAME="
-                + outputs[i].name);
-        
-        
-        if (outputs[i].name.containsIgnoreCase("UX16"))
-        {
-            if (midiManager.openOutput(i))
-            {
-                sysExSender.setMidiOutput(
-                    midiManager.getOutput()
-                );
-            }
-
-            break;
-        }
-    }
-
-    juce::Timer::callAfterDelay(
-        500,
-        [this]
-        {
-            DBG("AUTO REQUEST PROGRAM LIST");
-            sysExSender.sendRPLIST();
-        }
-    );
 
 
     sampleHeaderEditor.onSampleHeaderChanged =
@@ -5681,6 +5640,20 @@ void MainComponent::handleProgramListResponse(
     const uint8_t* data,
     int size)
 {
+
+    if (pendingMidiDeviceSave)
+    {
+        DBG("S3000XL PLIST RESPONSE RECEIVED");
+        DBG("CONFIRMED S3000XL MIDI CONNECTION");
+
+        saveS3000MidiDevices(
+            pendingMidiInputDevice,
+            pendingMidiOutputDevice
+        );
+
+        pendingMidiDeviceSave = false;
+    }
+
     auto rawCopy =
         std::vector<uint8_t>(
             data,
@@ -10293,6 +10266,340 @@ void MainComponent::loadProject()
     );
 }
 
+bool MainComponent::connectS3000Midi(
+    int inputIndex,
+    int outputIndex,
+    bool saveAfterConfirmation)
+{
+    s3000MidiInputDevices =
+        juce::MidiInput::getAvailableDevices();
+
+    s3000MidiOutputDevices =
+        juce::MidiOutput::getAvailableDevices();
+
+    if (inputIndex < 0 ||
+        inputIndex >= s3000MidiInputDevices.size())
+    {
+        DBG("Invalid S3000 MIDI input index");
+        return false;
+    }
+
+    if (outputIndex < 0 ||
+        outputIndex >= s3000MidiOutputDevices.size())
+    {
+        DBG("Invalid S3000 MIDI output index");
+        return false;
+    }
+
+    DBG("OPEN S3000 INPUT: "
+        + s3000MidiInputDevices[inputIndex].name);
+
+    DBG("OPEN S3000 OUTPUT: "
+        + s3000MidiOutputDevices[outputIndex].name);
+
+    if (!midiManager.openInput(
+        inputIndex,
+        this))
+    {
+        DBG("S3000 MIDI INPUT OPEN FAILED");
+        return false;
+    }
+
+    if (!midiManager.openOutput(outputIndex))
+    {
+        DBG("S3000 MIDI OUTPUT OPEN FAILED");
+        return false;
+    }
+
+    sysExSender.setMidiOutput(
+        midiManager.getOutput()
+    );
+
+    pendingMidiDeviceSave =
+        saveAfterConfirmation;
+
+    if (saveAfterConfirmation)
+    {
+        pendingMidiInputDevice =
+            s3000MidiInputDevices[inputIndex];
+
+        pendingMidiOutputDevice =
+            s3000MidiOutputDevices[outputIndex];
+    }
+
+    waitingForInitialMidiResponse = true;
+
+    midiConnectionAttemptTime =
+        juce::Time::getMillisecondCounterHiRes();
+
+    DBG("MIDI PORTS OPEN");
+    DBG("WAITING FOR S3000XL RESPONSE");
+
+    juce::Timer::callAfterDelay(
+        500,
+        [this]
+        {
+            if (midiManager.getOutput() != nullptr)
+            {
+                DBG("AUTO REQUEST PROGRAM LIST");
+                sysExSender.sendRPLIST();
+            }
+        }
+    );
+
+    return true;
+}
+
+void MainComponent::saveS3000MidiDevices(
+    const juce::MidiDeviceInfo& input,
+    const juce::MidiDeviceInfo& output)
+{
+    if (midiProperties == nullptr)
+        return;
+
+    midiProperties->setValue(
+        "s3000MidiInputId",
+        input.identifier
+    );
+
+    midiProperties->setValue(
+        "s3000MidiOutputId",
+        output.identifier
+    );
+
+    midiProperties->saveIfNeeded();
+
+    DBG("SAVED MIDI INPUT: "
+        + input.name
+        + " / "
+        + input.identifier);
+
+    DBG("SAVED MIDI OUTPUT: "
+        + output.name
+        + " / "
+        + output.identifier);
+}
+
+bool MainComponent::restoreS3000MidiDevices()
+{
+    if (midiProperties == nullptr)
+        return false;
+
+    const auto savedInputId =
+        midiProperties->getValue(
+            "s3000MidiInputId"
+        );
+
+    const auto savedOutputId =
+        midiProperties->getValue(
+            "s3000MidiOutputId"
+        );
+
+    if (savedInputId.isEmpty() ||
+        savedOutputId.isEmpty())
+    {
+        DBG("NO SAVED S3000 MIDI DEVICES");
+        return false;
+    }
+
+    s3000MidiInputDevices =
+        juce::MidiInput::getAvailableDevices();
+
+    s3000MidiOutputDevices =
+        juce::MidiOutput::getAvailableDevices();
+
+    int inputIndex = -1;
+    int outputIndex = -1;
+
+    for (int i = 0;
+        i < s3000MidiInputDevices.size();
+        ++i)
+    {
+        DBG("INPUT "
+            + juce::String(i)
+            + " NAME="
+            + s3000MidiInputDevices[i].name
+            + " ID="
+            + s3000MidiInputDevices[i].identifier);
+
+        if (s3000MidiInputDevices[i].identifier ==
+            savedInputId)
+        {
+            inputIndex = i;
+        }
+    }
+
+    for (int i = 0;
+        i < s3000MidiOutputDevices.size();
+        ++i)
+    {
+        DBG("OUTPUT "
+            + juce::String(i)
+            + " NAME="
+            + s3000MidiOutputDevices[i].name
+            + " ID="
+            + s3000MidiOutputDevices[i].identifier);
+
+        if (s3000MidiOutputDevices[i].identifier ==
+            savedOutputId)
+        {
+            outputIndex = i;
+        }
+    }
+
+    if (inputIndex < 0 || outputIndex < 0)
+    {
+        DBG("SAVED S3000 MIDI DEVICE NOT FOUND");
+        return false;
+    }
+
+    DBG("RESTORING SAVED S3000 MIDI CONNECTION");
+
+    return connectS3000Midi(
+        inputIndex,
+        outputIndex,
+        false
+    );
+}
+
+void MainComponent::showS3000MidiSetup()
+{
+    s3000MidiInputDevices =
+        juce::MidiInput::getAvailableDevices();
+
+    s3000MidiOutputDevices =
+        juce::MidiOutput::getAvailableDevices();
+
+    if (s3000MidiInputDevices.isEmpty() ||
+        s3000MidiOutputDevices.isEmpty())
+    {
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::MessageBoxIconType::WarningIcon,
+            "MIDI Setup",
+            "No MIDI input/output devices were found."
+        );
+
+        return;
+    }
+
+    auto* window =
+        new juce::AlertWindow(
+            "S3000XL MIDI Setup",
+            "Select the MIDI interface connected to your S3000XL.",
+            juce::MessageBoxIconType::NoIcon
+        );
+
+    // ==============================
+    // MIDI Input
+    // ==============================
+
+    juce::StringArray inputNames;
+
+    for (const auto& device : s3000MidiInputDevices)
+        inputNames.add(device.name);
+
+    window->addComboBox(
+        "midiInput",
+        inputNames,
+        "MIDI Input"
+    );
+
+    auto* inputCombo =
+        window->getComboBoxComponent(
+            "midiInput"
+        );
+
+    // ==============================
+    // MIDI Output
+    // ==============================
+
+    juce::StringArray outputNames;
+
+    for (const auto& device : s3000MidiOutputDevices)
+        outputNames.add(device.name);
+
+    window->addComboBox(
+        "midiOutput",
+        outputNames,
+        "MIDI Output"
+    );
+
+    auto* outputCombo =
+        window->getComboBoxComponent(
+            "midiOutput"
+        );
+
+    // ==============================
+    // Buttons
+    // ==============================
+
+    window->addButton(
+        "Connect",
+        1,
+        juce::KeyPress(
+            juce::KeyPress::returnKey
+        )
+    );
+
+    window->addButton(
+        "Cancel",
+        0,
+        juce::KeyPress(
+            juce::KeyPress::escapeKey
+        )
+    );
+
+    // ==============================
+    // Show dialog
+    // ==============================
+
+    window->enterModalState(
+        true,
+        juce::ModalCallbackFunction::create(
+            [this, window, inputCombo, outputCombo]
+            (int result)
+            {
+                if (result == 1)
+                {
+                    const int inputIndex =
+                        inputCombo->getSelectedItemIndex();
+
+                    const int outputIndex =
+                        outputCombo->getSelectedItemIndex();
+
+                    if (inputIndex < 0 ||
+                        outputIndex < 0)
+                    {
+                        juce::AlertWindow::
+                            showMessageBoxAsync(
+                                juce::MessageBoxIconType::WarningIcon,
+                                "MIDI Setup",
+                                "Please select both a MIDI input and output."
+                            );
+                    }
+                    else
+                    {
+                        if (!connectS3000Midi(
+                            inputIndex,
+                            outputIndex,
+                            true))
+                        {
+                            juce::AlertWindow::
+                                showMessageBoxAsync(
+                                    juce::MessageBoxIconType::WarningIcon,
+                                    "MIDI Setup",
+                                    "Could not open the selected MIDI devices."
+                                );
+                        }
+                    }
+                }
+
+                delete window;
+            }
+        ),
+        false
+    );
+}
 
 
 // write-test

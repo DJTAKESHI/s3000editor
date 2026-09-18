@@ -592,6 +592,34 @@ private:
     juce::Viewport programViewport;
     
     MidiManager midiManager;
+
+    // S3000XL MIDI connection
+    juce::Array<juce::MidiDeviceInfo> s3000MidiInputDevices;
+    juce::Array<juce::MidiDeviceInfo> s3000MidiOutputDevices;
+
+    std::unique_ptr<juce::PropertiesFile> midiProperties;
+
+    bool connectS3000Midi(
+        int inputIndex,
+        int outputIndex,
+        bool saveAfterConfirmation);
+
+    void saveS3000MidiDevices(
+        const juce::MidiDeviceInfo& input,
+        const juce::MidiDeviceInfo& output);
+
+    bool restoreS3000MidiDevices();
+    void showS3000MidiSetup();
+
+    // Save only after S3000XL replies to RPLIST
+    bool pendingMidiDeviceSave = false;
+    juce::MidiDeviceInfo pendingMidiInputDevice;
+    juce::MidiDeviceInfo pendingMidiOutputDevice;
+
+    // Waiting for RPLIST reply
+    bool waitingForInitialMidiResponse = false;
+    double midiConnectionAttemptTime = 0.0;
+
     void processIncomingSysEx(
                                const juce::MidiMessage& message);
     void handleCommandReply(
