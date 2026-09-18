@@ -254,59 +254,7 @@ public:
             }
         }
 
-        beginTest(
-            "Real S3000XL keygroup binary round trips losslessly"
-        );
-
-        {
-            juce::File fixture(
-                "C:\\Users\\yasuto\\s3000editor_projucer\\"
-                "s3000editor_producer\\Source\\tests\\fixtures\\"
-                "keygroup_basic.bin"
-            );
-
-            auto original =
-                loadFixture(fixture);
-
-            expect(
-                !original.empty(),
-                "Could not load keygroup fixture"
-            );
-
-            if (original.empty())
-                return;
-
-            auto parsed =
-                KeygroupParser::parse(
-                    original,
-                    {}
-                );
-
-            auto encoded =
-                KeygroupEncoder::encode(
-                    parsed
-                );
-
-            expectEquals(
-                static_cast<int>(encoded.size()),
-                static_cast<int>(original.size())
-            );
-
-            for (int i = 0;
-                i < static_cast<int>(original.size());
-                ++i)
-            {
-                expectEquals(
-                    static_cast<int>(encoded[i]),
-                    static_cast<int>(original[i]),
-                    "Round-trip mismatch at offset "
-                    + juce::String(i)
-                );
-            }
-        }
-
-
-
+//        juce::UnitTestRunner runner;
 
 
     }

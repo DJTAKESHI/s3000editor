@@ -27,6 +27,7 @@ void Envelope2Editor::setEnvelope(
 }
 
 void Envelope2Editor::paint(
+                            
     juce::Graphics& g)
 {
     auto bounds =

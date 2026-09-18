@@ -720,6 +720,8 @@ KeyGroupEditor::KeyGroupEditor()
             knob.setSliderStyle(
                 juce::Slider::RotaryHorizontalVerticalDrag
             );
+            
+            knob.setScrollWheelEnabled(false);
 
             knob.setTextBoxStyle(
                 juce::Slider::TextBoxBelow,

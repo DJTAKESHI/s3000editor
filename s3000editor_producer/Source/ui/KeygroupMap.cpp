@@ -3,6 +3,9 @@
 void KeygroupMap::setProgram(
     const Program& program)
 {
+    
+    DBG("=== KEYGROUP MAP setProgram CALLED ===");
+    
     currentProgram = program;
 
 

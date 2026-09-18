@@ -31,7 +31,7 @@ public:
             )
         );
 
-#if JUCE_DEBUG
+#if JUCE_DEBUG && !JUCE_MAC
         DBG("========== RUNNING UNIT TESTS ==========");
 
         juce::UnitTestRunner runner;

@@ -4,6 +4,24 @@
 #include "../s3000/S3000Types.h"
 #include "ProgramRangeBar.h"
 
+class TuneSlider : public juce::Slider
+{
+public:
+    std::function<void()> onDoubleClickReset;
+
+    void mouseDoubleClick(
+        const juce::MouseEvent& event) override
+    {
+        setValue(
+            0.0,
+            juce::sendNotificationSync
+        );
+
+        if (onDoubleClickReset)
+            onDoubleClickReset();
+    }
+};
+
 class ProgramEditor : public juce::Component
 {
 public:
@@ -104,7 +122,7 @@ private:
     juce::Label loudnessValueLabel;
 
     juce::Label tuneLabel;
-    juce::Slider tuneSlider;
+    TuneSlider tuneSlider;
     juce::Label tuneValueLabel;
 
     juce::Label outLevelLabel;
@@ -234,7 +252,7 @@ private:
     juce::Label modAmp2AmountLabel;
 
     juce::Label modAmp3Label;
-    juce::ComboBox modAmp3SourceCombo;
+    juce::Label modAmp3SourceLabel;
 
 
     // =========================
@@ -292,7 +310,7 @@ private:
     juce::Slider lfo1PitchSlider;
     juce::Label lfo1PitchAmountLabel;
 
-    juce::Label velocityLoudnessLabel;
+//    juce::Label velocityLoudnessLabel;
     juce::Slider velocityLoudnessSlider;
     juce::Label velocityLoudnessValueLabel;
 

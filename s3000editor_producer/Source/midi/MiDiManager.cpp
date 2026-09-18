@@ -4,6 +4,22 @@
 bool MidiManager::openOutput(int deviceIndex)
 {
     auto outputs = juce::MidiOutput::getAvailableDevices();
+    
+    DBG("OPEN OUTPUT INDEX = "
+            + juce::String(deviceIndex));
+
+        DBG("AVAILABLE OUTPUT COUNT = "
+            + juce::String(outputs.size()));
+
+        for (int i = 0; i < outputs.size(); ++i)
+        {
+            DBG("OUTPUT "
+                + juce::String(i)
+                + " NAME="
+                + outputs[i].name
+                + " IDENTIFIER="
+                + outputs[i].identifier);
+        }
 
     if (deviceIndex < 0 ||
         deviceIndex >= outputs.size())

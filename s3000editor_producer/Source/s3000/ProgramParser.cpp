@@ -168,6 +168,12 @@ void ProgramParser::parseHeader(
 
     p.loudness =
         d[P::Output::Loudness];
+    
+    p.velocityLoudness =
+        readS8(
+            d,
+            P::Output::VelocityLoudness
+        );
 
 
 

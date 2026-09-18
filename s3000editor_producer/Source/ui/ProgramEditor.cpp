@@ -100,6 +100,8 @@ ProgramEditor::ProgramEditor()
         99,
         1
     );
+    
+    lfo1RateSlider.setScrollWheelEnabled(false);
 
     lfo1RateSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -330,14 +332,16 @@ ProgramEditor::ProgramEditor()
         0.01
     );
 
-    tuneSlider.setDoubleClickReturnValue(
-        true,
-        0.0
-    );
+//    tuneSlider.setDoubleClickReturnValue(
+//        false,
+//        0.0
+//    );
 
     tuneSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
     );
+    
+    tuneSlider.setScrollWheelEnabled(false);
 
     tuneSlider.setTextBoxStyle(
         juce::Slider::NoTextBox,
@@ -387,7 +391,31 @@ ProgramEditor::ProgramEditor()
                 );
             }
         };
+    
 
+
+    tuneSlider.onDoubleClickReset =
+        [this]()
+        {
+            currentProgram.tune =
+                tuneSlider.getValue();
+
+            DBG(
+                "PROGRAM TUNE DOUBLE CLICK RESET TUNE="
+                + juce::String(
+                    currentProgram.tune,
+                    2
+                )
+            );
+
+            if (onProgramChanged)
+            {
+                onProgramChanged(
+                    currentProgram
+                );
+            }
+        };
+    
     addAndMakeVisible(polyphonyCombo);
 
     polyphonyCombo.onChange =
@@ -481,6 +509,8 @@ ProgramEditor::ProgramEditor()
         99.0,
         1.0
     );
+    
+    outLevelSlider.setScrollWheelEnabled(false);
 
     outLevelSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -674,6 +704,8 @@ ProgramEditor::ProgramEditor()
         99.0,
         1.0
     );
+    
+    stereoSlider.setScrollWheelEnabled(false);
 
     stereoSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -815,6 +847,8 @@ ProgramEditor::ProgramEditor()
         50.0,
         1.0
     );
+    
+    panSlider.setScrollWheelEnabled(false);
 
     panSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -909,6 +943,8 @@ ProgramEditor::ProgramEditor()
         12,
         1
     );
+    
+    pressurePitchSlider.setScrollWheelEnabled(false);
 
     pressurePitchSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -962,6 +998,8 @@ ProgramEditor::ProgramEditor()
         24,
         1
     );
+    
+    bendDownSlider.setScrollWheelEnabled(false);
 
     bendDownSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -981,7 +1019,49 @@ ProgramEditor::ProgramEditor()
     );
 
     addAndMakeVisible(bendDownValueLabel);
+    
+    bendUpLabel.setText(
+        "Bend Up",
+        juce::dontSendNotification
+    );
+    
+    addAndMakeVisible(bendUpLabel);
+    
+    bendUpSlider.setSliderStyle(
+        juce::Slider::LinearHorizontal
+    );
 
+    bendUpSlider.setTextBoxStyle(
+        juce::Slider::NoTextBox,
+        false,
+        0,
+        0
+    );
+
+    bendUpSlider.setScrollWheelEnabled(false);
+    
+    addAndMakeVisible(bendUpSlider);
+    addAndMakeVisible(bendUpValueLabel);
+
+    bendUpSlider.onValueChange =
+        [this]()
+        {
+            bendUpValueLabel.setText(
+                juce::String(
+                    (int)bendUpSlider.getValue()
+                ),
+                juce::dontSendNotification
+            );
+        };
+    
+    bendUpValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+
+    bendDownValueLabel.setJustificationType(
+        juce::Justification::centredRight
+    );
+    
     bendDownSlider.onValueChange =
         [this]()
         {
@@ -1057,6 +1137,8 @@ ProgramEditor::ProgramEditor()
         50,
         1
     );
+    
+    transposeSlider.setScrollWheelEnabled(false);
 
     transposeSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -1236,6 +1318,8 @@ ProgramEditor::ProgramEditor()
         99,
         1
     );
+    
+    lfo1DepthSlider.setScrollWheelEnabled(false);
 
     lfo1DepthSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -1294,6 +1378,8 @@ ProgramEditor::ProgramEditor()
         99,
         1
     );
+    
+    lfo1DelaySlider.setScrollWheelEnabled(false);
 
     lfo1DelaySlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -1360,6 +1446,8 @@ ProgramEditor::ProgramEditor()
             addAndMakeVisible(label);
 
             slider.setRange(0, 99, 1);
+            
+            slider.setScrollWheelEnabled(false);
 
             slider.setSliderStyle(
                 juce::Slider::LinearHorizontal
@@ -1554,6 +1642,8 @@ ProgramEditor::ProgramEditor()
             slider.setSliderStyle(
                 juce::Slider::LinearHorizontal
             );
+            
+            slider.setScrollWheelEnabled(false);
 
             slider.setTextBoxStyle(
                 juce::Slider::NoTextBox,
@@ -1731,11 +1821,11 @@ ProgramEditor::ProgramEditor()
         "Source 2"
     );
 
-    setupModSourceCombo(
-        modAmp3Label,
-        modAmp3SourceCombo,
-        "Source 3"
-    );
+//    setupModSourceCombo(
+//        modAmp3Label,
+//        modAmp3SourceCombo,
+//        "Source 3"
+//    );
 
     setupModSourceCombo(
         modLfo1RateLabel,
@@ -1793,6 +1883,8 @@ ProgramEditor::ProgramEditor()
             slider.setSliderStyle(
                 juce::Slider::LinearHorizontal
             );
+            
+            slider.setScrollWheelEnabled(false);
 
             slider.setTextBoxStyle(
                 juce::Slider::NoTextBox,
@@ -2044,14 +2136,16 @@ ProgramEditor::ProgramEditor()
                 onProgramChanged(currentProgram);
         };
 
-    modAmp3SourceCombo.onChange = [this]()
-        {
-            currentProgram.modSAmp3 =
-                modAmp3SourceCombo.getSelectedId() - 1;
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
-        };
+//    modAmp3SourceCombo.onChange = [this]()
+//        {
+//            currentProgram.modSAmp3 =
+//                modAmp3SourceCombo.getSelectedId() - 1;
+//
+//            if (onProgramChanged)
+//                onProgramChanged(currentProgram);
+//        };
+    
+//    modAmp3SourceCombo.setEnabled(false);
 
 
     modLfo1RateSourceCombo.onChange = [this]()
@@ -2306,11 +2400,23 @@ ProgramEditor::ProgramEditor()
     );
 
 
-    velocityLoudnessLabel.setText(
-        "Vel -> Loud",
-        juce::dontSendNotification
-    );
-    addAndMakeVisible(velocityLoudnessLabel);
+//    velocityLoudnessLabel.setText(
+//        "Vel -> Loud",
+//        juce::dontSendNotification
+//    );
+    
+    const int value =
+        (int)velocityLoudnessSlider.getValue();
+
+//    velocityLoudnessLabel.setText(
+//        value > 0
+//            ? "+" + juce::String(value)
+//            : juce::String(value),
+//        juce::dontSendNotification
+//    );
+    
+    
+//    addAndMakeVisible(velocityLoudnessLabel);
 
     velocityLoudnessSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -2328,6 +2434,10 @@ ProgramEditor::ProgramEditor()
         50.0,
         1.0
     );
+    
+    velocityLoudnessSlider.setScrollWheelEnabled(false);
+    
+    loudnessSlider.setScrollWheelEnabled(false);
 
     addAndMakeVisible(velocityLoudnessSlider);
 
@@ -2342,10 +2452,13 @@ ProgramEditor::ProgramEditor()
     velocityLoudnessSlider.onValueChange =
         [this]()
         {
+            const int value =
+                (int)velocityLoudnessSlider.getValue();
+
             velocityLoudnessValueLabel.setText(
-                juce::String(
-                    (int)velocityLoudnessSlider.getValue()
-                ),
+                value > 0
+                    ? "+" + juce::String(value)
+                    : juce::String(value),
                 juce::dontSendNotification
             );
         };
@@ -2476,10 +2589,16 @@ ProgramEditor::ProgramEditor()
     addAndMakeVisible(velocityDepthSlider);
 
     modWheelDepthSlider.setRange(0.0, 99.0, 1.0);
+    
+    modWheelDepthSlider.setScrollWheelEnabled(false);
 
     pressureDepthSlider.setRange(0.0, 99.0, 1.0);
+    
+//    pressureDepthSlider.setScrollWheelEnabled(false);
 
     velocityDepthSlider.setRange(0.0, 99.0, 1.0);
+    
+    velocityDepthSlider.setScrollWheelEnabled(false);
 
     velocityDepthValueLabel.setJustificationType(
         juce::Justification::centredRight
@@ -2521,6 +2640,9 @@ ProgramEditor::ProgramEditor()
 
     addAndMakeVisible(portamentoValueSlider);
     portamentoValueSlider.setRange(0, 99, 1);
+    portamentoValueSlider.setScrollWheelEnabled(false);
+    
+    
     portamentoValueSlider.setSliderStyle(
         juce::Slider::LinearHorizontal
     );
@@ -2529,6 +2651,11 @@ ProgramEditor::ProgramEditor()
         false,
         50,
         20
+    );
+    
+    portamentoValueSlider.setColour(
+        juce::Slider::textBoxTextColourId,
+        juce::Colour(35, 35, 35)
     );
 
 
@@ -2571,7 +2698,9 @@ void ProgramEditor::setModFilter3Amount(int value)
     );
 
     modFilter3AmountLabel.setText(
-        juce::String(value),
+        value > 0
+            ? "+" + juce::String(value)
+            : juce::String(value),
         juce::dontSendNotification
     );
 }
@@ -3020,7 +3149,9 @@ void ProgramEditor::setProgram(
     );
 
     velocityLoudnessValueLabel.setText(
-        juce::String(program.velocityLoudness),
+        program.velocityLoudness > 0
+            ? "+" + juce::String(program.velocityLoudness)
+            : juce::String(program.velocityLoudness),
         juce::dontSendNotification
     );
 
@@ -3088,10 +3219,26 @@ void ProgramEditor::setProgram(
         juce::dontSendNotification
     );
 
-    modAmp3SourceCombo.setSelectedId(
-        program.modSAmp3 + 1,
+//    modAmp3SourceCombo.setSelectedId(
+//        program.modSAmp3 + 1,
+//        juce::dontSendNotification
+//    );
+    
+    modAmp3SourceLabel.setText(
+        "Velocity",
         juce::dontSendNotification
     );
+    
+    addAndMakeVisible(modAmp3Label);
+    
+    modAmp3Label.setText(
+        "Source 3",
+        juce::dontSendNotification
+    );
+    
+    
+
+    addAndMakeVisible(modAmp3SourceLabel);
 
 
     modLfo1RateSourceCombo.setSelectedId(
@@ -3380,6 +3527,7 @@ void ProgramEditor::resized()
     constexpr int rowHeight = 28;
     constexpr int labelWidth = 105;
 
+
     auto addRow =
         [=](
             juce::Rectangle<int>& section,
@@ -3470,22 +3618,22 @@ void ProgramEditor::resized()
 
     left.removeFromTop(10);
 
-    {
-        auto row =
-            general.removeFromTop(rowHeight);
-
-        velocityLoudnessLabel.setBounds(
-            row.removeFromLeft(labelWidth)
-        );
-
-        velocityLoudnessValueLabel.setBounds(
-            row.removeFromRight(55)
-        );
-
-        velocityLoudnessSlider.setBounds(
-            row.reduced(2)
-        );
-    }
+//    {
+//        auto row =
+//            general.removeFromTop(rowHeight);
+//
+////        velocityLoudnessLabel.setBounds(
+////            row.removeFromLeft(labelWidth)
+////        );
+//
+//        velocityLoudnessValueLabel.setBounds(
+//            row.removeFromRight(55)
+//        );
+//
+//        velocityLoudnessSlider.setBounds(
+//            row.reduced(2)
+//        );
+//    }
 
     {
         auto row =
@@ -3951,7 +4099,7 @@ void ProgramEditor::resized()
         modAmp2AmountLabel
     );
 
-    // Source 3 ‚Í Amount ‚ª‚È‚¢
+    // Source 3 = Velocity -> Loudness
     {
         auto row =
             modAmp.removeFromTop(modRowHeight);
@@ -3960,9 +4108,17 @@ void ProgramEditor::resized()
             row.removeFromLeft(modNameWidth)
         );
 
-        modAmp3SourceCombo.setBounds(
+        modAmp3SourceLabel.setBounds(
             row.removeFromLeft(modSourceWidth)
             .reduced(2, 4)
+        );
+
+        velocityLoudnessValueLabel.setBounds(
+            row.removeFromRight(modValueWidth)
+        );
+
+        velocityLoudnessSlider.setBounds(
+            row.reduced(4, 7)
         );
     }
 

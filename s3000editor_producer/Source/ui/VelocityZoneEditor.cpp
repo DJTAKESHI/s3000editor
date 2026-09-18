@@ -124,6 +124,8 @@ VelocityZoneEditor::VelocityZoneEditor()
 
 
     semitoneSlider.setRange(-50, 50, 1);
+    
+    semitoneSlider.setScrollWheelEnabled(false);
 
     semitoneSlider.setDoubleClickReturnValue(
         true,
@@ -166,6 +168,8 @@ VelocityZoneEditor::VelocityZoneEditor()
 
 
     fineTuneSlider.setRange(-50, 50, 1);
+    
+    fineTuneSlider.setScrollWheelEnabled(false);
 
 
     fineTuneSlider.setDoubleClickReturnValue(
@@ -438,6 +442,8 @@ VelocityZoneEditor::VelocityZoneEditor()
         [](juce::Slider& slider)
         {
             slider.setRange(-50, 50, 1);
+            
+            slider.setScrollWheelEnabled(false);
 
             slider.setDoubleClickReturnValue(
                 true,
@@ -447,6 +453,8 @@ VelocityZoneEditor::VelocityZoneEditor()
             slider.setSliderStyle(
                 juce::Slider::LinearHorizontal
             );
+            
+            slider.setScrollWheelEnabled(false);
 
             slider.setTextBoxStyle(
                 juce::Slider::TextBoxRight,
@@ -863,7 +871,9 @@ void VelocityZoneEditor::setZone(
         zone.filterFreq,
         juce::dontSendNotification
     );
-
+    
+    filterFreqSlider.setScrollWheelEnabled(false);
+    
     playModeCombo.setSelectedId(
         static_cast<int>(zone.playMode) + 1,
         juce::dontSendNotification

@@ -3022,16 +3022,55 @@ MainComponent::MainComponent()
         DBG("Dump files not found yet");
     }
 
-    midiManager.openInput(
-        1,
-        this
-    );
+    // ==============================
+    // Open S3000XL MIDI ports
+    // ==============================
 
-    if (midiManager.openOutput(2))
+    const auto inputs =
+        juce::MidiInput::getAvailableDevices();
+
+    for (int i = 0; i < inputs.size(); ++i)
     {
-        sysExSender.setMidiOutput(
-            midiManager.getOutput()
-        );
+        
+        DBG("INPUT "
+                + juce::String(i)
+                + " NAME="
+                + inputs[i].name);
+        
+        if (inputs[i].name.containsIgnoreCase("UX16"))
+        {
+            midiManager.openInput(
+                i,
+                this
+            );
+
+            break;
+        }
+    }
+
+    const auto outputs =
+        juce::MidiOutput::getAvailableDevices();
+
+    for (int i = 0; i < outputs.size(); ++i)
+    {
+        
+        DBG("OUTPUT SEARCH "
+                + juce::String(i)
+                + " NAME="
+                + outputs[i].name);
+        
+        
+        if (outputs[i].name.containsIgnoreCase("UX16"))
+        {
+            if (midiManager.openOutput(i))
+            {
+                sysExSender.setMidiOutput(
+                    midiManager.getOutput()
+                );
+            }
+
+            break;
+        }
     }
 
     juce::Timer::callAfterDelay(
@@ -3279,6 +3318,9 @@ MainComponent::MainComponent()
 
     addAndMakeVisible(keyboardVelocitySlider);
     keyboardVelocitySlider.setRange(1, 127, 1);
+    
+    keyboardVelocitySlider.setScrollWheelEnabled(false);
+    
     keyboardVelocitySlider.setValue(100);
     keyboardVelocitySlider.setSliderStyle(
         juce::Slider::LinearHorizontal
@@ -3779,7 +3821,13 @@ void MainComponent::menuItemSelected(
         const int index =
             menuItemID - 3000;
 
-        midiManager.openOutput(index);
+        if (midiManager.openOutput(index))
+        {
+            sysExSender.setMidiOutput(
+                midiManager.getOutput()
+            );
+        }
+
         return;
     }
 
@@ -3977,7 +4025,7 @@ void MainComponent::resized()
             300,
             keyGroupViewport.getWidth() - 15
         ),
-        1200
+        900
     );
 
 
@@ -4049,6 +4097,11 @@ void MainComponent::timerCallback()
 
     if (elapsed > 5000.0)
     {
+        DBG(
+                "DEVICE TIMEOUT elapsed="
+                + juce::String(elapsed)
+            );
+        
         setDeviceConnected(false);
     }
 
@@ -4273,6 +4326,16 @@ void MainComponent::processIncomingSysEx(
     // MDATA response = heartbeat response
     if (opcode == 0x11)
     {
+        const double now =
+                juce::Time::getMillisecondCounterHiRes();
+
+            DBG(
+                "HEARTBEAT RESPONSE gap="
+                + juce::String(
+                    now - lastDeviceResponseTime
+                )
+            );
+        
         lastDeviceResponseTime =
             juce::Time::getMillisecondCounterHiRes();
 
@@ -4300,8 +4363,24 @@ void MainComponent::processIncomingSysEx(
                     basicMidiChannel = bmchan;
 
 
+                    DBG(
+                        "MDATA ASYNC CHECK selected="
+                        + juce::String(selectedProgram)
+                        + " current="
+                        + juce::String(currentProgram)
+                    );
+
                     if (selectedProgram != currentProgram)
+                    {
+                        DBG(
+                            "MDATA TRIGGER LOAD PROGRAM "
+                            + juce::String(currentProgram)
+                            + " -> "
+                            + juce::String(selectedProgram)
+                        );
+
                         loadProgram(selectedProgram);
+                    }
                 }
             );
         }
@@ -5804,28 +5883,39 @@ void MainComponent::handleKeygroupDataResponse(
         );
     }
 
-    sysExSender.sendKeygroupHeaderByteRequest(
-        loadedProgram.programNumber,
-        loadingKeygroup,
-        KeygroupHeaderOffset::Mod::Lfo1Pitch
-    );
+    const int requestProgram =
+        loadedProgram.programNumber;
 
-    sysExSender.sendKeygroupHeaderByteRequest(
-        loadedProgram.programNumber,
-        loadingKeygroup,
-        KeygroupHeaderOffset::Mod::Filter1
-    );
+    const int requestKeygroup =
+        loadingKeygroup;
 
-    sysExSender.sendKeygroupHeaderByteRequest(
-        loadedProgram.programNumber,
-        loadingKeygroup,
-        KeygroupHeaderOffset::Mod::Filter2
-    );
+    juce::MessageManager::callAsync(
+        [this, requestProgram, requestKeygroup]()
+        {
+            sysExSender.sendKeygroupHeaderByteRequest(
+                requestProgram,
+                requestKeygroup,
+                KeygroupHeaderOffset::Mod::Lfo1Pitch
+            );
 
-    sysExSender.sendKeygroupHeaderByteRequest(
-        loadedProgram.programNumber,
-        loadingKeygroup,
-        KeygroupHeaderOffset::Mod::Filter3
+            sysExSender.sendKeygroupHeaderByteRequest(
+                requestProgram,
+                requestKeygroup,
+                KeygroupHeaderOffset::Mod::Filter1
+            );
+
+            sysExSender.sendKeygroupHeaderByteRequest(
+                requestProgram,
+                requestKeygroup,
+                KeygroupHeaderOffset::Mod::Filter2
+            );
+
+            sysExSender.sendKeygroupHeaderByteRequest(
+                requestProgram,
+                requestKeygroup,
+                KeygroupHeaderOffset::Mod::Filter3
+            );
+        }
     );
 
 
@@ -7746,10 +7836,24 @@ void MainComponent::parsePLIST(const std::vector<uint8_t>& d)
         }
         else
         {
-            programCombo.setSelectedId(
-                1,
-                juce::sendNotification
-            );
+            if (currentProgram < 0)
+            {
+                // Initial PLIST:
+                // select and load Program 0
+                programCombo.setSelectedId(
+                    1,
+                    juce::sendNotification
+                );
+            }
+            else if (currentProgram < programCombo.getNumItems())
+            {
+                // PLIST refresh:
+                // keep the currently loaded Program selected
+                programCombo.setSelectedId(
+                    currentProgram + 1,
+                    juce::dontSendNotification
+                );
+            }
         }
     }
 
