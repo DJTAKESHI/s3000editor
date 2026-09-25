@@ -808,6 +808,14 @@ void SysExSender::sendKeygroupByte(
             sysex.size()
         );
 
+    DBG(
+        "SEND KEYGROUP BYTE"
+        " PROGRAM=" + juce::String(programIndex)
+        + " KG=" + juce::String(keygroupIndex)
+        + " OFFSET=" + juce::String(byteOffset)
+        + " VALUE=" + juce::String((int)value)
+    );
+
     midiOutput->sendMessageNow(message);
 }
 

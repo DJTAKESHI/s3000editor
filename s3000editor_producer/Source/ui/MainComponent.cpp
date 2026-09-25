@@ -1254,7 +1254,13 @@ MainComponent::MainComponent()
                 const int offset =
                     46 + currentZone * 24;
 
-
+                DBG(
+                    "SEND ZONE LOW VELOCITY"
+                    " KG=" + juce::String(currentKeygroup)
+                    + " ZONE=" + juce::String(currentZone)
+                    + " OFFSET=" + juce::String(offset)
+                    + " VALUE=" + juce::String(low)
+                );
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
@@ -1269,7 +1275,13 @@ MainComponent::MainComponent()
                 const int offset =
                     47 + currentZone * 24;
 
-
+                DBG(
+                    "SEND ZONE HIGH VELOCITY"
+                    " KG=" + juce::String(currentKeygroup)
+                    + " ZONE=" + juce::String(currentZone)
+                    + " OFFSET=" + juce::String(offset)
+                    + " VALUE=" + juce::String(high)
+                );
 
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,

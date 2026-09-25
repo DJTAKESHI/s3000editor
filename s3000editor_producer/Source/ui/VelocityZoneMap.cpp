@@ -367,9 +367,7 @@ void VelocityZoneMap::mouseDrag(
             static_cast<uint8_t>(
                 juce::jlimit(
                     0,
-                    static_cast<int>(
-                        zone.highVel
-                        ),
+                    static_cast<int>(zone.highVel),
                     velocity
                 )
                 );
@@ -380,30 +378,43 @@ void VelocityZoneMap::mouseDrag(
         zone.highVel =
             static_cast<uint8_t>(
                 juce::jlimit(
-                    static_cast<int>(
-                        zone.lowVel
-                        ),
+                    static_cast<int>(zone.lowVel),
                     127,
                     velocity
                 )
                 );
     }
 
+    // UIだけリアルタイム更新
     repaint();
-
-    if (onZoneRangeChanged)
-    {
-        onZoneRangeChanged(
-            draggingZone,
-            zone.lowVel,
-            zone.highVel
-        );
-    }
 }
 
 void VelocityZoneMap::mouseUp(
     const juce::MouseEvent&)
 {
+    if (draggingZone >= 0 &&
+        draggingZone < 4)
+    {
+        const auto& zone =
+            zones[draggingZone];
+
+        DBG(
+            "VELOCITY ZONE MAP EDIT FINISHED"
+            " ZONE=" + juce::String(draggingZone)
+            + " LOW=" + juce::String((int)zone.lowVel)
+            + " HIGH=" + juce::String((int)zone.highVel)
+        );
+
+        if (onZoneRangeChanged)
+        {
+            onZoneRangeChanged(
+                draggingZone,
+                zone.lowVel,
+                zone.highVel
+            );
+        }
+    }
+
     draggingZone = -1;
     draggingLow = false;
     draggingHigh = false;
