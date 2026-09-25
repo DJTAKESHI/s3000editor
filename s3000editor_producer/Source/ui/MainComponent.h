@@ -325,6 +325,8 @@ private:
         int topLevelMenuIndex
     ) override;
 
+    void continueKeygroupLoading();
+
     void addProgram();
     void deleteProgram();
 
@@ -728,6 +730,28 @@ private:
     int pendingFilterFreqValue = -1;
     int pendingFilterFreqKeygroup = -1;
 
+    enum class ExtraKgParamRequest
+    {
+        none,
+        lfo1Pitch,
+        filter1,
+        filter2,
+        filter3
+    };
+
+    ExtraKgParamRequest extraKgParamRequest =
+        ExtraKgParamRequest::none;
+
+    int extraKgParamProgram = -1;
+    int extraKgParamKeygroup = -1;
+
+    void startExtraKgParamRequests(
+        int programIndex,
+        int keygroupIndex);
+
+    void sendNextExtraKgParamRequest();
+
+
     int pendingResonanceValue = -1;
     int pendingResonanceKeygroup = -1;
 
@@ -739,6 +763,13 @@ private:
 
     int pendingModFilter1Value = -1000;
     int pendingModFilter1Keygroup = -1;
+
+    int pendingModFilter2Value = -1000;
+    int pendingModFilter2Keygroup = -1;
+
+    int pendingModFilter3Value = -1000;
+    int pendingModFilter3Keygroup = -1;
+
 
     int pendingEnv2R2Value = -1;
     int pendingEnv2R2Keygroup = -1;

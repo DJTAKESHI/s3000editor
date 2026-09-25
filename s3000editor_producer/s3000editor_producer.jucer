@@ -4,6 +4,10 @@
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="c4SuyX" name="s3000editor_producer">
     <GROUP id="{0B4A6806-AA35-EFCF-7296-36DF564D3DE3}" name="Source">
+      <GROUP id="{FE48AB7E-8726-5743-3ECC-A88D79E47A8F}" name="Resources">
+        <FILE id="gU6rtC" name="AKAI S3000XL Sampler Icon.png" compile="0"
+              resource="1" file="../../Desktop/AKAI S3000XL Sampler Icon.png"/>
+      </GROUP>
       <GROUP id="{40F5D40B-D961-CB5D-5352-56BBEEA2B353}" name="tests">
         <FILE id="UvWPRL" name="KeygroupEncoderTests.cpp" compile="1" resource="0"
               file="Source/tests/KeygroupEncoderTests.cpp"/>
@@ -134,7 +138,7 @@
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
-    <VS2022 targetFolder="Builds/VisualStudio2022">
+    <VS2022 targetFolder="Builds/VisualStudio2022" smallIcon="gU6rtC" bigIcon="gU6rtC">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="s3000editor_producer"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="s3000editor_producer"/>

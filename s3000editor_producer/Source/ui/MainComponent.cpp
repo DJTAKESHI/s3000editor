@@ -438,15 +438,23 @@ MainComponent::MainComponent()
 
             programRefreshOnly = true;
 
+
+            DBG(
+                "PDATA CALLER 441"
+                " PAN="
+                + juce::String(program.pan)
+            );
+
+
             sysExSender.sendProgramData(
                 program.programNumber,
                 encodedProgram
             );
 
             // 診断用
-            sysExSender.sendProgramHeader(
-                program.programNumber
-            );
+            //sysExSender.sendProgramHeader(
+            //    program.programNumber
+            //);
 
             if (nameChanged)
             {
@@ -545,39 +553,45 @@ MainComponent::MainComponent()
                         .modFilter1 = value;
                 }
 
+                const int targetKeygroup =
+                    programEditor.isModulationEditAll()
+                    ? 0x7f
+                    : currentKeygroup;
+
                 // -------------------------
-                // SysEx送信中なら最新値だけ保持
+                // ACK待ち中なら最新値だけ保持
                 // -------------------------
 
                 if (waitingForFilterReply)
                 {
                     pendingModFilter1Value = value;
+                    pendingModFilter1Keygroup =
+                        targetKeygroup;
 
                     DBG(
-                        "MOD FILTER1 PENDING VALUE="
+                        "MOD FILTER1 PENDING"
+                        " KG="
+                        + juce::String(targetKeygroup)
+                        + " VALUE="
                         + juce::String(value)
                     );
 
                     return;
                 }
 
-                waitingForFilterReply = true;
-
-                const int targetKeygroup =
-                    programEditor.isModulationEditAll()
-                    ? 0x7f
-                    : currentKeygroup;
-
-                if (waitingForFilterReply)
-                {
-                    pendingModFilter1Value = value;
-                    pendingModFilter1Keygroup = targetKeygroup;
-
-
-                    return;
-                }
+                // -------------------------
+                // 今は空いているので送信
+                // -------------------------
 
                 waitingForFilterReply = true;
+
+                DBG(
+                    "MOD FILTER1 SEND"
+                    " KG="
+                    + juce::String(targetKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
@@ -595,42 +609,52 @@ MainComponent::MainComponent()
                     static_cast<int>(
                         loadedProgram.keygroups.size()))
                 {
-                    DBG("FILTER2 AMOUNT: INVALID KEYGROUP");
                     return;
                 }
 
                 if (programEditor.isModulationEditAll())
                 {
-                    for (auto& keygroup :
-                        loadedProgram.keygroups)
-                    {
+                    for (auto& keygroup : loadedProgram.keygroups)
                         keygroup.modFilter2 = value;
-                    }
+                }
+                else
+                {
+                    loadedProgram.keygroups[currentKeygroup]
+                        .modFilter2 = value;
+                }
+
+                const int targetKeygroup =
+                    programEditor.isModulationEditAll()
+                    ? 0x7f
+                    : currentKeygroup;
+
+                if (waitingForFilterReply)
+                {
+                    pendingModFilter2Value = value;
+                    pendingModFilter2Keygroup = targetKeygroup;
 
                     DBG(
-                        "KG FILTER2 AMOUNT ALL WRITE VALUE="
+                        "MOD FILTER2 PENDING KG="
+                        + juce::String(targetKeygroup)
+                        + " VALUE="
                         + juce::String(value)
-                    );
-
-                    sysExSender.sendKeygroupHeaderByte(
-                        loadedProgram.programNumber,
-                        0x7f,
-                        KeygroupHeaderOffset::Mod::Filter2,
-                        value
                     );
 
                     return;
                 }
 
-                auto& keygroup =
-                    loadedProgram.keygroups[currentKeygroup];
+                waitingForFilterReply = true;
 
-                keygroup.modFilter2 = value;
-
+                DBG(
+                    "MOD FILTER2 SEND KG="
+                    + juce::String(targetKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
-                    currentKeygroup,
+                    targetKeygroup,
                     KeygroupHeaderOffset::Mod::Filter2,
                     value
                 );
@@ -644,42 +668,52 @@ MainComponent::MainComponent()
                     static_cast<int>(
                         loadedProgram.keygroups.size()))
                 {
-                    DBG("FILTER3 AMOUNT: INVALID KEYGROUP");
                     return;
                 }
 
                 if (programEditor.isModulationEditAll())
                 {
-                    for (auto& keygroup :
-                        loadedProgram.keygroups)
-                    {
+                    for (auto& keygroup : loadedProgram.keygroups)
                         keygroup.modFilter3 = value;
-                    }
+                }
+                else
+                {
+                    loadedProgram.keygroups[currentKeygroup]
+                        .modFilter3 = value;
+                }
+
+                const int targetKeygroup =
+                    programEditor.isModulationEditAll()
+                    ? 0x7f
+                    : currentKeygroup;
+
+                if (waitingForFilterReply)
+                {
+                    pendingModFilter3Value = value;
+                    pendingModFilter3Keygroup = targetKeygroup;
 
                     DBG(
-                        "KG FILTER3 AMOUNT ALL WRITE VALUE="
+                        "MOD FILTER3 PENDING KG="
+                        + juce::String(targetKeygroup)
+                        + " VALUE="
                         + juce::String(value)
-                    );
-
-                    sysExSender.sendKeygroupHeaderByte(
-                        loadedProgram.programNumber,
-                        0x7f,
-                        KeygroupHeaderOffset::Mod::Filter3,
-                        value
                     );
 
                     return;
                 }
 
-                auto& keygroup =
-                    loadedProgram.keygroups[currentKeygroup];
+                waitingForFilterReply = true;
 
-                keygroup.modFilter3 = value;
-
+                DBG(
+                    "MOD FILTER3 SEND KG="
+                    + juce::String(targetKeygroup)
+                    + " VALUE="
+                    + juce::String(value)
+                );
 
                 sysExSender.sendKeygroupHeaderByte(
                     loadedProgram.programNumber,
-                    currentKeygroup,
+                    targetKeygroup,
                     KeygroupHeaderOffset::Mod::Filter3,
                     value
                 );
@@ -1250,6 +1284,7 @@ MainComponent::MainComponent()
             }
 
 
+            DBG("PDATA CALLER 1279"); 
             sysExSender.sendProgramData(
                 loadedProgram.programNumber,
                 encodedProgram
@@ -1358,7 +1393,7 @@ MainComponent::MainComponent()
             }
 
 
-
+            DBG("PDATA CALLER 1388");
             sysExSender.sendProgramData(
                 loadedProgram.programNumber,
                 encodedProgram
@@ -1611,6 +1646,9 @@ MainComponent::MainComponent()
 
                 waitingForFilterReply = true;
 
+                DBG("FILTER SEND time="
+                    + juce::String(juce::Time::getMillisecondCounter()));
+
                 sysExSender.sendKeygroupByte(
                     currentProgramIndex,
                     0x7f,
@@ -1648,6 +1686,9 @@ MainComponent::MainComponent()
             }
 
             waitingForFilterReply = true;
+
+            DBG("FILTER SEND time="
+                + juce::String(juce::Time::getMillisecondCounter()));
 
             sysExSender.sendKeygroupByte(
                 currentProgramIndex,
@@ -3742,7 +3783,7 @@ void MainComponent::addProgram()
         "ADD PROGRAM: SEND PDATA PROGRAM="
         + juce::String(newProgramNumber)
     );
-
+    DBG("PDATA CALLER 3778");
     sysExSender.sendProgramData(
         newProgramNumber,
         encodedProgram
@@ -4534,6 +4575,23 @@ void MainComponent::processIncomingSysEx(
                         );
                     }
 
+                    // Lfo1Pitch reply received -> request Filter1 next
+                    if (extraKgParamRequest ==
+                        ExtraKgParamRequest::lfo1Pitch
+                        && programNumber == extraKgParamProgram
+                        && keygroup == extraKgParamKeygroup)
+                    {
+                        DBG(
+                            "EXTRA KG PARAM LFO1PITCH RECEIVED"
+                            " -> NEXT FILTER1"
+                        );
+
+                        extraKgParamRequest =
+                            ExtraKgParamRequest::filter1;
+
+                        sendNextExtraKgParamRequest();
+                    }
+
                 }
 
                 // ========================================
@@ -4987,6 +5045,24 @@ void MainComponent::processIncomingSysEx(
                         + " VALUE="
                         + juce::String(signedValue)
                     );
+
+                    // Filter1 reply received -> request Filter2 next
+                    if (extraKgParamRequest ==
+                        ExtraKgParamRequest::filter1
+                        && programNumber == extraKgParamProgram
+                        && keygroup == extraKgParamKeygroup)
+                    {
+                        DBG(
+                            "EXTRA KG PARAM FILTER1 RECEIVED"
+                            " -> NEXT FILTER2"
+                        );
+
+                        extraKgParamRequest =
+                            ExtraKgParamRequest::filter2;
+
+                        sendNextExtraKgParamRequest();
+                    }
+
                 }
 
                 if (offset == KeygroupHeaderOffset::Mod::Filter2
@@ -5014,11 +5090,30 @@ void MainComponent::processIncomingSysEx(
                         + " VALUE="
                         + juce::String(signedValue)
                     );
+
+                    // Filter2 reply received -> request Filter3 next
+                    if (extraKgParamRequest ==
+                        ExtraKgParamRequest::filter2
+                        && programNumber == extraKgParamProgram
+                        && keygroup == extraKgParamKeygroup)
+                    {
+                        DBG(
+                            "EXTRA KG PARAM FILTER2 RECEIVED"
+                            " -> NEXT FILTER3"
+                        );
+
+                        extraKgParamRequest =
+                            ExtraKgParamRequest::filter3;
+
+                        sendNextExtraKgParamRequest();
+                    }
+
                 }
 
                 if (offset == KeygroupHeaderOffset::Mod::Filter3
                     && keygroup >= 0
-                    && keygroup < static_cast<int>(loadedProgram.keygroups.size()))
+                    && keygroup < static_cast<int>(
+                        loadedProgram.keygroups.size()))
                 {
                     loadedProgram.keygroups[keygroup].modFilter3 =
                         signedValue;
@@ -5033,14 +5128,39 @@ void MainComponent::processIncomingSysEx(
                                 );
                             }
                         );
-
                     }
+
                     DBG(
                         "UPDATE KG MODFILTER3 KG="
                         + juce::String(keygroup)
                         + " VALUE="
                         + juce::String(signedValue)
                     );
+
+                    // ========================================
+                    // Sequential extra KG request complete
+                    // ========================================
+
+                    if (extraKgParamRequest ==
+                        ExtraKgParamRequest::filter3
+                        && programNumber == extraKgParamProgram
+                        && keygroup == extraKgParamKeygroup)
+                    {
+                        DBG(
+                            "EXTRA KG PARAM FILTER3 RECEIVED"
+                            " -> COMPLETE"
+                        );
+
+                        extraKgParamRequest =
+                            ExtraKgParamRequest::none;
+
+                        extraKgParamProgram = -1;
+                        extraKgParamKeygroup = -1;
+
+                        // このKGの追加パラメータ取得が完全に終わったので
+                        // 次のKGへ進む
+                        continueKeygroupLoading();
+                    }
                 }
 
 
@@ -5862,33 +5982,9 @@ void MainComponent::handleKeygroupDataResponse(
     const int requestKeygroup =
         loadingKeygroup;
 
-    juce::MessageManager::callAsync(
-        [this, requestProgram, requestKeygroup]()
-        {
-            sysExSender.sendKeygroupHeaderByteRequest(
-                requestProgram,
-                requestKeygroup,
-                KeygroupHeaderOffset::Mod::Lfo1Pitch
-            );
-
-            sysExSender.sendKeygroupHeaderByteRequest(
-                requestProgram,
-                requestKeygroup,
-                KeygroupHeaderOffset::Mod::Filter1
-            );
-
-            sysExSender.sendKeygroupHeaderByteRequest(
-                requestProgram,
-                requestKeygroup,
-                KeygroupHeaderOffset::Mod::Filter2
-            );
-
-            sysExSender.sendKeygroupHeaderByteRequest(
-                requestProgram,
-                requestKeygroup,
-                KeygroupHeaderOffset::Mod::Filter3
-            );
-        }
+    startExtraKgParamRequests(
+        requestProgram,
+        requestKeygroup
     );
 
 
@@ -5898,66 +5994,66 @@ void MainComponent::handleKeygroupDataResponse(
   // ���񃍁[�h����Map / Tree�𒀎��X�V
   // ========================================
 
-    const int mapUpdateIndex =
-        loadingKeygroup;
+    //const int mapUpdateIndex =
+    //    loadingKeygroup;
 
-    const Program programForMap =
-        loadedProgram;
-
-
-
-    juce::MessageManager::callAsync(
-        [this, programForMap, mapUpdateIndex]()
-        {
+    //const Program programForMap =
+    //    loadedProgram;
 
 
-            // KeygroupMap
-            keygroupMap.setProgram(
-                programForMap
-            );
 
-            // ProgramTree
-            programTree.setProgram(
-                programForMap,
-                sampleHeaders
-            );
+    //juce::MessageManager::callAsync(
+    //    [this, programForMap, mapUpdateIndex]()
+    //    {
 
 
-        }
-    );
+    //        // KeygroupMap
+    //        keygroupMap.setProgram(
+    //            programForMap
+    //        );
+
+    //        // ProgramTree
+    //        programTree.setProgram(
+    //            programForMap,
+    //            sampleHeaders
+    //        );
+
+
+    //    }
+    //);
 
 
     // ========================================
     // Request Sample Headers
     // ========================================
 
-    for (const auto& zone :
-        loadedProgram.keygroups[loadingKeygroup].zones)
-    {
-        if (zone.sampleId < 0)
-            continue;
+    //for (const auto& zone :
+    //    loadedProgram.keygroups[loadingKeygroup].zones)
+    //{
+    //    if (zone.sampleId < 0)
+    //        continue;
 
-        // ���łɎ����Ă���Sample Header�Ȃ�
-        // �ă��N�G�X�g���Ȃ�
-        if (sampleHeaders.find(zone.sampleId)
-            != sampleHeaders.end())
-        {
-            DBG(
-                "SAMPLE HEADER ALREADY EXISTS ID="
-                + juce::String(zone.sampleId)
-            );
+    //    // ���łɎ����Ă���Sample Header�Ȃ�
+    //    // �ă��N�G�X�g���Ȃ�
+    //    if (sampleHeaders.find(zone.sampleId)
+    //        != sampleHeaders.end())
+    //    {
+    //        DBG(
+    //            "SAMPLE HEADER ALREADY EXISTS ID="
+    //            + juce::String(zone.sampleId)
+    //        );
 
-            continue;
-        }
-
-
+    //        continue;
+    //    }
 
 
 
-        sendSampleHeader(
-            zone.sampleId
-        );
-    }
+
+
+    //    sendSampleHeader(
+    //        zone.sampleId
+    //    );
+    //}
 
 
 
@@ -5991,104 +6087,300 @@ void MainComponent::handleKeygroupDataResponse(
 
 
 
-    if (!pendingSampleRequests.empty())
-    {
-        DBG(
-            "WAITING FOR SAMPLE HEADERS. pending="
-            + juce::String(
-                (int)pendingSampleRequests.size()
-            )
-        );
-    }
+    //if (!pendingSampleRequests.empty())
+    //{
+    //    DBG(
+    //        "WAITING FOR SAMPLE HEADERS. pending="
+    //        + juce::String(
+    //            (int)pendingSampleRequests.size()
+    //        )
+    //    );
+    //}
 
+    
+
+
+}
+
+void MainComponent::continueKeygroupLoading()
+{
     // ========================================
-// Continue loading Keygroups
-// ========================================
+    // Continue loading Keygroups
+    // ========================================
 
     ++loadingKeygroup;
 
     if (loadingKeygroup < totalKeygroups)
     {
-        DBG(
-            "REQUEST NEXT KG HEADER INDEX="
-            + juce::String(loadingKeygroup)
-        );
+        const int nextProgram =
+            loadedProgram.programNumber;
 
-        sysExSender.sendKGHeader(
-            loadedProgram.programNumber,
-            loadingKeygroup
-        );
-    }
-    else
-    {
-        static int finishCount = 0;
-        ++finishCount;
-
-        const int restoreKeygroup =
-            juce::jlimit(
-                0,
-                juce::jmax(0, totalKeygroups - 1),
-                currentKeygroup
-            );
+        const int nextKeygroup =
+            loadingKeygroup;
 
         DBG(
-            "RESTORE HARDWARE KG DISPLAY INDEX="
-            + juce::String(restoreKeygroup)
+            "QUEUE NEXT KG HEADER INDEX="
+            + juce::String(nextKeygroup)
         );
-
-        restoringKeygroupDisplay = true;
-
-        sysExSender.sendKGHeader(
-            loadedProgram.programNumber,
-            restoreKeygroup
-        );
-
-
-
-        // �ʐM���������Z�b�g
-        loadingKeygroup = 0;
 
         juce::MessageManager::callAsync(
-            [this]
+            [this, nextProgram, nextKeygroup]()
             {
-                constexpr int rowHeight = 32;
-
-                const int contentHeight =
-                    juce::jmax(
-                        200,
-                        static_cast<int>(
-                            loadedProgram.keygroups.size()
-                            ) * rowHeight
-                        + KeygroupMap::buttonAreaHeight
-                        + 20
-                    );
-
-                // ��ɍŏI�T�C�Y���m��
-                keygroupMap.setSize(
-                    juce::jmax(
-                        1,
-                        keygroupMapViewport.getWidth() - 16
-                    ),
-                    contentHeight
+                DBG(
+                    "SEND NEXT KG HEADER INDEX="
+                    + juce::String(nextKeygroup)
                 );
 
-                // ���̌�Program��n��
-                keygroupMap.setProgram(
-                    loadedProgram
-                );
-
-                programTree.setProgram(
-                    loadedProgram,
-                    sampleHeaders
+                sysExSender.sendKGHeader(
+                    nextProgram,
+                    nextKeygroup
                 );
             }
-
         );
+
+        return;
     }
 
+    // ========================================
+    // All Keygroups loaded
+    // ========================================
 
+    static int finishCount = 0;
+    ++finishCount;
+
+    // ========================================
+// Build Sample Header request queue
+// ========================================
+
+    pendingSampleRequests.clear();
+    pendingSampleRequestOrder.clear();
+    activeSampleHeaderRequestId = -1;
+
+    for (const auto& kg : loadedProgram.keygroups)
+    {
+        for (const auto& zone : kg.zones)
+        {
+            if (zone.sampleId < 0)
+                continue;
+
+            // Already loaded
+            if (sampleHeaders.find(zone.sampleId)
+                != sampleHeaders.end())
+            {
+                continue;
+            }
+
+            // insert() が true の時だけ新規ID
+            const auto [it, inserted] =
+                pendingSampleRequests.insert(zone.sampleId);
+
+            if (inserted)
+            {
+                pendingSampleRequestOrder.push_back(
+                    zone.sampleId
+                );
+            }
+        }
+    }
+
+    DBG(
+        "SAMPLE HEADER QUEUE BUILT"
+        " unique="
+        + juce::String(
+            (int)pendingSampleRequests.size()
+        )
+        + " order="
+        + juce::String(
+            (int)pendingSampleRequestOrder.size()
+        )
+    );
+
+
+    DBG(
+        "=== KG LOAD FINISHED ==="
+        " finishCount="
+        + juce::String(finishCount)
+        + " groups="
+        + juce::String(loadedProgram.groups)
+        + " keygroups.size="
+        + juce::String(
+            (int)loadedProgram.keygroups.size()
+        )
+        + " totalKeygroups="
+        + juce::String(totalKeygroups)
+    );
+
+
+    const int restoreKeygroup =
+        juce::jlimit(
+            0,
+            juce::jmax(0, totalKeygroups - 1),
+            currentKeygroup
+        );
+
+    DBG(
+        "ALL KG EXTRA PARAMS COMPLETE"
+        " - RESTORE HARDWARE KG DISPLAY INDEX="
+        + juce::String(restoreKeygroup)
+    );
+
+    restoringKeygroupDisplay = true;
+
+    const int restoreProgram =
+        loadedProgram.programNumber;
+
+    juce::MessageManager::callAsync(
+        [this, restoreProgram, restoreKeygroup]()
+        {
+            DBG(
+                "SEND RESTORE KG HEADER INDEX="
+                + juce::String(restoreKeygroup)
+            );
+
+            sysExSender.sendKGHeader(
+                restoreProgram,
+                restoreKeygroup
+            );
+        }
+    );
+
+    // 通信状態をリセット
+    loadingKeygroup = 0;
+
+    juce::MessageManager::callAsync(
+        [this]
+        {
+            DBG(
+                "=== FINAL MAP/TREE UPDATE ==="
+                " groups="
+                + juce::String(loadedProgram.groups)
+                + " keygroups.size="
+                + juce::String(
+                    (int)loadedProgram.keygroups.size()
+                )
+            );
+
+            constexpr int rowHeight = 32;
+
+            const int contentHeight =
+                juce::jmax(
+                    200,
+                    static_cast<int>(
+                        loadedProgram.keygroups.size()
+                        ) * rowHeight
+                    + KeygroupMap::buttonAreaHeight
+                    + 20
+                );
+
+            keygroupMap.setSize(
+                juce::jmax(
+                    1,
+                    keygroupMapViewport.getWidth() - 16
+                ),
+                contentHeight
+            );
+
+            DBG("CALL keygroupMap.setProgram");
+
+            keygroupMap.setProgram(
+                loadedProgram
+            );
+
+            DBG("CALL programTree.setProgram");
+
+            programTree.setProgram(
+                loadedProgram,
+                sampleHeaders
+            );
+
+            DBG("=== FINAL MAP/TREE UPDATE DONE ===");
+        }
+    );
 }
 
+
+
+void MainComponent::startExtraKgParamRequests(
+    int programIndex,
+    int keygroupIndex)
+{
+    extraKgParamProgram = programIndex;
+    extraKgParamKeygroup = keygroupIndex;
+
+    extraKgParamRequest =
+        ExtraKgParamRequest::lfo1Pitch;
+
+    sendNextExtraKgParamRequest();
+}
+
+
+void MainComponent::sendNextExtraKgParamRequest()
+{
+    if (extraKgParamRequest ==
+        ExtraKgParamRequest::none)
+    {
+        return;
+    }
+
+    const int programIndex =
+        extraKgParamProgram;
+
+    const int keygroupIndex =
+        extraKgParamKeygroup;
+
+    const auto request =
+        extraKgParamRequest;
+
+    juce::MessageManager::callAsync(
+        [this,
+        programIndex,
+        keygroupIndex,
+        request]()
+        {
+            int offset = -1;
+
+            switch (request)
+            {
+            case ExtraKgParamRequest::lfo1Pitch:
+                offset =
+                    KeygroupHeaderOffset::Mod::Lfo1Pitch;
+                break;
+
+            case ExtraKgParamRequest::filter1:
+                offset =
+                    KeygroupHeaderOffset::Mod::Filter1;
+                break;
+
+            case ExtraKgParamRequest::filter2:
+                offset =
+                    KeygroupHeaderOffset::Mod::Filter2;
+                break;
+
+            case ExtraKgParamRequest::filter3:
+                offset =
+                    KeygroupHeaderOffset::Mod::Filter3;
+                break;
+
+            default:
+                return;
+            }
+
+            DBG(
+                "SEND EXTRA KG PARAM"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " OFFSET="
+                + juce::String(offset)
+            );
+
+            sysExSender.sendKeygroupHeaderByteRequest(
+                programIndex,
+                keygroupIndex,
+                offset
+            );
+        }
+    );
+}
 
 
 void MainComponent::handleCommandReply(
@@ -6303,7 +6595,7 @@ void MainComponent::handleCommandReply(
         DBG(
             "STEP 2: SEND PDATA GROUPS + 1"
         );
-
+        DBG("PDATA CALLER 6511");
         sysExSender.sendProgramData(
             loadedProgram.programNumber,
             encodedProgram
@@ -6526,7 +6818,8 @@ void MainComponent::handleCommandReply(
     {
         waitingForFilterReply = false;
 
-        DBG("FILTER REPLY RECEIVED");
+        DBG("FILTER REPLY time="
+            + juce::String(juce::Time::getMillisecondCounter()));
 
         if (pendingFilterFreqValue >= 0 &&
             pendingFilterFreqKeygroup >= 0)
@@ -6542,16 +6835,29 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
+            const int programIndex =
+                currentProgramIndex;
+
             DBG(
-                "FILTER FREQ SEND PENDING VALUE="
+                "FILTER FREQ QUEUE PENDING VALUE="
                 + juce::String(value)
             );
 
-            sysExSender.sendKeygroupByte(
-                currentProgramIndex,
-                keygroupIndex,
-                KeygroupHeaderOffset::Filter::FILFRQ,
-                static_cast<uint8_t>(value)
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    DBG(
+                        "FILTER FREQ SEND PENDING VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupByte(
+                        programIndex,
+                        keygroupIndex,
+                        KeygroupHeaderOffset::Filter::FILFRQ,
+                        static_cast<uint8_t>(value)
+                    );
+                }
             );
 
             return;
@@ -6571,16 +6877,29 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
+            const int programIndex =
+                currentProgramIndex;
+
             DBG(
-                "FILTER RESONANCE SEND PENDING VALUE="
+                "FILTER RESONANCE QUEUE PENDING VALUE="
                 + juce::String(value)
             );
 
-            sysExSender.sendKeygroupWord(
-                currentProgramIndex,
-                keygroupIndex,
-                KeygroupHeaderOffset::Filter::FILQ,
-                static_cast<uint16_t>(value)
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    DBG(
+                        "FILTER RESONANCE SEND PENDING VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupWord(
+                        programIndex,
+                        keygroupIndex,
+                        KeygroupHeaderOffset::Filter::FILQ,
+                        static_cast<uint16_t>(value)
+                    );
+                }
             );
 
             return;
@@ -6589,21 +6908,32 @@ void MainComponent::handleCommandReply(
         if (pendingEnv2R1Value >= 0 &&
             pendingEnv2R1Keygroup >= 0)
         {
-            const int value = pendingEnv2R1Value;
-            const int keygroupIndex = pendingEnv2R1Keygroup;
+            const int value =
+                pendingEnv2R1Value;
+
+            const int keygroupIndex =
+                pendingEnv2R1Keygroup;
 
             pendingEnv2R1Value = -1;
             pendingEnv2R1Keygroup = -1;
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::R1
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::R1
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
@@ -6612,21 +6942,32 @@ void MainComponent::handleCommandReply(
         if (pendingEnv2L1Value >= 0 &&
             pendingEnv2L1Keygroup >= 0)
         {
-            const int value = pendingEnv2L1Value;
-            const int keygroupIndex = pendingEnv2L1Keygroup;
+            const int value =
+                pendingEnv2L1Value;
+
+            const int keygroupIndex =
+                pendingEnv2L1Keygroup;
 
             pendingEnv2L1Value = -1;
             pendingEnv2L1Keygroup = -1;
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::L1
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::L1
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
@@ -6646,8 +6987,58 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
+            // MIDI callbackを抜けた後でも
+            // 正しいProgram番号を使えるようにコピーしておく
+            const int programIndex =
+                loadedProgram.programNumber;
+
             DBG(
-                "MOD FILTER1 SEND PENDING"
+                "MOD FILTER1 QUEUE PENDING"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    DBG(
+                        "MOD FILTER1 SEND PENDING"
+                        " KG="
+                        + juce::String(keygroupIndex)
+                        + " VALUE="
+                        + juce::String(value)
+                    );
+
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        KeygroupHeaderOffset::Mod::Filter1,
+                        value
+                    );
+                }
+            );
+
+            return;
+        }
+
+        if (pendingModFilter2Value != -1000 &&
+            pendingModFilter2Keygroup >= 0)
+        {
+            const int value =
+                pendingModFilter2Value;
+
+            const int keygroupIndex =
+                pendingModFilter2Keygroup;
+
+            pendingModFilter2Value = -1000;
+            pendingModFilter2Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            DBG(
+                "MOD FILTER2 SEND PENDING"
                 " KG="
                 + juce::String(keygroupIndex)
                 + " VALUE="
@@ -6657,12 +7048,45 @@ void MainComponent::handleCommandReply(
             sysExSender.sendKeygroupHeaderByte(
                 loadedProgram.programNumber,
                 keygroupIndex,
-                KeygroupHeaderOffset::Mod::Filter1,
+                KeygroupHeaderOffset::Mod::Filter2,
                 value
             );
 
             return;
         }
+
+        if (pendingModFilter3Value != -1000 &&
+            pendingModFilter3Keygroup >= 0)
+        {
+            const int value =
+                pendingModFilter3Value;
+
+            const int keygroupIndex =
+                pendingModFilter3Keygroup;
+
+            pendingModFilter3Value = -1000;
+            pendingModFilter3Keygroup = -1;
+
+            waitingForFilterReply = true;
+
+            DBG(
+                "MOD FILTER3 SEND PENDING"
+                " KG="
+                + juce::String(keygroupIndex)
+                + " VALUE="
+                + juce::String(value)
+            );
+
+            sysExSender.sendKeygroupHeaderByte(
+                loadedProgram.programNumber,
+                keygroupIndex,
+                KeygroupHeaderOffset::Mod::Filter3,
+                value
+            );
+
+            return;
+        }
+
 
         if (pendingEnv2R2Value >= 0 &&
             pendingEnv2R2Keygroup >= 0)
@@ -6675,17 +7099,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::R2
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::R2
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv2L2Value >= 0 &&
             pendingEnv2L2Keygroup >= 0)
@@ -6698,17 +7131,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::L2
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::L2
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv2R3Value >= 0 &&
             pendingEnv2R3Keygroup >= 0)
@@ -6721,17 +7163,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::R3
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::R3
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv2L3Value >= 0 &&
             pendingEnv2L3Keygroup >= 0)
@@ -6744,17 +7195,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::L3
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::L3
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv2R4Value >= 0 &&
             pendingEnv2R4Keygroup >= 0)
@@ -6767,17 +7227,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::R4
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::R4
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv2L4Value >= 0 &&
             pendingEnv2L4Keygroup >= 0)
@@ -6790,13 +7259,21 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env2::L4
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env2::L4
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
@@ -6816,13 +7293,21 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env1::ATTACK
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env1::ATTACK
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
@@ -6842,17 +7327,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env1::DECAY
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env1::DECAY
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv1SustainValue >= 0 &&
             pendingEnv1SustainKeygroup >= 0)
@@ -6868,17 +7362,26 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env1::SUSTAIN
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env1::SUSTAIN
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
         }
+
 
         if (pendingEnv1ReleaseValue >= 0 &&
             pendingEnv1ReleaseKeygroup >= 0)
@@ -6894,13 +7397,21 @@ void MainComponent::handleCommandReply(
 
             waitingForFilterReply = true;
 
-            sysExSender.sendKeygroupHeaderByte(
-                loadedProgram.programNumber,
-                keygroupIndex,
-                static_cast<int>(
-                    KeygroupHeaderOffset::Env1::RELEASE
-                    ),
-                value
+            const int programIndex =
+                loadedProgram.programNumber;
+
+            juce::MessageManager::callAsync(
+                [this, programIndex, keygroupIndex, value]()
+                {
+                    sysExSender.sendKeygroupHeaderByte(
+                        programIndex,
+                        keygroupIndex,
+                        static_cast<int>(
+                            KeygroupHeaderOffset::Env1::RELEASE
+                            ),
+                        value
+                    );
+                }
             );
 
             return;
@@ -7256,9 +7767,29 @@ void MainComponent::handleKeygroupHeaderResponse()
 
     if (restoringKeygroupDisplay)
     {
-        DBG("RESTORE KG DISPLAY RESPONSE - IGNORE KDATA REQUEST");
+        DBG("RESTORE KG DISPLAY RESPONSE");
 
         restoringKeygroupDisplay = false;
+
+        if (!pendingSampleRequests.empty())
+        {
+            DBG(
+                "RESTORE COMPLETE - START SAMPLE HEADERS"
+                " pending="
+                + juce::String(
+                    (int)pendingSampleRequests.size()
+                )
+            );
+
+            trySendNextSampleHeader();
+        }
+        else
+        {
+            DBG(
+                "RESTORE COMPLETE - NO SAMPLE HEADERS NEEDED"
+            );
+        }
+
         return;
     }
 
@@ -7283,14 +7814,30 @@ void MainComponent::handleKeygroupHeaderResponse()
     // 0x2A�ł�loadedProgram���X�V���Ȃ��B
     // ���S��Keygroup����0x09 KDATA�Ŏ擾����B
 
+    const int requestProgram =
+        loadedProgram.programNumber;
+
+    const int requestKeygroup =
+        loadingKeygroup;
+
     DBG(
-        "REQUEST KDATA INDEX="
-        + juce::String(loadingKeygroup)
+        "QUEUE KDATA INDEX="
+        + juce::String(requestKeygroup)
     );
 
-    sysExSender.sendKData(
-        loadedProgram.programNumber,
-        loadingKeygroup
+    juce::MessageManager::callAsync(
+        [this, requestProgram, requestKeygroup]()
+        {
+            DBG(
+                "SEND KDATA INDEX="
+                + juce::String(requestKeygroup)
+            );
+
+            sysExSender.sendKData(
+                requestProgram,
+                requestKeygroup
+            );
+        }
     );
 }
 

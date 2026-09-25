@@ -2244,12 +2244,45 @@ ProgramEditor::ProgramEditor()
 
     modPan1AmountSlider.onDragEnd = [this]()
         {
-            currentProgram.modVPan1 =
+            const int value =
                 (int)modPan1AmountSlider.getValue();
+
+            DBG(
+                "MOD PAN1 DRAG END"
+                " slider="
+                + juce::String(value)
+                + " model="
+                + juce::String(currentProgram.modVPan1)
+            );
+
+            // 値が変わっていなければ送信不要
+            if (value == currentProgram.modVPan1)
+            {
+                DBG("MOD PAN1 DRAG END: NO CHANGE -> IGNORE");
+                return;
+            }
+
+            currentProgram.modVPan1 = value;
 
             if (onProgramChanged)
                 onProgramChanged(currentProgram);
         };
+
+
+    modPan1AmountSlider.onDoubleClickReset = [this]()
+        {
+            currentProgram.modVPan1 =
+                (int)modPan1AmountSlider.getValue();
+
+            DBG(
+                "MOD PAN1 DOUBLE CLICK RESET="
+                + juce::String(currentProgram.modVPan1)
+            );
+
+            if (onProgramChanged)
+                onProgramChanged(currentProgram);
+        };
+
 
     modPan2AmountSlider.onDragEnd = [this]()
         {

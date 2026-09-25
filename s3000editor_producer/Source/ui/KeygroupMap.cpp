@@ -3,11 +3,17 @@
 void KeygroupMap::setProgram(
     const Program& program)
 {
-    
-    DBG("=== KEYGROUP MAP setProgram CALLED ===");
+    static int setProgramCount = 0;
+    ++setProgramCount;
+
+    DBG(
+        "=== KEYGROUP MAP setProgram CALLED count="
+        + juce::String(setProgramCount)
+    );
     
     currentProgram = program;
 
+ 
 
 
     for (int i = 0;

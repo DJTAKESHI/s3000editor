@@ -12,6 +12,8 @@ public:
     void mouseDoubleClick(
         const juce::MouseEvent& event) override
     {
+        DBG("RESETTABLE DOUBLE CLICK");
+
         setValue(
             0.0,
             juce::sendNotificationSync
@@ -125,6 +127,25 @@ private:
     TuneSlider tuneSlider;
     juce::Label tuneValueLabel;
 
+    class ResettableSlider : public juce::Slider
+    {
+    public:
+        std::function<void()> onDoubleClickReset;
+
+        void mouseDoubleClick(
+            const juce::MouseEvent& event) override
+        {
+            setValue(
+                0.0,
+                juce::sendNotificationSync
+            );
+
+            if (onDoubleClickReset)
+                onDoubleClickReset();
+        }
+    };
+
+
     juce::Label outLevelLabel;
     juce::Slider outLevelSlider;
     juce::Label outLevelValueLabel;
@@ -220,7 +241,7 @@ private:
 
     juce::Label modPan1Label;
     juce::ComboBox modPan1SourceCombo;
-    juce::Slider modPan1AmountSlider;
+    ResettableSlider modPan1AmountSlider;
     juce::Label modPan1AmountLabel;
 
     juce::Label modPan2Label;

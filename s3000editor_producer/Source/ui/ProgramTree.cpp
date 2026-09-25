@@ -124,6 +124,10 @@ void ProgramTree::setProgram(
         )
     );
 
+    DBG("BEFORE setRootItem(nullptr)");
+
+    juce::Component::unfocusAllComponents();
+
     setRootItem(rootItem.get());
 
     DBG("AFTER setRootItem(rootItem)");
