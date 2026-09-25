@@ -174,36 +174,18 @@ ProgramEditor::ProgramEditor()
     addAndMakeVisible(programNameLabel);
     addAndMakeVisible(programNameEditor);
 
-    programNameEditor.setWantsKeyboardFocus(false);
+    programNameEditor.setWantsKeyboardFocus(true);
 
     programNameEditor.onReturnKey =
         [this]()
         {
-            auto name =
-                programNameEditor.getText()
-                .trim()
-                .toUpperCase()
-                .substring(0, 12);
+            commitProgramName();
+        };
 
-            if (name.isEmpty())
-            {
-                programNameEditor.setText(
-                    juce::String(currentProgram.name),
-                    false
-                );
-                return;
-            }
-
-            programNameEditor.setText(
-                name,
-                false
-            );
-
-            currentProgram.name =
-                name.toStdString();
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+    programNameEditor.onFocusLost =
+        [this]()
+        {
+            commitProgramName();
         };
 
 
@@ -4492,4 +4474,49 @@ void ProgramEditor::resized()
 
 
 
+}
+
+
+void ProgramEditor::commitProgramName()
+{
+    auto name =
+        programNameEditor.getText()
+        .trim()
+        .toUpperCase()
+        .substring(0, 12);
+
+    // 空欄なら現在の名前に戻す
+    if (name.isEmpty())
+    {
+        programNameEditor.setText(
+            juce::String(currentProgram.name),
+            false
+        );
+
+        return;
+    }
+
+    // 表示を正規化
+    programNameEditor.setText(
+        name,
+        false
+    );
+
+    // 同じ名前なら送信しない
+    if (name == juce::String(currentProgram.name))
+        return;
+
+    DBG(
+        "PROGRAM NAME COMMIT old=["
+        + juce::String(currentProgram.name)
+        + "] new=["
+        + name
+        + "]"
+    );
+
+    currentProgram.name =
+        name.toStdString();
+
+    if (onProgramChanged)
+        onProgramChanged(currentProgram);
 }

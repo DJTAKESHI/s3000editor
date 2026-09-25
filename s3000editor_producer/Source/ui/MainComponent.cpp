@@ -378,9 +378,23 @@ MainComponent::MainComponent()
         [this](
             const Program& program)
         {
+            DBG(
+                "NAME CHANGE CHECK"
+                " program=["
+                + juce::String(program.name)
+                + "] loaded=["
+                + juce::String(loadedProgram.name)
+                + "]"
+            );
 
             const bool nameChanged =
                 program.name != loadedProgram.name;
+
+
+            DBG(
+                "NAME CHANGED="
+                + juce::String(nameChanged ? "YES" : "NO")
+            );
 
             if (nameChanged)
             {
@@ -467,6 +481,13 @@ MainComponent::MainComponent()
                     + "]"
                 );
 
+                // Program Treeを即時更新
+                programTree.setProgram(
+                    loadedProgram,
+                    sampleHeaders
+                );
+
+                DBG("SEND RPLIST AFTER PROGRAM RENAME");
                 sysExSender.sendRPLIST();
             }
 

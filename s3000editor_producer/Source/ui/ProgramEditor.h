@@ -83,6 +83,7 @@ public:
 
 private:
     Program currentProgram;
+    void commitProgramName();
 
     juce::Label titleLabel;
 

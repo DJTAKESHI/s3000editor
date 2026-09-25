@@ -75,7 +75,7 @@ public:
             : DocumentWindow(
                 name,
                 juce::Colours::black,
-                0,
+                juce::DocumentWindow::allButtons,
                 true)
         {
             DBG("MAINWINDOW CREATED");
