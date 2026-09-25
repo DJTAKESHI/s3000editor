@@ -142,15 +142,8 @@ ProgramEditor::ProgramEditor()
             currentProgram.lfo1Rate =
                 (int)lfo1RateSlider.getValue();
 
-            DBG(
-                "PROGRAM LFO1 RATE EDIT FINISHED="
-                + juce::String(
-                    currentProgram.lfo1Rate
-                )
-            );
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            if (onLfo1RateChanged)
+                onLfo1RateChanged(currentProgram.lfo1Rate);
         };
 
 
@@ -1357,13 +1350,8 @@ ProgramEditor::ProgramEditor()
             currentProgram.lfo1Depth =
                 (int)lfo1DepthSlider.getValue();
 
-            DBG(
-                "PROGRAM LFO1 DEPTH EDIT FINISHED="
-                + juce::String(currentProgram.lfo1Depth)
-            );
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            if (onLfo1DepthChanged)
+                onLfo1DepthChanged(currentProgram.lfo1Depth);
         };
 
     lfo1DelayLabel.setText(
@@ -1412,19 +1400,14 @@ ProgramEditor::ProgramEditor()
         };
 
     lfo1DelaySlider.onDragEnd =
-        [this]()
-        {
-            currentProgram.lfo1Delay =
-                (int)lfo1DelaySlider.getValue();
+    [this]()
+    {
+        currentProgram.lfo1Delay =
+            (int)lfo1DelaySlider.getValue();
 
-            DBG(
-                "PROGRAM LFO1 DELAY EDIT FINISHED="
-                + juce::String(currentProgram.lfo1Delay)
-            );
-
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
-        };
+        if (onLfo1DelayChanged)
+            onLfo1DelayChanged(currentProgram.lfo1Delay);
+    };
 
     setupSectionLabel(
         lfo2SectionLabel,
@@ -1512,8 +1495,14 @@ ProgramEditor::ProgramEditor()
                 + juce::String(currentProgram.lfo2Rate)
             );
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            if (onLfo2RateChanged)
+                onLfo2RateChanged(
+                    currentProgram.lfo2Rate
+                );
+
+            // テスト中はPDATAを送らない
+            // if (onProgramChanged)
+            //     onProgramChanged(currentProgram);
         };
 
     lfo2DepthSlider.onDragEnd =
@@ -1527,8 +1516,16 @@ ProgramEditor::ProgramEditor()
                 + juce::String(currentProgram.lfo2Depth)
             );
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            if (onLfo2DepthChanged)
+            {
+                onLfo2DepthChanged(
+                    currentProgram.lfo2Depth
+                );
+            }
+
+            // PDATA全体送信はしない
+            // if (onProgramChanged)
+            //     onProgramChanged(currentProgram);
         };
 
     lfo2DelaySlider.onDragEnd =
@@ -1542,8 +1539,16 @@ ProgramEditor::ProgramEditor()
                 + juce::String(currentProgram.lfo2Delay)
             );
 
-            if (onProgramChanged)
-                onProgramChanged(currentProgram);
+            if (onLfo2DelayChanged)
+            {
+                onLfo2DelayChanged(
+                    currentProgram.lfo2Delay
+                );
+            }
+
+            // PDATA全体送信はしない
+            // if (onProgramChanged)
+            //     onProgramChanged(currentProgram);
         };
 
     lfo2WaveLabel.setText(

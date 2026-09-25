@@ -764,6 +764,126 @@ MainComponent::MainComponent()
                 );
             };
 
+        programEditor.onLfo1RateChanged =
+            [this](int value)
+            {
+                loadedProgram.lfo1Rate = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO1Rate
+                        ),
+                    value
+                );
+            };
+
+        programEditor.onLfo1DepthChanged =
+            [this](int value)
+            {
+                loadedProgram.lfo1Depth = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO1Depth
+                        ),
+                    value
+                );
+            };
+
+        programEditor.onLfo1DelayChanged =
+            [this](int value)
+            {
+                loadedProgram.lfo1Delay = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO1Delay
+                        ),
+                    value
+                );
+            };
+
+
+        programEditor.onLfo2RateChanged =
+            [this](int value)
+            {
+                DBG(
+                    "LFO2 RATE BYTE WRITE"
+                    " PROGRAM="
+                    + juce::String(loadedProgram.programNumber)
+                    + " OFFSET="
+                    + juce::String(
+                        (int)ProgramOffset::LFO::LFO2Rate
+                    )
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                loadedProgram.lfo2Rate = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO2Rate
+                        ),
+                    value
+                );
+            };
+
+        programEditor.onLfo2DepthChanged =
+            [this](int value)
+            {
+                DBG(
+                    "LFO2 DEPTH BYTE WRITE"
+                    " PROGRAM="
+                    + juce::String(loadedProgram.programNumber)
+                    + " OFFSET="
+                    + juce::String(
+                        (int)ProgramOffset::LFO::LFO2Depth
+                    )
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                loadedProgram.lfo2Depth = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO2Depth
+                        ),
+                    value
+                );
+            };
+
+        programEditor.onLfo2DelayChanged =
+            [this](int value)
+            {
+                DBG(
+                    "LFO2 DELAY BYTE WRITE"
+                    " PROGRAM="
+                    + juce::String(loadedProgram.programNumber)
+                    + " OFFSET="
+                    + juce::String(
+                        (int)ProgramOffset::LFO::LFO2Delay
+                    )
+                    + " VALUE="
+                    + juce::String(value)
+                );
+
+                loadedProgram.lfo2Delay = value;
+
+                sysExSender.sendProgramHeaderByte(
+                    loadedProgram.programNumber,
+                    static_cast<int>(
+                        ProgramOffset::LFO::LFO2Delay
+                        ),
+                    value
+                );
+            };
 
 
         programEditor.onLfo1PitchChanged =
@@ -8464,6 +8584,11 @@ std::vector<uint8_t> MainComponent::decodeKeygroupNibbleData(
 void MainComponent::loadProgram(
     int programIndex)
 {
+    DBG(
+        "========== LOAD PROGRAM START =========="
+        " program="
+        + juce::String(programIndex)
+    );
 
 
     if (programIndex < 0)
@@ -8499,7 +8624,10 @@ void MainComponent::loadProgram(
 
     sysExSender.sendRSLIST();
 
-
+    DBG(
+        "LOAD PROGRAM SEND PROGRAM HEADER program="
+        + juce::String(programIndex)
+    );
 
     // Program���[�h�J�n
     sysExSender.sendProgramHeader(

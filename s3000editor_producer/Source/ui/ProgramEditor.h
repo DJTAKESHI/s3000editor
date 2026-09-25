@@ -50,6 +50,15 @@ public:
     std::function<void(bool)> onPortamentoEnableChanged;
     std::function<void(int)> onPortamentoTypeChanged;
     std::function<void(int)> onPortamentoValueChanged;
+    std::function<void(int)> onLfo1RateChanged;
+    std::function<void(int)> onLfo1DepthChanged;
+    std::function<void(int)> onLfo1DelayChanged;
+
+
+    std::function<void(int)> onLfo2RateChanged;
+    std::function<void(int)> onLfo2DepthChanged;
+    std::function<void(int)> onLfo2DelayChanged;
+
 
     //std::function<void(int)> onEnv2EnvelopePitchChanged;
 
