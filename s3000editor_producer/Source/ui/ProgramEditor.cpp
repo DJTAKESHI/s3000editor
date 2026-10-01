@@ -174,18 +174,58 @@ ProgramEditor::ProgramEditor()
     addAndMakeVisible(programNameLabel);
     addAndMakeVisible(programNameEditor);
 
-    programNameEditor.setWantsKeyboardFocus(true);
+    //programNameEditor.setWantsKeyboardFocus(true);
+    //programNameEditor.setMouseClickGrabsKeyboardFocus(true);
+
+    programNameEditor.onTextChange =
+        [this]()
+        {
+            DBG(
+                "PROGRAM NAME TEXT CHANGED -> ["
+                + programNameEditor.getText()
+                + "]"
+            );
+
+            if (auto* focused =
+                juce::Component::getCurrentlyFocusedComponent())
+            {
+                DBG(
+                    "FOCUS WHEN NAME CHANGED = "
+                    + focused->getName()
+                    + " TYPE="
+                    + juce::String(
+                        typeid(*focused).name()
+                    )
+                );
+            }
+            else
+            {
+                DBG(
+                    "FOCUS WHEN NAME CHANGED = NONE"
+                );
+            }
+        };
+
+
 
     programNameEditor.onReturnKey =
         [this]()
         {
             commitProgramName();
+
+            programNameEditor.giveAwayKeyboardFocus();
+
+            if (onRequestKeyboardFocus)
+                onRequestKeyboardFocus();
         };
 
     programNameEditor.onFocusLost =
         [this]()
         {
             commitProgramName();
+
+            if (onRequestKeyboardFocus)
+                onRequestKeyboardFocus();
         };
 
 
@@ -307,6 +347,8 @@ ProgramEditor::ProgramEditor()
         0.01
     );
 
+    tuneSlider.setMouseDragSensitivity(1000);
+
 //    tuneSlider.setDoubleClickReturnValue(
 //        false,
 //        0.0
@@ -330,6 +372,50 @@ ProgramEditor::ProgramEditor()
     tuneValueLabel.setJustificationType(
         juce::Justification::centred
     );
+
+    tuneValueLabel.setEditable(
+        true,   // single click
+        true,   // double click
+        false   // loss of focus discards? false = commit
+    );
+
+    tuneValueLabel.onTextChange =
+        [this]()
+        {
+            const double value =
+                tuneValueLabel.getText().getDoubleValue();
+
+            const double clamped =
+                juce::jlimit(
+                    -50.0,
+                    50.0,
+                    value
+                );
+
+            tuneSlider.setValue(
+                clamped,
+                juce::dontSendNotification
+            );
+
+            tuneValueLabel.setText(
+                juce::String(clamped, 2),
+                juce::dontSendNotification
+            );
+
+            currentProgram.tune = clamped;
+
+            DBG(
+                "PROGRAM TUNE TEXT EDIT FINISHED TUNE="
+                + juce::String(currentProgram.tune, 2)
+            );
+
+            if (onProgramChanged)
+            {
+                onProgramChanged(
+                    currentProgram
+                );
+            }
+        };
 
     addAndMakeVisible(tuneValueLabel);
 
@@ -3506,6 +3592,15 @@ void ProgramEditor::setProgram(
         program.portamentoTime,
         juce::dontSendNotification
     );
+
+
+    if (programNameEditor.hasKeyboardFocus(true))
+    {
+        DBG("PROGRAM NAME HAD FOCUS AFTER SETPROGRAM");
+        programNameEditor.giveAwayKeyboardFocus();
+    }
+
+
 }
 
 void ProgramEditor::resized()

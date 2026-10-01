@@ -36,6 +36,9 @@ std::vector<uint8_t>
 ProgramEncoder::encode(
 	const Program& program)
 {
+
+
+
 	auto data =
 		program.rawData;
 

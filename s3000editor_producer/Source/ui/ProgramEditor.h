@@ -24,6 +24,33 @@ public:
     }
 };
 
+class ProgramNameEditor : public juce::TextEditor
+{
+public:
+    ProgramNameEditor()
+    {
+        setWantsKeyboardFocus(false);
+    }
+
+    void mouseDown(
+        const juce::MouseEvent& event) override
+    {
+        setWantsKeyboardFocus(true);
+        grabKeyboardFocus();
+
+        juce::TextEditor::mouseDown(event);
+    }
+
+    void focusLost(
+        FocusChangeType cause) override
+    {
+        juce::TextEditor::focusLost(cause);
+
+        setWantsKeyboardFocus(false);
+    }
+};
+
+
 class ProgramEditor : public juce::Component
 {
 public:
@@ -59,6 +86,8 @@ public:
     std::function<void(int)> onLfo2DepthChanged;
     std::function<void(int)> onLfo2DelayChanged;
 
+    std::function<void()> onRequestKeyboardFocus;
+
 
     //std::function<void(int)> onEnv2EnvelopePitchChanged;
 
@@ -92,7 +121,7 @@ private:
     juce::Label outputSectionLabel;
 
     juce::Label programNameLabel;
-    juce::TextEditor programNameEditor;
+    ProgramNameEditor programNameEditor;
 
 
 

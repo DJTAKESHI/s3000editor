@@ -141,6 +141,21 @@ MainComponent::MainComponent()
                 .keygroups[currentKeygroup]
                 .modFilter3;
 
+            programEditor.onRequestKeyboardFocus =
+                [this]()
+                {
+                    juce::MessageManager::callAsync(
+                        [this]()
+                        {
+                            juce::Component::unfocusAllComponents();
+
+                            keyboardComponent.grabKeyboardFocus();
+
+                            DBG("PROGRAM EDITOR -> KEYBOARD FOCUS");
+                        }
+                    );
+                };
+
 
             programEditor.setModPitchAmount(
                 modVPitch
@@ -434,10 +449,26 @@ MainComponent::MainComponent()
             programToSend.portamentoEnabled =
                 loadedProgram.portamentoEnabled;
 
+            DBG(
+                "PROGRAM BEFORE ENCODE"
+                " LFO1_WAVE=" + juce::String(programToSend.lfo1Wave)
+                + " LFO1_RATE=" + juce::String(programToSend.lfo1Rate)
+                + " LFO1_DEPTH=" + juce::String(programToSend.lfo1Depth)
+                + " MOD_S_FILTER1=" + juce::String(programToSend.modSFilter1)
+            );
+
             auto encodedProgram =
                 ProgramEncoder::encode(
                     programToSend
                 );
+
+            DBG(
+                "ENCODED LFO1"
+                " RATE=" + juce::String(encodedProgram[33])
+                + " DEPTH=" + juce::String(encodedProgram[34])
+                + " DELAY=" + juce::String(encodedProgram[35])
+                + " WAVE=" + juce::String(encodedProgram[97])
+            );
 
 
 
@@ -465,10 +496,25 @@ MainComponent::MainComponent()
                 encodedProgram
             );
 
-            // 診断用
-            //sysExSender.sendProgramHeader(
-            //    program.programNumber
-            //);
+            sysExSender.sendProgramData(
+                program.programNumber,
+                encodedProgram
+            );
+
+            // LFO diagnostic read-back
+            juce::Timer::callAfterDelay(
+                200,
+                [this, programNumber = program.programNumber]()
+                {
+                    DBG(
+                        "LFO TEST: REQUEST PROGRAM HEADER AFTER PDATA"
+                    );
+
+                    sysExSender.sendProgramHeader(
+                        programNumber
+                    );
+                }
+            );
 
             if (nameChanged)
             {
@@ -3457,17 +3503,16 @@ MainComponent::MainComponent()
             keyboardOctaveCombo.setVisible(showKeyboard);
 
             if (showKeyboard)
+            {
+                juce::Component::unfocusAllComponents();
                 keyboardComponent.grabKeyboardFocus();
+
+                DBG("KEYBOARD TOGGLE -> FORCED KEYBOARD FOCUS");
+            }
 
             resized();
             repaint();
         };
-
-    addAndMakeVisible(keyboardVelocityLabel);
-    keyboardVelocityLabel.setText(
-        "Velocity",
-        juce::dontSendNotification
-    );
 
     addAndMakeVisible(keyboardVelocitySlider);
     keyboardVelocitySlider.setRange(1, 127, 1);
@@ -7609,6 +7654,18 @@ void MainComponent::handleProgramHeaderResponse()
         )
     );
 
+    DBG(
+        "PROGRAM READBACK"
+        " LFO1_RATE="
+        + juce::String(decoded[ProgramOffset::LFO::LFO1Rate])
+        + " LFO1_DEPTH="
+        + juce::String(decoded[ProgramOffset::LFO::LFO1Depth])
+        + " LFO1_WAVE="
+        + juce::String(decoded[ProgramOffset::LFO::LFO1Wave])
+        + " MOD_S_FILTER1="
+        + juce::String(decoded[ProgramOffset::Mod::ModSFilter1])
+    );
+
     static std::vector<uint8_t> previousProgramData;
 
     DBG(
@@ -9035,12 +9092,33 @@ void MainComponent::injectTestKeygroupHeaderByte(
 
 bool MainComponent::keyPressed(
     const juce::KeyPress& key,
-    juce::Component*)
+    juce::Component* originatingComponent)
 {
     DBG(
         "PC KEY PRESSED: "
         + key.getTextDescription()
     );
+
+    if (originatingComponent != nullptr)
+    {
+        DBG(
+            "KEY ORIGIN COMPONENT = "
+            + originatingComponent->getName()
+            + " TYPE="
+            + juce::String(typeid(*originatingComponent).name())
+        );
+    }
+
+    if (auto* focused =
+        juce::Component::getCurrentlyFocusedComponent())
+    {
+        DBG(
+            "CURRENT FOCUS = "
+            + focused->getName()
+            + " TYPE="
+            + juce::String(typeid(*focused).name())
+        );
+    }
 
     keyGroupEditor.suspendFilterRealtime();
 
