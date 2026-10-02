@@ -8,10 +8,7 @@
             file="Assets/editor_icon_sm.png"/>
     </GROUP>
     <GROUP id="{0B4A6806-AA35-EFCF-7296-36DF564D3DE3}" name="Source">
-      <GROUP id="{FE48AB7E-8726-5743-3ECC-A88D79E47A8F}" name="Resources">
-        <FILE id="uTLYPN" name="editor_icon_sm.png" compile="0" resource="1"
-              file="../../Desktop/editor_icon_sm.png" xcodeResource="1"/>
-      </GROUP>
+      <GROUP id="{FE48AB7E-8726-5743-3ECC-A88D79E47A8F}" name="Resources"/>
       <GROUP id="{40F5D40B-D961-CB5D-5352-56BBEEA2B353}" name="tests">
         <FILE id="UvWPRL" name="KeygroupEncoderTests.cpp" compile="1" resource="0"
               file="Source/tests/KeygroupEncoderTests.cpp"/>
